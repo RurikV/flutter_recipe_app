@@ -71,7 +71,7 @@ class RecipeManager {
       description: 'Классический итальянский десерт на основе маскарпоне, кофе и печенья савоярди.',
       instructions: '...',
       difficulty: 3,
-      duration: '30 минут (плюс охлаждение)', // Added duration
+      duration: '30 минут', // Added duration
       rating: 5,
       tags: ['Итальянская кухня', 'Десерт', 'Кофе'],
     ),

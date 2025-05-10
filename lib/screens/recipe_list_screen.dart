@@ -13,6 +13,7 @@ class RecipeListScreen extends StatefulWidget {
 class _RecipeListScreenState extends State<RecipeListScreen> {
   final RecipeManager _recipeManager = RecipeManager();
   late Future<List<Recipe>> _recipesFuture;
+  int _selectedIndex = 0; // For bottom navigation
 
   @override
   void initState() {
@@ -23,9 +24,12 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFECECEC), // Background color as per design
       appBar: AppBar(
         title: const Text('Рецепты'),
         centerTitle: true,
+        backgroundColor: const Color(0xFFECECEC), // Match background color
+        elevation: 0, // No shadow
       ),
       body: FutureBuilder<List<Recipe>>(
         future: _recipesFuture,
@@ -80,6 +84,71 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
             return RecipeList(recipes: snapshot.data!);
           }
         },
+      ),
+      bottomNavigationBar: Container(
+        height: 60, // Height as per design
+        decoration: const BoxDecoration(
+          color: Colors.white, // White background as per design
+          boxShadow: [
+            BoxShadow(
+              color: Color.fromRGBO(0, 0, 0, 0.25), // Shadow as per design
+              blurRadius: 8,
+              offset: Offset(0, 0),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Recipes tab
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.local_pizza, // Pizza icon as per design
+                    color: const Color(0xFF2ECC71), // Green color for active tab
+                    size: 24,
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Рецепты',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 10,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF2ECC71), // Green color for active tab
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Login tab
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.person, // Person icon as per design
+                    color: const Color(0xFFC2C2C2), // Gray color for inactive tab
+                    size: 24,
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Вход',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 10,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFFC2C2C2), // Gray color for inactive tab
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
