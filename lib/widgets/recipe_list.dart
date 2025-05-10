@@ -4,10 +4,7 @@ import '../models/recipe.dart';
 class RecipeList extends StatelessWidget {
   final List<Recipe> recipes;
 
-  const RecipeList({
-    Key? key,
-    required this.recipes,
-  }) : super(key: key);
+  const RecipeList({Key? key, required this.recipes}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +27,7 @@ class RecipeList extends StatelessWidget {
 class RecipeCard extends StatelessWidget {
   final Recipe recipe;
 
-  const RecipeCard({
-    Key? key,
-    required this.recipe,
-  }) : super(key: key);
+  const RecipeCard({Key? key, required this.recipe}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -43,10 +37,14 @@ class RecipeCard extends StatelessWidget {
       child: Card(
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5.0), // 5px border radius as per design
+          borderRadius: BorderRadius.circular(
+            5.0,
+          ), // 5px border radius as per design
         ),
-        elevation: 4, // Shadow as per design
-        shadowColor: const Color.fromRGBO(149, 146, 146, 0.1), // Shadow color as per design
+        elevation: 4,
+        // Shadow as per design
+        shadowColor: const Color.fromRGBO(149, 146, 146, 0.1),
+        // Shadow color as per design
         child: Row(
           children: [
             // Recipe image - Left side of the card
@@ -65,7 +63,11 @@ class RecipeCard extends StatelessWidget {
                     return Container(
                       color: Colors.grey[300],
                       child: const Center(
-                        child: Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
+                        child: Icon(
+                          Icons.image_not_supported,
+                          size: 40,
+                          color: Colors.grey,
+                        ),
                       ),
                     );
                   },
@@ -75,55 +77,70 @@ class RecipeCard extends StatelessWidget {
 
             // Recipe details - Right side of the card
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Recipe name
-                    Padding(
-                      padding: const EdgeInsets.only(top: 14.0), // Position as per design
-                      child: Text(
-                        recipe.name,
-                        style: const TextStyle(
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w500, // Medium weight as per design
-                          fontSize: 22, // 22px as per design
-                          height: 1.0, // Line height as per design
-                          color: Colors.black,
+              child: Container(
+                // Wrap with a Container
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Recipe name
+                      Padding(
+                        padding: const EdgeInsets.only(top: 14.0),
+                        // Position as per design
+                        child: Text(
+                          recipe.name,
+                          style: const TextStyle(
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w500,
+                            // Medium weight as per design
+                            fontSize: 22,
+                            // 22px as per design
+                            height: 1.0,
+                            // Line height as per design
+                            color: Colors.black,
+                          ),
+                          maxLines: 2, // Two lines as per design
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 2, // Two lines as per design
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
 
-                    const Spacer(), // Push the duration to the bottom
-
-                    // Duration with clock icon
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0), // Position as per design
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.access_time, // Clock icon
-                            size: 16.0,
-                            color: Color(0xFF2ECC71), // Green color as per design
-                          ),
-                          const SizedBox(width: 8.0),
-                          Text(
-                            recipe.duration,
-                            style: const TextStyle(
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400, // Regular weight as per design
-                              fontSize: 16, // 16px as per design
-                              height: 19/16, // Line height as per design
-                              color: Color(0xFF2ECC71), // Green color as per design
+                      const Spacer(), // Push the duration to the bottom
+                      // Duration with clock icon
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        // Position as per design
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.access_time, // Clock icon
+                              size: 16.0,
+                              color: Color(
+                                0xFF2ECC71,
+                              ), // Green color as per design
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8.0),
+                            Text(
+                              recipe.duration,
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w400,
+                                // Regular weight as per design
+                                fontSize: 16,
+                                // 16px as per design
+                                height: 19 / 16,
+                                // Line height as per design
+                                color: Color(
+                                  0xFF2ECC71,
+                                ), // Green color as per design
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
