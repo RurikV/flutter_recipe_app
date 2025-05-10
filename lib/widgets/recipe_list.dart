@@ -32,6 +32,12 @@ class RecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Determine if the theme is dark or light to adjust text color
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final timeColor = isDarkMode ? Colors.white70 : Colors.black54;
+
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16.0),
       clipBehavior: Clip.antiAlias,
@@ -39,113 +45,83 @@ class RecipeCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.0),
       ),
       elevation: 2.0,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack( // Use Stack to overlay text on the image
         children: [
-          // Recipe image
+          // Recipe image - Fills the card
           AspectRatio(
-            aspectRatio: 16 / 9,
+            aspectRatio: 16 / 9, // Adjust as needed for your desired image proportions
             child: Image.network(
-              recipe.images,
+              recipe.images, // Make sure recipe.images is a valid URL
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
                   color: Colors.grey[300],
                   child: const Center(
-                    child: Icon(Icons.image_not_supported, size: 40),
+                    child: Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
                   ),
                 );
               },
             ),
           ),
-          
-          // Recipe details
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Recipe name
-                Text(
-                  recipe.name,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
+
+          // Gradient overlay for better text readability
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.center,
+                ),
+              ),
+            ),
+          ),
+
+          // Recipe Name and Time
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(12.0), // Adjusted padding
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min, // Important for Stack positioning
+                children: [
+                  Text(
+                    recipe.name,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // Text color for better contrast on image
+                      fontSize: 18, // Slightly smaller font for this layout
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                
-                const SizedBox(height: 8.0),
-                
-                // Recipe description
-                Text(
-                  recipe.description,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                
-                const SizedBox(height: 12.0),
-                
-                // Recipe metadata
-                Row(
-                  children: [
-                    // Difficulty
-                    _buildMetadataItem(
-                      context,
-                      Icons.signal_cellular_alt,
-                      'Сложность: ${recipe.difficulty}/5',
-                    ),
-                    
-                    const SizedBox(width: 16.0),
-                    
-                    // Rating
-                    _buildMetadataItem(
-                      context,
-                      Icons.star,
-                      'Рейтинг: ${recipe.rating}/5',
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 12.0),
-                
-                // Tags
-                Wrap(
-                  spacing: 8.0,
-                  runSpacing: 4.0,
-                  children: recipe.tags.map((tag) {
-                    return Chip(
-                      label: Text(
-                        tag,
-                        style: const TextStyle(fontSize: 12.0),
+                  const SizedBox(height: 4.0),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.timer_outlined,
+                        color: Colors.white.withOpacity(0.8),
+                        size: 16.0,
                       ),
-                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    );
-                  }).toList(),
-                ),
-              ],
+                      const SizedBox(width: 4.0),
+                      Text(
+                        recipe.duration,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildMetadataItem(BuildContext context, IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 16.0,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        const SizedBox(width: 4.0),
-        Text(
-          text,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      ],
     );
   }
 }
