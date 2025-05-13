@@ -71,7 +71,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       builder: (context) => _IngredientDialog(
         availableIngredients: _availableIngredients,
         availableUnits: _availableUnits,
-        onAdd: (ingredient) {
+        onSave: (ingredient) {
           setState(() {
             _ingredients.add(ingredient);
           });
@@ -83,7 +83,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   void _editIngredient(int index) {
     showDialog(
       context: context,
-      builder: (context) => _EditIngredientDialog(
+      builder: (context) => _IngredientDialog(
         availableIngredients: _availableIngredients,
         availableUnits: _availableUnits,
         ingredient: _ingredients[index],
@@ -100,7 +100,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     showDialog(
       context: context,
       builder: (context) => _StepDialog(
-        onAdd: (step) {
+        onSave: (step) {
           setState(() {
             _steps.add(step);
           });
@@ -112,7 +112,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   void _editStep(int index) {
     showDialog(
       context: context,
-      builder: (context) => _EditStepDialog(
+      builder: (context) => _StepDialog(
         step: _steps[index],
         onSave: (step) {
           setState(() {
@@ -610,16 +610,18 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   }
 }
 
-// Dialog for adding a new ingredient
+// Dialog for adding or editing an ingredient
 class _IngredientDialog extends StatefulWidget {
   final List<String> availableIngredients;
   final List<String> availableUnits;
-  final Function(Ingredient) onAdd;
+  final Function(Ingredient) onSave;
+  final Ingredient? ingredient; // Optional - if provided, we're in edit mode
 
   const _IngredientDialog({
     required this.availableIngredients,
     required this.availableUnits,
-    required this.onAdd,
+    required this.onSave,
+    this.ingredient,
   });
 
   @override
@@ -628,328 +630,27 @@ class _IngredientDialog extends StatefulWidget {
 
 class _IngredientDialogState extends State<_IngredientDialog> {
   final _formKey = GlobalKey<FormState>();
-  String _selectedIngredient = '';
-  final _quantityController = TextEditingController();
-  String _selectedUnit = '';
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.availableIngredients.isNotEmpty) {
-      _selectedIngredient = widget.availableIngredients[0];
-    }
-    if (widget.availableUnits.isNotEmpty) {
-      _selectedUnit = widget.availableUnits[0];
-    }
-  }
-
-  @override
-  void dispose() {
-    _quantityController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Container(
-        width: 396,
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Dialog title
-              const Padding(
-                padding: EdgeInsets.only(top: 2, bottom: 19),
-                child: Text(
-                  'Ингредиент',
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w400,
-                    fontSize: 16,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-
-              // Ingredient name field
-              Stack(
-                children: [
-                  Container(
-                    width: 351,
-                    height: 56,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFECECEC),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(2),
-                        topRight: Radius.circular(2),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 18,
-                    top: 8,
-                    child: const Text(
-                      'Название ингредиента',
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w400,
-                        fontSize: 10,
-                        color: Color(0xFF165932),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 0,
-                    top: 56,
-                    child: Container(
-                      width: 351,
-                      height: 0,
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Color(0xFF165932),
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 18,
-                    top: 24,
-                    right: 16,
-                    child: DropdownButtonFormField<String>(
-                      value: _selectedIngredient.isNotEmpty ? _selectedIngredient : null,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                      items: widget.availableIngredients.map((ingredient) {
-                        return DropdownMenuItem<String>(
-                          value: ingredient,
-                          child: Text(ingredient),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedIngredient = value!;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Пожалуйста, выберите ингредиент';
-                        }
-                        return null;
-                      },
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // Quantity field
-              Stack(
-                children: [
-                  Container(
-                    width: 351,
-                    height: 56,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFECECEC),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(2),
-                        topRight: Radius.circular(2),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 18,
-                    top: 8,
-                    child: const Text(
-                      'Количество',
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w400,
-                        fontSize: 10,
-                        color: Color(0xFF165932),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 0,
-                    top: 56,
-                    child: Container(
-                      width: 351,
-                      height: 0,
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Color(0xFF165932),
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 18,
-                    top: 24,
-                    right: 16,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: TextFormField(
-                            controller: _quantityController,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                            ],
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Пожалуйста, введите количество';
-                              }
-                              return null;
-                            },
-                            style: const TextStyle(
-                              fontFamily: 'Roboto',
-                              fontSize: 16,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: DropdownButtonFormField<String>(
-                            value: _selectedUnit.isNotEmpty ? _selectedUnit : null,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                            items: widget.availableUnits.map((unit) {
-                              return DropdownMenuItem<String>(
-                                value: unit,
-                                child: Text(unit),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedUnit = value!;
-                              });
-                            },
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Выберите единицу';
-                              }
-                              return null;
-                            },
-                            style: const TextStyle(
-                              fontFamily: 'Roboto',
-                              fontSize: 16,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 50),
-
-              // Add button
-              Center(
-                child: SizedBox(
-                  width: 232,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        widget.onAdd(
-                          Ingredient(
-                            name: _selectedIngredient,
-                            quantity: _quantityController.text,
-                            unit: _selectedUnit,
-                          ),
-                        );
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2ECC71),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                    ),
-                    child: const Text(
-                      'Добавить',
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Dialog for editing an existing ingredient
-class _EditIngredientDialog extends StatefulWidget {
-  final List<String> availableIngredients;
-  final List<String> availableUnits;
-  final Ingredient ingredient;
-  final Function(Ingredient) onSave;
-
-  const _EditIngredientDialog({
-    required this.availableIngredients,
-    required this.availableUnits,
-    required this.ingredient,
-    required this.onSave,
-  });
-
-  @override
-  State<_EditIngredientDialog> createState() => _EditIngredientDialogState();
-}
-
-class _EditIngredientDialogState extends State<_EditIngredientDialog> {
-  final _formKey = GlobalKey<FormState>();
   late String _selectedIngredient;
   late TextEditingController _quantityController;
   late String _selectedUnit;
+  late bool _isEditMode;
 
   @override
   void initState() {
     super.initState();
-    // Initialize with the existing ingredient values
-    _selectedIngredient = widget.ingredient.name;
-    _quantityController = TextEditingController(text: widget.ingredient.quantity);
-    _selectedUnit = widget.ingredient.unit;
+    _isEditMode = widget.ingredient != null;
+
+    if (_isEditMode) {
+      // Initialize with the existing ingredient values
+      _selectedIngredient = widget.ingredient!.name;
+      _quantityController = TextEditingController(text: widget.ingredient!.quantity);
+      _selectedUnit = widget.ingredient!.unit;
+    } else {
+      // Initialize with default values
+      _selectedIngredient = widget.availableIngredients.isNotEmpty ? widget.availableIngredients[0] : '';
+      _quantityController = TextEditingController();
+      _selectedUnit = widget.availableUnits.isNotEmpty ? widget.availableUnits[0] : '';
+    }
   }
 
   @override
@@ -975,11 +676,11 @@ class _EditIngredientDialogState extends State<_EditIngredientDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Dialog title
-              const Padding(
-                padding: EdgeInsets.only(top: 2, bottom: 19),
+              Padding(
+                padding: const EdgeInsets.only(top: 2, bottom: 19),
                 child: Text(
-                  'Редактировать ингредиент',
-                  style: TextStyle(
+                  _isEditMode ? 'Редактировать ингредиент' : 'Ингредиент',
+                  style: const TextStyle(
                     fontFamily: 'Roboto',
                     fontWeight: FontWeight.w400,
                     fontSize: 16,
@@ -1031,20 +732,56 @@ class _EditIngredientDialogState extends State<_EditIngredientDialog> {
                       ),
                     ),
                   ),
-                  Positioned(
-                    left: 34,
-                    top: 79 - 56,
-                    child: Text(
-                      _selectedIngredient,
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
-                        height: 23 / 16,
-                        color: Colors.black,
+                  if (_isEditMode)
+                    Positioned(
+                      left: 34,
+                      top: 79 - 56,
+                      child: Text(
+                        _selectedIngredient,
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          height: 23 / 16,
+                          color: Colors.black,
+                        ),
+                      ),
+                    )
+                  else
+                    Positioned(
+                      left: 18,
+                      top: 24,
+                      right: 16,
+                      child: DropdownButtonFormField<String>(
+                        value: _selectedIngredient.isNotEmpty ? _selectedIngredient : null,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        items: widget.availableIngredients.map((ingredient) {
+                          return DropdownMenuItem<String>(
+                            value: ingredient,
+                            child: Text(ingredient),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedIngredient = value!;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Пожалуйста, выберите ингредиент';
+                          }
+                          return null;
+                        },
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
 
@@ -1093,26 +830,94 @@ class _EditIngredientDialogState extends State<_EditIngredientDialog> {
                       ),
                     ),
                   ),
-                  Positioned(
-                    left: 33,
-                    top: 149 - 127,
-                    child: Text(
-                      '${_quantityController.text} ${_selectedUnit}',
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
-                        height: 23 / 16,
-                        color: Colors.black,
+                  if (_isEditMode)
+                    Positioned(
+                      left: 33,
+                      top: 149 - 127,
+                      child: Text(
+                        '${_quantityController.text} ${_selectedUnit}',
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          height: 23 / 16,
+                          color: Colors.black,
+                        ),
+                      ),
+                    )
+                  else
+                    Positioned(
+                      left: 18,
+                      top: 24,
+                      right: 16,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: TextFormField(
+                              controller: _quantityController,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                              ],
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Пожалуйста, введите количество';
+                                }
+                                return null;
+                              },
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: DropdownButtonFormField<String>(
+                              value: _selectedUnit.isNotEmpty ? _selectedUnit : null,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              items: widget.availableUnits.map((unit) {
+                                return DropdownMenuItem<String>(
+                                  value: unit,
+                                  child: Text(unit),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedUnit = value!;
+                                });
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Выберите единицу';
+                                }
+                                return null;
+                              },
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
                 ],
               ),
 
               const SizedBox(height: 50),
 
-              // Save button
+              // Action button (Add or Save)
               Center(
                 child: SizedBox(
                   width: 232,
@@ -1136,9 +941,9 @@ class _EditIngredientDialogState extends State<_EditIngredientDialog> {
                         borderRadius: BorderRadius.circular(25),
                       ),
                     ),
-                    child: const Text(
-                      'Сохранить',
-                      style: TextStyle(
+                    child: Text(
+                      _isEditMode ? 'Сохранить' : 'Добавить',
+                      style: const TextStyle(
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
@@ -1156,11 +961,15 @@ class _EditIngredientDialogState extends State<_EditIngredientDialog> {
   }
 }
 
-// Dialog for adding a new step
+// Dialog for adding or editing a step
 class _StepDialog extends StatefulWidget {
-  final Function(RecipeStep) onAdd;
+  final Function(RecipeStep) onSave;
+  final RecipeStep? step; // Optional - if provided, we're in edit mode
 
-  const _StepDialog({required this.onAdd});
+  const _StepDialog({
+    required this.onSave,
+    this.step,
+  });
 
   @override
   State<_StepDialog> createState() => _StepDialogState();
@@ -1168,410 +977,35 @@ class _StepDialog extends StatefulWidget {
 
 class _StepDialogState extends State<_StepDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _descriptionController = TextEditingController();
-  final _durationController = TextEditingController();
-
-  @override
-  void dispose() {
-    _descriptionController.dispose();
-    _durationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Container(
-        width: 396,
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Dialog title
-              const Padding(
-                padding: EdgeInsets.only(top: 2, bottom: 19),
-                child: Text(
-                  'Шаг рецепта',
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w400,
-                    fontSize: 16,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-
-              // Description field
-              Stack(
-                children: [
-                  Container(
-                    width: 352,
-                    height: 161,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFECECEC),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(2),
-                        topRight: Radius.circular(2),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 18,
-                    top: 8,
-                    child: const Text(
-                      'Описание шага',
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w400,
-                        fontSize: 10,
-                        color: Color(0xFF165932),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 0,
-                    top: 161,
-                    child: Container(
-                      width: 352,
-                      height: 0,
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Color(0xFF165932),
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 18,
-                    top: 24,
-                    right: 16,
-                    bottom: 8,
-                    child: TextFormField(
-                      controller: _descriptionController,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                      maxLines: 7,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Пожалуйста, введите описание шага';
-                        }
-                        return null;
-                      },
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              // Duration label
-              const Padding(
-                padding: EdgeInsets.only(top: 8, bottom: 8),
-                child: Text(
-                  'Длительность шага',
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w400,
-                    fontSize: 10,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-
-              // Duration fields (minutes and seconds)
-              Row(
-                children: [
-                  // Minutes field
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: Stack(
-                        children: [
-                          Container(
-                            height: 56,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFECECEC),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(2),
-                                topRight: Radius.circular(2),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            left: 8,
-                            top: 8,
-                            child: const Text(
-                              'Минуты',
-                              style: TextStyle(
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w400,
-                                fontSize: 10,
-                                color: Color(0xFF165932),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            left: 0,
-                            top: 56,
-                            right: 0,
-                            child: Container(
-                              height: 0,
-                              decoration: const BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: Color(0xFF165932),
-                                    width: 2,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            left: 8,
-                            top: 24,
-                            right: 8,
-                            child: TextFormField(
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.zero,
-                                hintText: '59',
-                                hintStyle: TextStyle(
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 20,
-                                  color: Color(0xFFC2C2C2),
-                                ),
-                              ),
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(2),
-                              ],
-                              style: const TextStyle(
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w500,
-                                fontSize: 20,
-                                color: Colors.black,
-                              ),
-                              onChanged: (value) {
-                                // Update the duration controller
-                                final minutes = value.padLeft(2, '0');
-                                final seconds = _durationController.text.isEmpty 
-                                    ? '00' 
-                                    : _durationController.text.split(':').last.padLeft(2, '0');
-                                _durationController.text = '$minutes:$seconds';
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Seconds field
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Container(
-                          height: 56,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFECECEC),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(2),
-                              topRight: Radius.circular(2),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: 8,
-                          top: 8,
-                          child: const Text(
-                            'Секунды',
-                            style: TextStyle(
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400,
-                              fontSize: 10,
-                              color: Color(0xFF165932),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: 0,
-                          top: 56,
-                          right: 0,
-                          child: Container(
-                            height: 0,
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                  color: Color(0xFF165932),
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: 8,
-                          top: 24,
-                          right: 8,
-                          child: TextFormField(
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.zero,
-                              hintText: '59',
-                              hintStyle: TextStyle(
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w500,
-                                fontSize: 20,
-                                color: Color(0xFFC2C2C2),
-                              ),
-                            ),
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(2),
-                            ],
-                            style: const TextStyle(
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 20,
-                              color: Colors.black,
-                            ),
-                            onChanged: (value) {
-                              // Update the duration controller
-                              final minutes = _durationController.text.isEmpty 
-                                  ? '00' 
-                                  : _durationController.text.split(':').first.padLeft(2, '0');
-                              final seconds = value.padLeft(2, '0');
-                              _durationController.text = '$minutes:$seconds';
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              // Hidden field for the actual duration value
-              Opacity(
-                opacity: 0,
-                child: TextFormField(
-                  controller: _durationController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Пожалуйста, введите время';
-                    }
-                    // Validate time format (MM:SS)
-                    final regex = RegExp(r'^\d{2}:\d{2}$');
-                    if (!regex.hasMatch(value)) {
-                      return 'Используйте формат ММ:СС (например, 05:00)';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 53),
-
-              // Add button
-              Center(
-                child: SizedBox(
-                  width: 232,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Set default values if fields are empty
-                      if (_durationController.text.isEmpty) {
-                        _durationController.text = '00:00';
-                      }
-
-                      if (_formKey.currentState!.validate()) {
-                        widget.onAdd(
-                          RecipeStep(
-                            description: _descriptionController.text,
-                            duration: _durationController.text,
-                          ),
-                        );
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2ECC71),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                    ),
-                    child: const Text(
-                      'Добавить',
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Dialog for editing an existing step
-class _EditStepDialog extends StatefulWidget {
-  final RecipeStep step;
-  final Function(RecipeStep) onSave;
-
-  const _EditStepDialog({
-    required this.step,
-    required this.onSave,
-  });
-
-  @override
-  State<_EditStepDialog> createState() => _EditStepDialogState();
-}
-
-class _EditStepDialogState extends State<_EditStepDialog> {
-  final _formKey = GlobalKey<FormState>();
   late TextEditingController _descriptionController;
   late TextEditingController _durationController;
   late String _minutes;
   late String _seconds;
+  late bool _isEditMode;
 
   @override
   void initState() {
     super.initState();
-    // Initialize with the existing step values
-    _descriptionController = TextEditingController(text: widget.step.description);
-    _durationController = TextEditingController(text: widget.step.duration);
+    _isEditMode = widget.step != null;
 
-    // Parse the duration into minutes and seconds
-    final parts = widget.step.duration.split(':');
-    if (parts.length == 2) {
-      _minutes = parts[0];
-      _seconds = parts[1];
+    if (_isEditMode) {
+      // Initialize with the existing step values
+      _descriptionController = TextEditingController(text: widget.step!.description);
+      _durationController = TextEditingController(text: widget.step!.duration);
+
+      // Parse the duration into minutes and seconds
+      final parts = widget.step!.duration.split(':');
+      if (parts.length == 2) {
+        _minutes = parts[0];
+        _seconds = parts[1];
+      } else {
+        _minutes = '00';
+        _seconds = '00';
+      }
     } else {
+      // Initialize with default values
+      _descriptionController = TextEditingController();
+      _durationController = TextEditingController();
       _minutes = '00';
       _seconds = '00';
     }
@@ -1601,11 +1035,11 @@ class _EditStepDialogState extends State<_EditStepDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Dialog title
-              const Padding(
-                padding: EdgeInsets.only(top: 2, bottom: 19),
+              Padding(
+                padding: const EdgeInsets.only(top: 2, bottom: 19),
                 child: Text(
-                  'Редактировать шаг рецепта',
-                  style: TextStyle(
+                  _isEditMode ? 'Редактировать шаг рецепта' : 'Шаг рецепта',
+                  style: const TextStyle(
                     fontFamily: 'Roboto',
                     fontWeight: FontWeight.w400,
                     fontSize: 16,
@@ -1657,22 +1091,49 @@ class _EditStepDialogState extends State<_EditStepDialog> {
                       ),
                     ),
                   ),
-                  Positioned(
-                    left: 33,
-                    top: 87,
-                    width: 318,
-                    height: 80,
-                    child: Text(
-                      _descriptionController.text,
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w400,
-                        fontSize: 16,
-                        height: 18 / 16,
-                        color: Colors.black,
+                  if (_isEditMode)
+                    Positioned(
+                      left: 33,
+                      top: 87,
+                      width: 318,
+                      height: 80,
+                      child: Text(
+                        _descriptionController.text,
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 16,
+                          height: 18 / 16,
+                          color: Colors.black,
+                        ),
+                      ),
+                    )
+                  else
+                    Positioned(
+                      left: 18,
+                      top: 24,
+                      right: 16,
+                      bottom: 8,
+                      child: TextFormField(
+                        controller: _descriptionController,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        maxLines: 7,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Пожалуйста, введите описание шага';
+                          }
+                          return null;
+                        },
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
 
@@ -1738,20 +1199,59 @@ class _EditStepDialogState extends State<_EditStepDialog> {
                               ),
                             ),
                           ),
-                          Positioned(
-                            left: 25.37,
-                            top: 283 - 255,
-                            child: Text(
-                              _minutes,
-                              style: const TextStyle(
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w500,
-                                fontSize: 20,
-                                height: 23 / 20,
-                                color: Colors.black,
+                          if (_isEditMode)
+                            Positioned(
+                              left: 25.37,
+                              top: 283 - 255,
+                              child: Text(
+                                _minutes,
+                                style: const TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 20,
+                                  height: 23 / 20,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            )
+                          else
+                            Positioned(
+                              left: 8,
+                              top: 24,
+                              right: 8,
+                              child: TextFormField(
+                                decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.zero,
+                                  hintText: '59',
+                                  hintStyle: TextStyle(
+                                    fontFamily: 'Roboto',
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 20,
+                                    color: Color(0xFFC2C2C2),
+                                  ),
+                                ),
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(2),
+                                ],
+                                style: const TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 20,
+                                  color: Colors.black,
+                                ),
+                                onChanged: (value) {
+                                  // Update the duration controller
+                                  final minutes = value.padLeft(2, '0');
+                                  final seconds = _durationController.text.isEmpty 
+                                      ? '00' 
+                                      : _durationController.text.split(':').last.padLeft(2, '0');
+                                  _durationController.text = '$minutes:$seconds';
+                                },
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ),
@@ -1800,20 +1300,59 @@ class _EditStepDialogState extends State<_EditStepDialog> {
                             ),
                           ),
                         ),
-                        Positioned(
-                          left: 205.56,
-                          top: 283 - 255,
-                          child: Text(
-                            _seconds,
-                            style: const TextStyle(
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 20,
-                              height: 23 / 20,
-                              color: Colors.black,
+                        if (_isEditMode)
+                          Positioned(
+                            left: 205.56,
+                            top: 283 - 255,
+                            child: Text(
+                              _seconds,
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 20,
+                                height: 23 / 20,
+                                color: Colors.black,
+                              ),
+                            ),
+                          )
+                        else
+                          Positioned(
+                            left: 8,
+                            top: 24,
+                            right: 8,
+                            child: TextFormField(
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                                hintText: '59',
+                                hintStyle: TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 20,
+                                  color: Color(0xFFC2C2C2),
+                                ),
+                              ),
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(2),
+                              ],
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 20,
+                                color: Colors.black,
+                              ),
+                              onChanged: (value) {
+                                // Update the duration controller
+                                final minutes = _durationController.text.isEmpty 
+                                    ? '00' 
+                                    : _durationController.text.split(':').first.padLeft(2, '0');
+                                final seconds = value.padLeft(2, '0');
+                                _durationController.text = '$minutes:$seconds';
+                              },
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -1841,19 +1380,24 @@ class _EditStepDialogState extends State<_EditStepDialog> {
 
               const SizedBox(height: 53),
 
-              // Save button
+              // Action button (Add or Save)
               Center(
                 child: SizedBox(
                   width: 232,
                   height: 48,
                   child: ElevatedButton(
                     onPressed: () {
+                      // Set default values if fields are empty
+                      if (_durationController.text.isEmpty) {
+                        _durationController.text = '00:00';
+                      }
+
                       if (_formKey.currentState!.validate()) {
                         widget.onSave(
                           RecipeStep(
                             description: _descriptionController.text,
                             duration: _durationController.text,
-                            isCompleted: widget.step.isCompleted,
+                            isCompleted: _isEditMode ? widget.step!.isCompleted : false,
                           ),
                         );
                         Navigator.of(context).pop();
@@ -1865,9 +1409,9 @@ class _EditStepDialogState extends State<_EditStepDialog> {
                         borderRadius: BorderRadius.circular(25),
                       ),
                     ),
-                    child: const Text(
-                      'Сохранить',
-                      style: TextStyle(
+                    child: Text(
+                      _isEditMode ? 'Сохранить' : 'Добавить',
+                      style: const TextStyle(
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
