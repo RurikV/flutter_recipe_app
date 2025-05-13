@@ -20,28 +20,28 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _descriptionController = TextEditingController();
   final _durationController = TextEditingController();
   final _imageUrlController = TextEditingController();
-  
+
   final List<Ingredient> _ingredients = [];
   final List<RecipeStep> _steps = [];
-  
+
   final RecipeManager _recipeManager = RecipeManager();
-  
+
   List<String> _availableIngredients = [];
   List<String> _availableUnits = [];
-  
+
   bool _isLoading = false;
-  
+
   @override
   void initState() {
     super.initState();
     _loadData();
   }
-  
+
   Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       _availableIngredients = await _recipeManager.getIngredients();
       _availableUnits = await _recipeManager.getUnits();
@@ -55,7 +55,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       });
     }
   }
-  
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -64,7 +64,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     _imageUrlController.dispose();
     super.dispose();
   }
-  
+
   void _addIngredient() {
     showDialog(
       context: context,
@@ -79,7 +79,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       ),
     );
   }
-  
+
   void _addStep() {
     showDialog(
       context: context,
@@ -92,19 +92,19 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       ),
     );
   }
-  
+
   void _removeIngredient(int index) {
     setState(() {
       _ingredients.removeAt(index);
     });
   }
-  
+
   void _removeStep(int index) {
     setState(() {
       _steps.removeAt(index);
     });
   }
-  
+
   Future<void> _saveRecipe() async {
     if (_formKey.currentState!.validate()) {
       if (_ingredients.isEmpty) {
@@ -113,18 +113,18 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         );
         return;
       }
-      
+
       if (_steps.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Добавьте хотя бы один шаг приготовления')),
         );
         return;
       }
-      
+
       setState(() {
         _isLoading = true;
       });
-      
+
       try {
         final recipe = Recipe(
           uuid: DateTime.now().millisecondsSinceEpoch.toString(), // Generate a unique ID
@@ -141,9 +141,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
           ingredients: _ingredients,
           steps: _steps,
         );
-        
+
         final success = await _recipeManager.saveRecipe(recipe);
-        
+
         if (success) {
           widget.onRecipeAdded();
           if (mounted) {
@@ -171,212 +171,387 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       }
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Новый рецепт'),
+        title: const Text(
+          'Новый рецепт',
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.w400,
+            fontSize: 20,
+            color: Color(0xFF165932),
+          ),
+        ),
         centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 4,
+        shadowColor: const Color.fromRGBO(0, 0, 0, 0.1),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+          color: Colors.black,
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Image placeholder
-                    Container(
-                      width: double.infinity,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(5),
+                    // Recipe name input field
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16, right: 16, top: 112),
+                      child: Stack(
+                        children: [
+                          Container(
+                            width: 396,
+                            height: 56,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFECECEC),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(2),
+                                topRight: Radius.circular(2),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 36.31,
+                            top: 120.17 - 112,
+                            child: const Text(
+                              'Название рецепта',
+                              style: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w400,
+                                fontSize: 10,
+                                color: Color(0xFF165932),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 16,
+                            top: 168 - 112,
+                            child: Container(
+                              width: 396,
+                              height: 0,
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Color(0xFF165932),
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 36.31,
+                            top: 135,
+                            right: 16,
+                            child: TextFormField(
+                              controller: _nameController,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Пожалуйста, введите название рецепта';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.add_a_photo,
-                          size: 64,
-                          color: Colors.grey,
+                    ),
+
+                    // Photo upload section
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16, right: 16, top: 17),
+                      child: Container(
+                        width: 396,
+                        height: 215,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFECECEC),
+                          border: Border.all(
+                            color: const Color(0xFF165932),
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.add_photo_alternate,
+                              size: 48,
+                              color: Color(0xFF165932),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Добавить фото рецепта',
+                              style: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w400,
+                                fontSize: 14,
+                                color: Color(0xFF165932),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            // Hidden field for image URL
+                            Opacity(
+                              opacity: 0,
+                              child: TextFormField(
+                                controller: _imageUrlController,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    
-                    // Recipe name
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Название рецепта',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Пожалуйста, введите название рецепта';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Recipe description
-                    TextFormField(
-                      controller: _descriptionController,
-                      decoration: const InputDecoration(
-                        labelText: 'Описание',
-                        border: OutlineInputBorder(),
-                      ),
-                      maxLines: 3,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Пожалуйста, введите описание рецепта';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Recipe duration
-                    TextFormField(
-                      controller: _durationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Время приготовления (например, "30 минут")',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Пожалуйста, введите время приготовления';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Image URL (optional)
-                    TextFormField(
-                      controller: _imageUrlController,
-                      decoration: const InputDecoration(
-                        labelText: 'URL изображения (необязательно)',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    
+
                     // Ingredients section
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Ингредиенты',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 17, top: 19),
+                      child: Text(
+                        'Ингредиенты',
+                        style: TextStyle(
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          height: 23/16,
+                          color: const Color(0xFF165932),
                         ),
-                        ElevatedButton.icon(
-                          onPressed: _addIngredient,
-                          icon: const Icon(Icons.add),
-                          label: const Text('Добавить'),
-                        ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    
-                    // Ingredients list
+
+                    // Ingredients list or placeholder
                     if (_ingredients.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16.0),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 9),
                         child: Center(
-                          child: Text('Нет добавленных ингредиентов'),
-                        ),
-                      )
-                    else
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _ingredients.length,
-                        itemBuilder: (context, index) {
-                          final ingredient = _ingredients[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 8.0),
-                            child: ListTile(
-                              title: Text(ingredient.name),
-                              subtitle: Text('${ingredient.quantity} ${ingredient.unit}'),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () => _removeIngredient(index),
-                              ),
+                          child: Text(
+                            'нет ингредиентов',
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 12,
+                              height: 23/12,
+                              color: Colors.black,
                             ),
-                          );
-                        },
-                      ),
-                    const SizedBox(height: 24),
-                    
-                    // Steps section
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Шаги приготовления',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        ElevatedButton.icon(
-                          onPressed: _addStep,
-                          icon: const Icon(Icons.add),
-                          label: const Text('Добавить'),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _ingredients.length,
+                          itemBuilder: (context, index) {
+                            final ingredient = _ingredients[index];
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 8.0),
+                              child: ListTile(
+                                title: Text(
+                                  ingredient.name,
+                                  style: const TextStyle(
+                                    fontFamily: 'Roboto',
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  '${ingredient.quantity} ${ingredient.unit}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Roboto',
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 12,
+                                    color: Color(0xFF797676),
+                                  ),
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () => _removeIngredient(index),
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      ],
+                      ),
+
+                    // Add ingredient button
+                    Padding(
+                      padding: const EdgeInsets.only(left: 97, top: 25),
+                      child: SizedBox(
+                        width: 232,
+                        height: 48,
+                        child: OutlinedButton(
+                          onPressed: _addIngredient,
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF165932), width: 3),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          child: const Text(
+                            'Добавить ингредиент',
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                              color: Color(0xFF165932),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    
-                    // Steps list
+
+                    // Steps section
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16, top: 42),
+                      child: Text(
+                        'Шаги приготовления',
+                        style: TextStyle(
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          height: 23/16,
+                          color: const Color(0xFF165932),
+                        ),
+                      ),
+                    ),
+
+                    // Steps list or placeholder
                     if (_steps.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16.0),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
                         child: Center(
-                          child: Text('Нет добавленных шагов'),
+                          child: Text(
+                            'нет шагов приготовления',
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 12,
+                              height: 23/12,
+                              color: Colors.black,
+                            ),
+                          ),
                         ),
                       )
                     else
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _steps.length,
-                        itemBuilder: (context, index) {
-                          final step = _steps[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 8.0),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                child: Text('${index + 1}'),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _steps.length,
+                          itemBuilder: (context, index) {
+                            final step = _steps[index];
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 8.0),
+                              child: ListTile(
+                                leading: Text(
+                                  '${index + 1}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Roboto',
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 24,
+                                    color: Color(0xFFC2C2C2),
+                                  ),
+                                ),
+                                title: Text(
+                                  step.description,
+                                  style: const TextStyle(
+                                    fontFamily: 'Roboto',
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 12,
+                                    color: Color(0xFF797676),
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  'Время: ${step.duration}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Roboto',
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                    color: Color(0xFF797676),
+                                  ),
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () => _removeStep(index),
+                                ),
                               ),
-                              title: Text(step.description),
-                              subtitle: Text('Время: ${step.duration}'),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () => _removeStep(index),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    const SizedBox(height: 32),
-                    
-                    // Save button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _saveRecipe,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                            );
+                          },
                         ),
-                        child: const Text('Сохранить рецепт'),
+                      ),
+
+                    // Add step button
+                    Padding(
+                      padding: const EdgeInsets.only(left: 100, top: 25),
+                      child: SizedBox(
+                        width: 232,
+                        height: 48,
+                        child: OutlinedButton(
+                          onPressed: _addStep,
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF165932), width: 3),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          child: const Text(
+                            'Добавить шаг',
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                              color: Color(0xFF165932),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Save recipe button
+                    Padding(
+                      padding: const EdgeInsets.only(left: 98, top: 21, bottom: 24),
+                      child: SizedBox(
+                        width: 232,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: _saveRecipe,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF797676),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          child: const Text(
+                            'Сохранить рецепт',
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -408,7 +583,7 @@ class _IngredientDialogState extends State<_IngredientDialog> {
   String _selectedIngredient = '';
   final _quantityController = TextEditingController();
   String _selectedUnit = '';
-  
+
   @override
   void initState() {
     super.initState();
@@ -419,118 +594,279 @@ class _IngredientDialogState extends State<_IngredientDialog> {
       _selectedUnit = widget.availableUnits[0];
     }
   }
-  
+
   @override
   void dispose() {
     _quantityController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Добавить ингредиент'),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Ingredient dropdown
-            DropdownButtonFormField<String>(
-              value: _selectedIngredient.isNotEmpty ? _selectedIngredient : null,
-              decoration: const InputDecoration(
-                labelText: 'Ингредиент',
-                border: OutlineInputBorder(),
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Container(
+        width: 396,
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Dialog title
+              const Padding(
+                padding: EdgeInsets.only(top: 2, bottom: 19),
+                child: Text(
+                  'Ингредиент',
+                  style: TextStyle(
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                ),
               ),
-              items: widget.availableIngredients.map((ingredient) {
-                return DropdownMenuItem<String>(
-                  value: ingredient,
-                  child: Text(ingredient),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedIngredient = value!;
-                });
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Пожалуйста, выберите ингредиент';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            
-            // Quantity field
-            TextFormField(
-              controller: _quantityController,
-              decoration: const InputDecoration(
-                labelText: 'Количество',
-                border: OutlineInputBorder(),
+
+              // Ingredient name field
+              Stack(
+                children: [
+                  Container(
+                    width: 351,
+                    height: 56,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFECECEC),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(2),
+                        topRight: Radius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 18,
+                    top: 8,
+                    child: const Text(
+                      'Название ингредиента',
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 10,
+                        color: Color(0xFF165932),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 0,
+                    top: 56,
+                    child: Container(
+                      width: 351,
+                      height: 0,
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Color(0xFF165932),
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 18,
+                    top: 24,
+                    right: 16,
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedIngredient.isNotEmpty ? _selectedIngredient : null,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      items: widget.availableIngredients.map((ingredient) {
+                        return DropdownMenuItem<String>(
+                          value: ingredient,
+                          child: Text(ingredient),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedIngredient = value!;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Пожалуйста, выберите ингредиент';
+                        }
+                        return null;
+                      },
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-              ],
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Пожалуйста, введите количество';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            
-            // Unit dropdown
-            DropdownButtonFormField<String>(
-              value: _selectedUnit.isNotEmpty ? _selectedUnit : null,
-              decoration: const InputDecoration(
-                labelText: 'Единица измерения',
-                border: OutlineInputBorder(),
+
+              const SizedBox(height: 16),
+
+              // Quantity field
+              Stack(
+                children: [
+                  Container(
+                    width: 351,
+                    height: 56,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFECECEC),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(2),
+                        topRight: Radius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 18,
+                    top: 8,
+                    child: const Text(
+                      'Количество',
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 10,
+                        color: Color(0xFF165932),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 0,
+                    top: 56,
+                    child: Container(
+                      width: 351,
+                      height: 0,
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Color(0xFF165932),
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 18,
+                    top: 24,
+                    right: 16,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: TextFormField(
+                            controller: _quantityController,
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                            ],
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Пожалуйста, введите количество';
+                              }
+                              return null;
+                            },
+                            style: const TextStyle(
+                              fontFamily: 'Roboto',
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedUnit.isNotEmpty ? _selectedUnit : null,
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                            items: widget.availableUnits.map((unit) {
+                              return DropdownMenuItem<String>(
+                                value: unit,
+                                child: Text(unit),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedUnit = value!;
+                              });
+                            },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Выберите единицу';
+                              }
+                              return null;
+                            },
+                            style: const TextStyle(
+                              fontFamily: 'Roboto',
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              items: widget.availableUnits.map((unit) {
-                return DropdownMenuItem<String>(
-                  value: unit,
-                  child: Text(unit),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedUnit = value!;
-                });
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Пожалуйста, выберите единицу измерения';
-                }
-                return null;
-              },
-            ),
-          ],
+
+              const SizedBox(height: 50),
+
+              // Add button
+              Center(
+                child: SizedBox(
+                  width: 232,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        widget.onAdd(
+                          Ingredient(
+                            name: _selectedIngredient,
+                            quantity: _quantityController.text,
+                            unit: _selectedUnit,
+                          ),
+                        );
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2ECC71),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                    child: const Text(
+                      'Добавить',
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Отмена'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              widget.onAdd(
-                Ingredient(
-                  name: _selectedIngredient,
-                  quantity: _quantityController.text,
-                  unit: _selectedUnit,
-                ),
-              );
-              Navigator.of(context).pop();
-            }
-          },
-          child: const Text('Добавить'),
-        ),
-      ],
     );
   }
 }
@@ -549,82 +885,370 @@ class _StepDialogState extends State<_StepDialog> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
   final _durationController = TextEditingController();
-  
+
   @override
   void dispose() {
     _descriptionController.dispose();
     _durationController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Добавить шаг'),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Description field
-            TextFormField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Описание',
-                border: OutlineInputBorder(),
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Container(
+        width: 396,
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Dialog title
+              const Padding(
+                padding: EdgeInsets.only(top: 2, bottom: 19),
+                child: Text(
+                  'Шаг рецепта',
+                  style: TextStyle(
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                ),
               ),
-              maxLines: 3,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Пожалуйста, введите описание шага';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            
-            // Duration field
-            TextFormField(
-              controller: _durationController,
-              decoration: const InputDecoration(
-                labelText: 'Время (например, "05:00")',
-                border: OutlineInputBorder(),
+
+              // Description field
+              Stack(
+                children: [
+                  Container(
+                    width: 352,
+                    height: 161,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFECECEC),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(2),
+                        topRight: Radius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 18,
+                    top: 8,
+                    child: const Text(
+                      'Описание шага',
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 10,
+                        color: Color(0xFF165932),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 0,
+                    top: 161,
+                    child: Container(
+                      width: 352,
+                      height: 0,
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Color(0xFF165932),
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 18,
+                    top: 24,
+                    right: 16,
+                    bottom: 8,
+                    child: TextFormField(
+                      controller: _descriptionController,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      maxLines: 7,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Пожалуйста, введите описание шага';
+                        }
+                        return null;
+                      },
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Пожалуйста, введите время';
-                }
-                // Validate time format (MM:SS)
-                final regex = RegExp(r'^\d{2}:\d{2}$');
-                if (!regex.hasMatch(value)) {
-                  return 'Используйте формат ММ:СС (например, 05:00)';
-                }
-                return null;
-              },
-            ),
-          ],
+
+              // Duration label
+              const Padding(
+                padding: EdgeInsets.only(top: 8, bottom: 8),
+                child: Text(
+                  'Длительность шага',
+                  style: TextStyle(
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 10,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+
+              // Duration fields (minutes and seconds)
+              Row(
+                children: [
+                  // Minutes field
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Stack(
+                        children: [
+                          Container(
+                            height: 56,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFECECEC),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(2),
+                                topRight: Radius.circular(2),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 8,
+                            top: 8,
+                            child: const Text(
+                              'Минуты',
+                              style: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w400,
+                                fontSize: 10,
+                                color: Color(0xFF165932),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 0,
+                            top: 56,
+                            right: 0,
+                            child: Container(
+                              height: 0,
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Color(0xFF165932),
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 8,
+                            top: 24,
+                            right: 8,
+                            child: TextFormField(
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                                hintText: '59',
+                                hintStyle: TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 20,
+                                  color: Color(0xFFC2C2C2),
+                                ),
+                              ),
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(2),
+                              ],
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 20,
+                                color: Colors.black,
+                              ),
+                              onChanged: (value) {
+                                // Update the duration controller
+                                final minutes = value.padLeft(2, '0');
+                                final seconds = _durationController.text.isEmpty 
+                                    ? '00' 
+                                    : _durationController.text.split(':').last.padLeft(2, '0');
+                                _durationController.text = '$minutes:$seconds';
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Seconds field
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        Container(
+                          height: 56,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFECECEC),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(2),
+                              topRight: Radius.circular(2),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: 8,
+                          top: 8,
+                          child: const Text(
+                            'Секунды',
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 10,
+                              color: Color(0xFF165932),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: 0,
+                          top: 56,
+                          right: 0,
+                          child: Container(
+                            height: 0,
+                            decoration: const BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Color(0xFF165932),
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: 8,
+                          top: 24,
+                          right: 8,
+                          child: TextFormField(
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
+                              hintText: '59',
+                              hintStyle: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 20,
+                                color: Color(0xFFC2C2C2),
+                              ),
+                            ),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(2),
+                            ],
+                            style: const TextStyle(
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 20,
+                              color: Colors.black,
+                            ),
+                            onChanged: (value) {
+                              // Update the duration controller
+                              final minutes = _durationController.text.isEmpty 
+                                  ? '00' 
+                                  : _durationController.text.split(':').first.padLeft(2, '0');
+                              final seconds = value.padLeft(2, '0');
+                              _durationController.text = '$minutes:$seconds';
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              // Hidden field for the actual duration value
+              Opacity(
+                opacity: 0,
+                child: TextFormField(
+                  controller: _durationController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Пожалуйста, введите время';
+                    }
+                    // Validate time format (MM:SS)
+                    final regex = RegExp(r'^\d{2}:\d{2}$');
+                    if (!regex.hasMatch(value)) {
+                      return 'Используйте формат ММ:СС (например, 05:00)';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 53),
+
+              // Add button
+              Center(
+                child: SizedBox(
+                  width: 232,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Set default values if fields are empty
+                      if (_durationController.text.isEmpty) {
+                        _durationController.text = '00:00';
+                      }
+
+                      if (_formKey.currentState!.validate()) {
+                        widget.onAdd(
+                          RecipeStep(
+                            description: _descriptionController.text,
+                            duration: _durationController.text,
+                          ),
+                        );
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2ECC71),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                    child: const Text(
+                      'Добавить',
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Отмена'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              widget.onAdd(
-                RecipeStep(
-                  description: _descriptionController.text,
-                  duration: _durationController.text,
-                ),
-              );
-              Navigator.of(context).pop();
-            }
-          },
-          child: const Text('Добавить'),
-        ),
-      ],
     );
   }
 }
