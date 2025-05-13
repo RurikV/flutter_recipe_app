@@ -80,6 +80,22 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     );
   }
 
+  void _editIngredient(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => _EditIngredientDialog(
+        availableIngredients: _availableIngredients,
+        availableUnits: _availableUnits,
+        ingredient: _ingredients[index],
+        onSave: (ingredient) {
+          setState(() {
+            _ingredients[index] = ingredient;
+          });
+        },
+      ),
+    );
+  }
+
   void _addStep() {
     showDialog(
       context: context,
@@ -87,6 +103,20 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         onAdd: (step) {
           setState(() {
             _steps.add(step);
+          });
+        },
+      ),
+    );
+  }
+
+  void _editStep(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => _EditStepDialog(
+        step: _steps[index],
+        onSave: (step) {
+          setState(() {
+            _steps[index] = step;
           });
         },
       ),
@@ -383,9 +413,18 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                                     color: Color(0xFF797676),
                                   ),
                                 ),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () => _removeIngredient(index),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () => _editIngredient(index),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () => _removeIngredient(index),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
@@ -491,9 +530,18 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                                     color: Color(0xFF797676),
                                   ),
                                 ),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () => _removeStep(index),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () => _editStep(index),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () => _removeStep(index),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
@@ -853,6 +901,243 @@ class _IngredientDialogState extends State<_IngredientDialog> {
                     ),
                     child: const Text(
                       'Добавить',
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Dialog for editing an existing ingredient
+class _EditIngredientDialog extends StatefulWidget {
+  final List<String> availableIngredients;
+  final List<String> availableUnits;
+  final Ingredient ingredient;
+  final Function(Ingredient) onSave;
+
+  const _EditIngredientDialog({
+    required this.availableIngredients,
+    required this.availableUnits,
+    required this.ingredient,
+    required this.onSave,
+  });
+
+  @override
+  State<_EditIngredientDialog> createState() => _EditIngredientDialogState();
+}
+
+class _EditIngredientDialogState extends State<_EditIngredientDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late String _selectedIngredient;
+  late TextEditingController _quantityController;
+  late String _selectedUnit;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with the existing ingredient values
+    _selectedIngredient = widget.ingredient.name;
+    _quantityController = TextEditingController(text: widget.ingredient.quantity);
+    _selectedUnit = widget.ingredient.unit;
+  }
+
+  @override
+  void dispose() {
+    _quantityController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Container(
+        width: 396,
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Dialog title
+              const Padding(
+                padding: EdgeInsets.only(top: 2, bottom: 19),
+                child: Text(
+                  'Редактировать ингредиент',
+                  style: TextStyle(
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+
+              // Ingredient name field
+              Stack(
+                children: [
+                  Container(
+                    width: 351,
+                    height: 56,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFECECEC),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(2),
+                        topRight: Radius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 18,
+                    top: 8,
+                    child: const Text(
+                      'Название ингредиента',
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 10,
+                        color: Color(0xFF165932),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 0,
+                    top: 56,
+                    child: Container(
+                      width: 351,
+                      height: 0,
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Color(0xFF165932),
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 34,
+                    top: 79 - 56,
+                    child: Text(
+                      _selectedIngredient,
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        height: 23 / 16,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // Quantity field
+              Stack(
+                children: [
+                  Container(
+                    width: 351,
+                    height: 56,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFECECEC),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(2),
+                        topRight: Radius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 18,
+                    top: 8,
+                    child: const Text(
+                      'Количество',
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 10,
+                        color: Color(0xFF165932),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 0,
+                    top: 56,
+                    child: Container(
+                      width: 351,
+                      height: 0,
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Color(0xFF165932),
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 33,
+                    top: 149 - 127,
+                    child: Text(
+                      '${_quantityController.text} ${_selectedUnit}',
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        height: 23 / 16,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 50),
+
+              // Save button
+              Center(
+                child: SizedBox(
+                  width: 232,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        widget.onSave(
+                          Ingredient(
+                            name: _selectedIngredient,
+                            quantity: _quantityController.text,
+                            unit: _selectedUnit,
+                          ),
+                        );
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2ECC71),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                    child: const Text(
+                      'Сохранить',
                       style: TextStyle(
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w700,
@@ -1235,6 +1520,353 @@ class _StepDialogState extends State<_StepDialog> {
                     ),
                     child: const Text(
                       'Добавить',
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Dialog for editing an existing step
+class _EditStepDialog extends StatefulWidget {
+  final RecipeStep step;
+  final Function(RecipeStep) onSave;
+
+  const _EditStepDialog({
+    required this.step,
+    required this.onSave,
+  });
+
+  @override
+  State<_EditStepDialog> createState() => _EditStepDialogState();
+}
+
+class _EditStepDialogState extends State<_EditStepDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _descriptionController;
+  late TextEditingController _durationController;
+  late String _minutes;
+  late String _seconds;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with the existing step values
+    _descriptionController = TextEditingController(text: widget.step.description);
+    _durationController = TextEditingController(text: widget.step.duration);
+
+    // Parse the duration into minutes and seconds
+    final parts = widget.step.duration.split(':');
+    if (parts.length == 2) {
+      _minutes = parts[0];
+      _seconds = parts[1];
+    } else {
+      _minutes = '00';
+      _seconds = '00';
+    }
+  }
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    _durationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Container(
+        width: 396,
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Dialog title
+              const Padding(
+                padding: EdgeInsets.only(top: 2, bottom: 19),
+                child: Text(
+                  'Редактировать шаг рецепта',
+                  style: TextStyle(
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+
+              // Description field
+              Stack(
+                children: [
+                  Container(
+                    width: 352,
+                    height: 161,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFECECEC),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(2),
+                        topRight: Radius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 18,
+                    top: 8,
+                    child: const Text(
+                      'Описание шага',
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 10,
+                        color: Color(0xFF165932),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 0,
+                    top: 161,
+                    child: Container(
+                      width: 352,
+                      height: 0,
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Color(0xFF165932),
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 33,
+                    top: 87,
+                    width: 318,
+                    height: 80,
+                    child: Text(
+                      _descriptionController.text,
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 16,
+                        height: 18 / 16,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              // Duration label
+              const Padding(
+                padding: EdgeInsets.only(top: 8, bottom: 8),
+                child: Text(
+                  'Длительность шага',
+                  style: TextStyle(
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 10,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+
+              // Duration fields (minutes and seconds)
+              Row(
+                children: [
+                  // Minutes field
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Stack(
+                        children: [
+                          Container(
+                            height: 56,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFECECEC),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(2),
+                                topRight: Radius.circular(2),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 8,
+                            top: 8,
+                            child: const Text(
+                              'Минуты',
+                              style: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w400,
+                                fontSize: 10,
+                                color: Color(0xFF165932),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 0,
+                            top: 56,
+                            right: 0,
+                            child: Container(
+                              height: 0,
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Color(0xFF165932),
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 25.37,
+                            top: 283 - 255,
+                            child: Text(
+                              _minutes,
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 20,
+                                height: 23 / 20,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Seconds field
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        Container(
+                          height: 56,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFECECEC),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(2),
+                              topRight: Radius.circular(2),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: 8,
+                          top: 8,
+                          child: const Text(
+                            'Секунды',
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 10,
+                              color: Color(0xFF165932),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: 0,
+                          top: 56,
+                          right: 0,
+                          child: Container(
+                            height: 0,
+                            decoration: const BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Color(0xFF165932),
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: 205.56,
+                          top: 283 - 255,
+                          child: Text(
+                            _seconds,
+                            style: const TextStyle(
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 20,
+                              height: 23 / 20,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              // Hidden field for the actual duration value
+              Opacity(
+                opacity: 0,
+                child: TextFormField(
+                  controller: _durationController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Пожалуйста, введите время';
+                    }
+                    // Validate time format (MM:SS)
+                    final regex = RegExp(r'^\d{2}:\d{2}$');
+                    if (!regex.hasMatch(value)) {
+                      return 'Используйте формат ММ:СС (например, 05:00)';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 53),
+
+              // Save button
+              Center(
+                child: SizedBox(
+                  width: 232,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        widget.onSave(
+                          RecipeStep(
+                            description: _descriptionController.text,
+                            duration: _durationController.text,
+                            isCompleted: widget.step.isCompleted,
+                          ),
+                        );
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2ECC71),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                    child: const Text(
+                      'Сохранить',
                       style: TextStyle(
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w700,
