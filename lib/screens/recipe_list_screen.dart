@@ -4,7 +4,7 @@ import '../services/recipe_manager.dart';
 import '../widgets/recipe_list.dart';
 
 class RecipeListScreen extends StatefulWidget {
-  const RecipeListScreen({Key? key}) : super(key: key);
+  const RecipeListScreen({super.key});
 
   @override
   State<RecipeListScreen> createState() => _RecipeListScreenState();
@@ -13,7 +13,6 @@ class RecipeListScreen extends StatefulWidget {
 class _RecipeListScreenState extends State<RecipeListScreen> {
   final RecipeManager _recipeManager = RecipeManager();
   late Future<List<Recipe>> _recipesFuture;
-  int _selectedIndex = 0; // For bottom navigation
 
   @override
   void initState() {

@@ -1,14 +1,8 @@
 import '../models/recipe.dart';
 
 class RecipeManager {
-  // Singleton pattern
-  static final RecipeManager _instance = RecipeManager._internal();
-
-  factory RecipeManager() {
-    return _instance;
-  }
-
-  RecipeManager._internal();
+  // Regular class constructor
+  RecipeManager();
 
   // Method to get recipes (currently returns hardcoded data)
   Future<List<Recipe>> getRecipes() async {

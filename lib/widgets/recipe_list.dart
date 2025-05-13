@@ -4,7 +4,7 @@ import '../models/recipe.dart';
 class RecipeList extends StatelessWidget {
   final List<Recipe> recipes;
 
-  const RecipeList({Key? key, required this.recipes}) : super(key: key);
+  const RecipeList({super.key, required this.recipes});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class RecipeList extends StatelessWidget {
 class RecipeCard extends StatelessWidget {
   final Recipe recipe;
 
-  const RecipeCard({Key? key, required this.recipe}) : super(key: key);
+  const RecipeCard({super.key, required this.recipe});
 
   @override
   Widget build(BuildContext context) {
@@ -77,8 +77,8 @@ class RecipeCard extends StatelessWidget {
 
             // Recipe details - Right side of the card
             Expanded(
-              child: Container(
-                // Wrap with a Container
+              child: ColoredBox(
+                // Use ColoredBox instead of Container
                 color: Colors.white,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),

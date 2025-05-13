@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class Recipe {
   final String uuid;
   final String name;
