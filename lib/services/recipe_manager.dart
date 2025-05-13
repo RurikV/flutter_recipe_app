@@ -1,8 +1,67 @@
 import '../models/recipe.dart';
+import '../models/ingredient.dart';
+import '../models/recipe_step.dart';
 
 class RecipeManager {
   // Regular class constructor
   RecipeManager();
+
+  // Hardcoded list of ingredients
+  final List<String> _dummyIngredients = [
+    'Соевый соус',
+    'Вода',
+    'Мёд',
+    'Коричневый сахар',
+    'Чеснок',
+    'Тёртый свежий имбирь',
+    'Лимонный сок',
+    'Кукурузный крахмал',
+    'Растительное масло',
+    'Филе лосося или сёмги',
+    'Кунжут',
+    'Спагетти',
+    'Яйца',
+    'Сыр пармезан',
+    'Гуанчиале',
+    'Черный перец',
+    'Свекла',
+    'Капуста',
+    'Картофель',
+    'Морковь',
+    'Лук',
+    'Томатная паста',
+    'Помидоры',
+    'Огурцы',
+    'Болгарский перец',
+    'Красный лук',
+    'Оливки',
+    'Сыр фета',
+    'Оливковое масло',
+    'Лосось',
+    'Сливочный сыр',
+    'Авокадо',
+    'Рис для суши',
+    'Нори',
+    'Маскарпоне',
+    'Кофе',
+    'Печенье савоярди',
+    'Какао',
+  ];
+
+  // Hardcoded list of units of measurement
+  final List<String> _dummyUnits = [
+    'ст. ложка',
+    'ч. ложка',
+    'стакан',
+    'мл',
+    'л',
+    'г',
+    'кг',
+    'шт',
+    'зубчик',
+    'по вкусу',
+    'щепотка',
+  ];
 
   // Method to get recipes (currently returns hardcoded data)
   Future<List<Recipe>> getRecipes() async {
@@ -10,6 +69,33 @@ class RecipeManager {
     await Future.delayed(const Duration(milliseconds: 500));
 
     return _dummyRecipes;
+  }
+
+  // Method to get ingredients (currently returns hardcoded data)
+  Future<List<String>> getIngredients() async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    return _dummyIngredients;
+  }
+
+  // Method to get units of measurement (currently returns hardcoded data)
+  Future<List<String>> getUnits() async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    return _dummyUnits;
+  }
+
+  // Method to save a new recipe
+  Future<bool> saveRecipe(Recipe recipe) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    // Add the recipe to the list
+    _dummyRecipes.add(recipe);
+
+    return true;
   }
 
   // Hardcoded list of recipes
@@ -24,6 +110,40 @@ class RecipeManager {
       duration: '30 минут', // Added duration
       rating: 5,
       tags: ['Итальянская кухня', 'Паста', 'Ужин'],
+      ingredients: [
+        Ingredient(name: 'Спагетти', quantity: '400', unit: 'г'),
+        Ingredient(name: 'Гуанчиале', quantity: '150', unit: 'г'),
+        Ingredient(name: 'Яйца', quantity: '4', unit: 'шт'),
+        Ingredient(name: 'Сыр пармезан', quantity: '50', unit: 'г'),
+        Ingredient(name: 'Черный перец', quantity: '1', unit: 'ч. ложка'),
+        Ingredient(name: 'Соль', quantity: '1', unit: 'по вкусу'),
+      ],
+      steps: [
+        RecipeStep(
+          description: 'Отварите спагетти в подсоленной воде до состояния аль денте.',
+          duration: '10:00',
+        ),
+        RecipeStep(
+          description: 'Нарежьте гуанчиале небольшими кубиками и обжарьте на сковороде до золотистого цвета.',
+          duration: '05:00',
+        ),
+        RecipeStep(
+          description: 'Смешайте яйца, тертый пармезан и черный перец в миске.',
+          duration: '03:00',
+        ),
+        RecipeStep(
+          description: 'Добавьте горячие спагетти к гуанчиале, перемешайте и снимите с огня.',
+          duration: '02:00',
+        ),
+        RecipeStep(
+          description: 'Влейте яичную смесь и быстро перемешайте, чтобы получился кремовый соус.',
+          duration: '01:00',
+        ),
+        RecipeStep(
+          description: 'Подавайте сразу же, посыпав дополнительным пармезаном и черным перцем.',
+          duration: '01:00',
+        ),
+      ],
     ),
     Recipe(
       uuid: '2',

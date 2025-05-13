@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../services/recipe_manager.dart';
 import '../widgets/recipe_list.dart';
+import 'recipe_detail_screen.dart';
+import 'add_recipe_screen.dart';
 
 class RecipeListScreen extends StatefulWidget {
   const RecipeListScreen({super.key});
@@ -17,7 +19,13 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
   @override
   void initState() {
     super.initState();
-    _recipesFuture = _recipeManager.getRecipes();
+    _loadRecipes();
+  }
+
+  void _loadRecipes() {
+    setState(() {
+      _recipesFuture = _recipeManager.getRecipes();
+    });
   }
 
   @override
@@ -29,6 +37,20 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
         centerTitle: true,
         backgroundColor: const Color(0xFFECECEC), // Match background color
         elevation: 0, // No shadow
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddRecipeScreen(
+                onRecipeAdded: _loadRecipes,
+              ),
+            ),
+          );
+        },
+        backgroundColor: const Color(0xFF2ECC71),
+        child: const Icon(Icons.add),
       ),
       body: FutureBuilder<List<Recipe>>(
         future: _recipesFuture,
