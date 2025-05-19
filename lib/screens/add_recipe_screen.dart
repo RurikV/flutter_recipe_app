@@ -241,7 +241,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                         children: [
                           Container(
                             width: 396,
-                            height: 56,
+                            height: 80, // Increased height to accommodate error message
                             decoration: const BoxDecoration(
                               color: Color(0xFFECECEC),
                               borderRadius: BorderRadius.only(
@@ -265,7 +265,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                           ),
                           Positioned(
                             left: 16,
-                            top: 168 - 112,
+                            top: 80, // Adjusted to match the new container height
                             child: Container(
                               width: 396,
                               height: 0,
@@ -289,12 +289,17 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(vertical: 8.0),
                                 isDense: true,
+                                errorStyle: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 12,
+                                ),
                               ),
                               style: const TextStyle(
                                 fontFamily: 'Roboto',
                                 fontSize: 16,
                                 color: Colors.black,
                               ),
+                              autovalidateMode: AutovalidateMode.onUserInteraction,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Пожалуйста, введите название рецепта';
