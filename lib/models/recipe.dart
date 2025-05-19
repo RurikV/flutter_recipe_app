@@ -1,5 +1,6 @@
-import 'package:flutter_recipe_app/models/ingredient.dart';
-import 'package:flutter_recipe_app/models/recipe_step.dart';
+import 'ingredient.dart';
+import 'recipe_step.dart';
+import 'comment.dart';
 
 class Recipe {
   final String uuid;
@@ -13,6 +14,8 @@ class Recipe {
   final List<String> tags; // Will be removed from the card display
   final List<Ingredient> ingredients; // New field for ingredients
   final List<RecipeStep> steps; // New field for recipe steps
+  bool isFavorite; // Flag to mark recipe as favorite
+  final List<Comment> comments; // List of comments for the recipe
 
   Recipe({
     required this.uuid,
@@ -26,6 +29,8 @@ class Recipe {
     required this.tags,
     this.ingredients = const [],
     this.steps = const [],
+    this.isFavorite = false,
+    this.comments = const [],
   });
 
   factory Recipe.fromJson(Map<String, dynamic> json) {
@@ -55,6 +60,14 @@ class Recipe {
               ),
             )
           : [],
+      isFavorite: json['isFavorite'] as bool? ?? false,
+      comments: json['comments'] != null
+          ? List<Comment>.from(
+              (json['comments'] as List).map(
+                (x) => Comment.fromJson(x as Map<String, dynamic>),
+              ),
+            )
+          : [],
     );
   }
 
@@ -71,6 +84,8 @@ class Recipe {
       'tags': tags,
       'ingredients': ingredients.map((e) => e.toJson()).toList(),
       'steps': steps.map((e) => e.toJson()).toList(),
+      'isFavorite': isFavorite,
+      'comments': comments.map((e) => e.toJson()).toList(),
     };
   }
 }
