@@ -281,13 +281,14 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                           ),
                           Positioned(
                             left: 36.31,
-                            top: 135,
+                            top: 20,
                             right: 16,
                             child: TextFormField(
                               controller: _nameController,
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
-                                contentPadding: EdgeInsets.zero,
+                                contentPadding: EdgeInsets.symmetric(vertical: 8.0),
+                                isDense: true,
                               ),
                               style: const TextStyle(
                                 fontFamily: 'Roboto',
