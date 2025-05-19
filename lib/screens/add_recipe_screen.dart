@@ -750,7 +750,7 @@ class _IngredientDialogState extends State<_IngredientDialog> {
                   else
                     Positioned(
                       left: 18,
-                      top: 24,
+                      top: 14,
                       right: 16,
                       child: DropdownButtonFormField<String>(
                         value: _selectedIngredient.isNotEmpty ? _selectedIngredient : null,
@@ -848,7 +848,7 @@ class _IngredientDialogState extends State<_IngredientDialog> {
                   else
                     Positioned(
                       left: 18,
-                      top: 24,
+                      top: 14,
                       right: 16,
                       child: Row(
                         children: [
@@ -1217,7 +1217,7 @@ class _StepDialogState extends State<_StepDialog> {
                           else
                             Positioned(
                               left: 8,
-                              top: 24,
+                              top: 14,
                               right: 8,
                               child: TextFormField(
                                 decoration: const InputDecoration(
@@ -1318,7 +1318,7 @@ class _StepDialogState extends State<_StepDialog> {
                         else
                           Positioned(
                             left: 8,
-                            top: 24,
+                            top: 14,
                             right: 8,
                             child: TextFormField(
                               decoration: const InputDecoration(
