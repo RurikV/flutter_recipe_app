@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
+import '../screens/recipe_detail_screen.dart';
 
 class RecipeList extends StatelessWidget {
   final List<Recipe> recipes;
@@ -31,10 +32,19 @@ class RecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16.0),
-      height: 136, // Fixed height as per design
-      child: Card(
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RecipeDetailScreen(recipe: recipe),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16.0),
+        height: 136, // Fixed height as per design
+        child: Card(
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(
@@ -147,6 +157,7 @@ class RecipeCard extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

@@ -1,3 +1,6 @@
+import 'package:flutter_recipe_app/models/ingredient.dart';
+import 'package:flutter_recipe_app/models/recipe_step.dart';
+
 class Recipe {
   final String uuid;
   final String name;
@@ -8,6 +11,8 @@ class Recipe {
   final String duration; // New field for cooking time
   final int rating;     // Will be removed from the card display
   final List<String> tags; // Will be removed from the card display
+  final List<Ingredient> ingredients; // New field for ingredients
+  final List<RecipeStep> steps; // New field for recipe steps
 
   Recipe({
     required this.uuid,
@@ -16,9 +21,11 @@ class Recipe {
     required this.description,
     required this.instructions,
     required this.difficulty,
-    required this.duration, // Add to constructor
+    required this.duration,
     required this.rating,
     required this.tags,
+    this.ingredients = const [],
+    this.steps = const [],
   });
 
   factory Recipe.fromJson(Map<String, dynamic> json) {
@@ -31,9 +38,23 @@ class Recipe {
       description: json['description'] as String,
       instructions: json['instructions'] as String,
       difficulty: json['difficulty'] as int,
-      duration: json['duration'] as String, // Parse duration
+      duration: json['duration'] as String,
       rating: json['rating'] as int,
       tags: List<String>.from(json['tags']),
+      ingredients: json['ingredients'] != null
+          ? List<Ingredient>.from(
+              (json['ingredients'] as List).map(
+                (x) => Ingredient.fromJson(x as Map<String, dynamic>),
+              ),
+            )
+          : [],
+      steps: json['steps'] != null
+          ? List<RecipeStep>.from(
+              (json['steps'] as List).map(
+                (x) => RecipeStep.fromJson(x as Map<String, dynamic>),
+              ),
+            )
+          : [],
     );
   }
 
@@ -45,9 +66,11 @@ class Recipe {
       'description': description,
       'instructions': instructions,
       'difficulty': difficulty,
-      'duration': duration, // Add to JSON
+      'duration': duration,
       'rating': rating,
       'tags': tags,
+      'ingredients': ingredients.map((e) => e.toJson()).toList(),
+      'steps': steps.map((e) => e.toJson()).toList(),
     };
   }
 }
