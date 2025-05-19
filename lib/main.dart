@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/recipe_list_screen.dart';
+import 'screens/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,8 +19,7 @@ class MyApp extends StatelessWidget {
           seedColor: const Color(0xFF2ECC71), // Green primary color as per design
           primary: const Color(0xFF2ECC71),
           secondary: const Color(0xFFFF9800), // Orange accent color
-          background: const Color(0xFFECECEC), // Background color as per design
-          surface: Colors.white,
+          surface: const Color(0xFFECECEC), // Background color as per design
         ),
         scaffoldBackgroundColor: const Color(0xFFECECEC), // Background color as per design
         appBarTheme: const AppBarTheme(
@@ -72,7 +71,7 @@ class MyApp extends StatelessWidget {
           color: Color(0xFF2ECC71), // Green color for icons as per design
         ),
       ),
-      home: const RecipeListScreen(),
+      home: const HomeScreen(),
     );
   }
 }

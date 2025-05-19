@@ -72,6 +72,15 @@ class RecipeManager {
     return _dummyRecipes;
   }
 
+  // Method to get favorite recipes
+  Future<List<Recipe>> getFavoriteRecipes() async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Filter recipes to return only favorites
+    return _dummyRecipes.where((recipe) => recipe.isFavorite).toList();
+  }
+
   // Method to get ingredients (currently returns hardcoded data)
   Future<List<String>> getIngredients() async {
     // Simulate network delay
