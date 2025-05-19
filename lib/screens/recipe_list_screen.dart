@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../services/recipe_manager.dart';
 import '../widgets/recipe_list.dart';
-import 'recipe_detail_screen.dart';
 import 'add_recipe_screen.dart';
 
 class RecipeListScreen extends StatefulWidget {
@@ -52,7 +51,14 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
         backgroundColor: const Color(0xFF2ECC71),
         child: const Icon(Icons.add),
       ),
-      body: FutureBuilder<List<Recipe>>(
+      body: OrientationBuilder(
+        builder: (context, orientation) {
+          return Center(
+            child: Container(
+              width: orientation == Orientation.landscape
+                  ? MediaQuery.of(context).size.width * 0.5
+                  : MediaQuery.of(context).size.width,
+              child: FutureBuilder<List<Recipe>>(
         future: _recipesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -104,6 +110,10 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
           } else {
             return RecipeList(recipes: snapshot.data!);
           }
+        },
+              ),
+            ),
+          );
         },
       ),
       bottomNavigationBar: Container(

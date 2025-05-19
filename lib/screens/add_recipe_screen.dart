@@ -228,389 +228,400 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Recipe name input field
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16, right: 16, top: 112),
-                      child: Stack(
-                        children: [
-                          Container(
-                            width: 396,
-                            height: 80, // Increased height to accommodate error message
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFECECEC),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(2),
-                                topRight: Radius.circular(2),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            left: 36.31,
-                            top: 120.17 - 112,
-                            child: const Text(
-                              'Название рецепта',
-                              style: TextStyle(
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w400,
-                                fontSize: 10,
-                                color: Color(0xFF165932),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            left: 16,
-                            top: 80, // Adjusted to match the new container height
-                            child: Container(
-                              width: 396,
-                              height: 0,
-                              decoration: const BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: Color(0xFF165932),
-                                    width: 2,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            left: 36.31,
-                            top: 20,
-                            right: 16,
-                            child: TextFormField(
-                              controller: _nameController,
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(vertical: 8.0),
-                                isDense: true,
-                                errorStyle: TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              style: const TextStyle(
-                                fontFamily: 'Roboto',
-                                fontSize: 16,
-                                color: Colors.black,
-                              ),
-                              autovalidateMode: AutovalidateMode.onUserInteraction,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Пожалуйста, введите название рецепта';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Photo upload section
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16, right: 16, top: 17),
-                      child: Container(
-                        width: 396,
-                        height: 215,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFECECEC),
-                          border: Border.all(
-                            color: const Color(0xFF165932),
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(3),
-                        ),
+          : OrientationBuilder(
+              builder: (context, orientation) {
+                return Center(
+                  child: Container(
+                    width: orientation == Orientation.landscape
+                        ? MediaQuery.of(context).size.width * 0.5
+                        : MediaQuery.of(context).size.width,
+                    child: SingleChildScrollView(
+                      child: Form(
+                        key: _formKey,
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(
-                              Icons.add_photo_alternate,
-                              size: 48,
-                              color: Color(0xFF165932),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Добавить фото рецепта',
-                              style: TextStyle(
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w400,
-                                fontSize: 14,
-                                color: Color(0xFF165932),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            // Hidden field for image URL
-                            Opacity(
-                              opacity: 0,
-                              child: TextFormField(
-                                controller: _imageUrlController,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Ingredients section
-                    Padding(
-                      padding: const EdgeInsets.only(left: 17, top: 19),
-                      child: Text(
-                        'Ингредиенты',
-                        style: TextStyle(
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                          height: 23/16,
-                          color: const Color(0xFF165932),
-                        ),
-                      ),
-                    ),
-
-                    // Ingredients list or placeholder
-                    if (_ingredients.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 9),
-                        child: Center(
-                          child: Text(
-                            'нет ингредиентов',
-                            style: TextStyle(
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400,
-                              fontSize: 12,
-                              height: 23/12,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _ingredients.length,
-                          itemBuilder: (context, index) {
-                            final ingredient = _ingredients[index];
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 8.0),
-                              child: ListTile(
-                                title: Text(
-                                  ingredient.name,
-                                  style: const TextStyle(
-                                    fontFamily: 'Roboto',
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  '${ingredient.quantity} ${ingredient.unit}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Roboto',
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 12,
-                                    color: Color(0xFF797676),
-                                  ),
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit),
-                                      onPressed: () => _editIngredient(index),
+                            // Recipe name input field
+                            Padding(
+                              padding: const EdgeInsets.only(left: 16, right: 16, top: 112),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    width: 396,
+                                    height: 80, // Increased height to accommodate error message
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFECECEC),
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(2),
+                                        topRight: Radius.circular(2),
+                                      ),
                                     ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete),
-                                      onPressed: () => _removeIngredient(index),
+                                  ),
+                                  Positioned(
+                                    left: 36.31,
+                                    top: 120.17 - 112,
+                                    child: const Text(
+                                      'Название рецепта',
+                                      style: TextStyle(
+                                        fontFamily: 'Roboto',
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 10,
+                                        color: Color(0xFF165932),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    left: 16,
+                                    top: 80, // Adjusted to match the new container height
+                                    child: Container(
+                                      width: 396,
+                                      height: 0,
+                                      decoration: const BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            color: Color(0xFF165932),
+                                            width: 2,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    left: 36.31,
+                                    top: 20,
+                                    right: 16,
+                                    child: TextFormField(
+                                      controller: _nameController,
+                                      decoration: const InputDecoration(
+                                        border: InputBorder.none,
+                                        contentPadding: EdgeInsets.symmetric(vertical: 8.0),
+                                        isDense: true,
+                                        errorStyle: TextStyle(
+                                          color: Colors.red,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      style: const TextStyle(
+                                        fontFamily: 'Roboto',
+                                        fontSize: 16,
+                                        color: Colors.black,
+                                      ),
+                                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Пожалуйста, введите название рецепта';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // Photo upload section
+                            Padding(
+                              padding: const EdgeInsets.only(left: 16, right: 16, top: 17),
+                              child: Container(
+                                width: 396,
+                                height: 215,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFECECEC),
+                                  border: Border.all(
+                                    color: const Color(0xFF165932),
+                                    width: 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.add_photo_alternate,
+                                      size: 48,
+                                      color: Color(0xFF165932),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const Text(
+                                      'Добавить фото рецепта',
+                                      style: TextStyle(
+                                        fontFamily: 'Roboto',
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 14,
+                                        color: Color(0xFF165932),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    // Hidden field for image URL
+                                    Opacity(
+                                      opacity: 0,
+                                      child: TextFormField(
+                                        controller: _imageUrlController,
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
-                            );
-                          },
-                        ),
-                      ),
-
-                    // Add ingredient button
-                    Padding(
-                      padding: const EdgeInsets.only(left: 97, top: 25),
-                      child: SizedBox(
-                        width: 232,
-                        height: 48,
-                        child: OutlinedButton(
-                          onPressed: _addIngredient,
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFF165932), width: 3),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
                             ),
-                          ),
-                          child: const Text(
-                            'Добавить ингредиент',
-                            style: TextStyle(
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                              color: Color(0xFF165932),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
 
-                    // Steps section
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16, top: 42),
-                      child: Text(
-                        'Шаги приготовления',
-                        style: TextStyle(
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                          height: 23/16,
-                          color: const Color(0xFF165932),
-                        ),
-                      ),
-                    ),
-
-                    // Steps list or placeholder
-                    if (_steps.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Center(
-                          child: Text(
-                            'нет шагов приготовления',
-                            style: TextStyle(
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400,
-                              fontSize: 12,
-                              height: 23/12,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _steps.length,
-                          itemBuilder: (context, index) {
-                            final step = _steps[index];
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 8.0),
-                              child: ListTile(
-                                leading: Text(
-                                  '${index + 1}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Roboto',
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 24,
-                                    color: Color(0xFFC2C2C2),
-                                  ),
-                                ),
-                                title: Text(
-                                  step.description,
-                                  style: const TextStyle(
-                                    fontFamily: 'Roboto',
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 12,
-                                    color: Color(0xFF797676),
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  'Время: ${step.duration}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Roboto',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12,
-                                    color: Color(0xFF797676),
-                                  ),
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit),
-                                      onPressed: () => _editStep(index),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete),
-                                      onPressed: () => _removeStep(index),
-                                    ),
-                                  ],
+                            // Ingredients section
+                            Padding(
+                              padding: const EdgeInsets.only(left: 17, top: 19),
+                              child: Text(
+                                'Ингредиенты',
+                                style: TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                  height: 23/16,
+                                  color: const Color(0xFF165932),
                                 ),
                               ),
-                            );
-                          },
-                        ),
-                      ),
+                            ),
 
-                    // Add step button
-                    Padding(
-                      padding: const EdgeInsets.only(left: 100, top: 25),
-                      child: SizedBox(
-                        width: 232,
-                        height: 48,
-                        child: OutlinedButton(
-                          onPressed: _addStep,
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFF165932), width: 3),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                          ),
-                          child: const Text(
-                            'Добавить шаг',
-                            style: TextStyle(
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                              color: Color(0xFF165932),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                            // Ingredients list or placeholder
+                            if (_ingredients.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 9),
+                                child: Center(
+                                  child: Text(
+                                    'нет ингредиентов',
+                                    style: TextStyle(
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 12,
+                                      height: 23/12,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: _ingredients.length,
+                                  itemBuilder: (context, index) {
+                                    final ingredient = _ingredients[index];
+                                    return Card(
+                                      margin: const EdgeInsets.only(bottom: 8.0),
+                                      child: ListTile(
+                                        title: Text(
+                                          ingredient.name,
+                                          style: const TextStyle(
+                                            fontFamily: 'Roboto',
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 14,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                          '${ingredient.quantity} ${ingredient.unit}',
+                                          style: const TextStyle(
+                                            fontFamily: 'Roboto',
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 12,
+                                            color: Color(0xFF797676),
+                                          ),
+                                        ),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.edit),
+                                              onPressed: () => _editIngredient(index),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.delete),
+                                              onPressed: () => _removeIngredient(index),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
 
-                    // Save recipe button
-                    Padding(
-                      padding: const EdgeInsets.only(left: 98, top: 21, bottom: 24),
-                      child: SizedBox(
-                        width: 232,
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: _saveRecipe,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF797676),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
+                            // Add ingredient button
+                            Padding(
+                              padding: const EdgeInsets.only(left: 97, top: 25),
+                              child: SizedBox(
+                                width: 232,
+                                height: 48,
+                                child: OutlinedButton(
+                                  onPressed: _addIngredient,
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: Color(0xFF165932), width: 3),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(25),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Добавить ингредиент',
+                                    style: TextStyle(
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      color: Color(0xFF165932),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                          child: const Text(
-                            'Сохранить рецепт',
-                            style: TextStyle(
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                              color: Colors.white,
+
+                            // Steps section
+                            Padding(
+                              padding: const EdgeInsets.only(left: 16, top: 42),
+                              child: Text(
+                                'Шаги приготовления',
+                                style: TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                  height: 23/16,
+                                  color: const Color(0xFF165932),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
-                    ),
+
+                            // Steps list or placeholder
+                            if (_steps.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Center(
+                                  child: Text(
+                                    'нет шагов приготовления',
+                                    style: TextStyle(
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 12,
+                                      height: 23/12,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: _steps.length,
+                                  itemBuilder: (context, index) {
+                                    final step = _steps[index];
+                                    return Card(
+                                      margin: const EdgeInsets.only(bottom: 8.0),
+                                      child: ListTile(
+                                        leading: Text(
+                                          '${index + 1}',
+                                          style: const TextStyle(
+                                            fontFamily: 'Roboto',
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 24,
+                                            color: Color(0xFFC2C2C2),
+                                          ),
+                                        ),
+                                        title: Text(
+                                          step.description,
+                                          style: const TextStyle(
+                                            fontFamily: 'Roboto',
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 12,
+                                            color: Color(0xFF797676),
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                          'Время: ${step.duration}',
+                                          style: const TextStyle(
+                                            fontFamily: 'Roboto',
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 12,
+                                            color: Color(0xFF797676),
+                                          ),
+                                        ),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.edit),
+                                              onPressed: () => _editStep(index),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.delete),
+                                              onPressed: () => _removeStep(index),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+
+                            // Add step button
+                            Padding(
+                              padding: const EdgeInsets.only(left: 100, top: 25),
+                              child: SizedBox(
+                                width: 232,
+                                height: 48,
+                                child: OutlinedButton(
+                                  onPressed: _addStep,
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: Color(0xFF165932), width: 3),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(25),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Добавить шаг',
+                                    style: TextStyle(
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      color: Color(0xFF165932),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            // Save recipe button
+                            Padding(
+                              padding: const EdgeInsets.only(left: 98, top: 21, bottom: 24),
+                              child: SizedBox(
+                                width: 232,
+                                height: 48,
+                                child: ElevatedButton(
+                                  onPressed: _saveRecipe,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF797676),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(25),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Сохранить рецепт',
+                                    style: TextStyle(
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                   ],
-                ),
-              ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
     );
   }

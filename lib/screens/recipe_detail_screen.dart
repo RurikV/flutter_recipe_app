@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
-import '../models/ingredient.dart';
-import '../models/recipe_step.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   final Recipe recipe;
@@ -33,10 +31,17 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: OrientationBuilder(
+        builder: (context, orientation) {
+          return Center(
+            child: Container(
+              width: orientation == Orientation.landscape
+                  ? MediaQuery.of(context).size.width * 0.5
+                  : MediaQuery.of(context).size.width,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
             // Recipe name
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
@@ -51,7 +56,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 ),
               ),
             ),
-            
+
             // Duration with clock icon
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -76,7 +81,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 ],
               ),
             ),
-            
+
             // Recipe image
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -104,7 +109,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 ),
               ),
             ),
-            
+
             // Ingredients section
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 24, 16, 0),
@@ -119,7 +124,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 ),
               ),
             ),
-            
+
             // Ingredients list
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -173,7 +178,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 ),
               ),
             ),
-            
+
             // Steps section
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 24, 16, 0),
@@ -188,7 +193,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 ),
               ),
             ),
-            
+
             // Steps list
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -221,7 +226,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                                 ),
                               ),
                             ),
-                            
+
                             // Step description
                             Expanded(
                               child: Padding(
@@ -238,7 +243,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                                 ),
                               ),
                             ),
-                            
+
                             // Step duration and checkbox
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
@@ -279,7 +284,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 }),
               ),
             ),
-            
+
             // Start cooking button
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
@@ -309,7 +314,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
               ),
             ),
           ],
-        ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
