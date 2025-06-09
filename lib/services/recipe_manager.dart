@@ -180,8 +180,8 @@ class RecipeManager {
     return true;
   }
 
-  // Hardcoded list of recipes
-  final List<Recipe> _dummyRecipes = [
+  // Hardcoded list of recipes (static to be shared across instances)
+  static final List<Recipe> _dummyRecipes = [
     Recipe(
       uuid: '1',
       name: 'Спагетти Карбонара',
