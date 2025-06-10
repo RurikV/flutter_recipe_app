@@ -18,11 +18,11 @@ class StepsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Steps header
         Padding(
-          padding: const EdgeInsets.only(left: 16, top: 42),
+          padding: const EdgeInsets.only(top: 42),
           child: Text(
             'Шаги приготовления',
             style: TextStyle(
@@ -112,7 +112,7 @@ class StepsSection extends StatelessWidget {
 
         // Add step button
         Padding(
-          padding: const EdgeInsets.only(left: 100, top: 25),
+          padding: const EdgeInsets.only(top: 25),
           child: SizedBox(
             width: 232,
             height: 48,

@@ -18,11 +18,11 @@ class IngredientsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Ingredients header
         Padding(
-          padding: const EdgeInsets.only(left: 17, top: 19),
+          padding: const EdgeInsets.only(top: 19),
           child: Text(
             'Ингредиенты',
             style: TextStyle(
@@ -103,7 +103,7 @@ class IngredientsSection extends StatelessWidget {
 
         // Add ingredient button
         Padding(
-          padding: const EdgeInsets.only(left: 97, top: 25),
+          padding: const EdgeInsets.only(top: 25),
           child: SizedBox(
             width: 232,
             height: 48,

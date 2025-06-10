@@ -11,7 +11,7 @@ class SaveRecipeButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 98, top: 21, bottom: 24),
+      padding: const EdgeInsets.only(top: 21, bottom: 24),
       child: SizedBox(
         width: 232,
         height: 48,

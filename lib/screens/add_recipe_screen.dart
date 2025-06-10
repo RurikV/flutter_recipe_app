@@ -245,7 +245,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                       child: Form(
                         key: _formKey,
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             // Recipe name input field
                             RecipeNameInput(controller: _nameController),
