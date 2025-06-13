@@ -157,12 +157,10 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<bool> updateStepStatus(int stepId, bool isCompleted) async {
-    return update(recipeSteps).replace(
-      RecipeStepsCompanion(
-        id: Value(stepId),
-        isCompleted: Value(isCompleted),
-      )
-    );
+    final rowsAffected = await (update(recipeSteps)
+      ..where((step) => step.id.equals(stepId)))
+      .write(RecipeStepsCompanion(isCompleted: Value(isCompleted)));
+    return rowsAffected > 0;
   }
 
 }

@@ -93,11 +93,54 @@ class ApiService {
   Future<Recipe> createRecipe(Recipe recipe) async {
     return _requestWithRetry(
       request: () async {
+        // Create a copy of the recipe JSON and modify fields to match API expectations
+        // - remove 'uuid' as the API doesn't expect it when creating a new recipe
+        // - rename 'images' to 'photo' as that's what the API expects
+        // - remove 'description' as the API doesn't expect it when creating a new recipe
+        // - remove 'instructions' as the API doesn't expect it when creating a new recipe
+        // - remove 'difficulty' as the API doesn't expect it when creating a new recipe
+        // - remove 'rating' as the API doesn't expect it when creating a new recipe
+        // - remove 'tags' as the API doesn't expect it when creating a new recipe
+        // - remove 'ingredients' as the API doesn't expect it when creating a new recipe
+        // - remove 'steps' as the API doesn't expect it when creating a new recipe
+        // - remove 'isFavorite' as the API doesn't expect it when creating a new recipe
+        // - set a default value for 'duration' if it's empty as the API requires a non-null value
+        final recipeJson = recipe.toJson();
+        recipeJson.remove('uuid');
+        recipeJson.remove('description');
+        recipeJson.remove('instructions');
+        recipeJson.remove('difficulty');
+        recipeJson.remove('rating');
+        recipeJson.remove('tags');
+        recipeJson.remove('ingredients');
+        recipeJson.remove('steps');
+        recipeJson.remove('isFavorite');
+
+        // Set a default value for duration if it's empty or convert to integer
+        if (recipeJson['duration'] == '') {
+          recipeJson['duration'] = 0; // Use integer 0 instead of string
+        } else {
+          // Try to extract numeric value from duration string (e.g., "30 min" -> 30)
+          final durationStr = recipeJson['duration'] as String;
+          final numericValue = int.tryParse(durationStr.split(' ').first);
+          if (numericValue != null) {
+            recipeJson['duration'] = numericValue;
+          } else {
+            recipeJson['duration'] = 0; // Default to 0 if parsing fails
+          }
+        }
+
+        // Rename 'images' to 'photo'
+        if (recipeJson.containsKey('images')) {
+          recipeJson['photo'] = recipeJson['images'];
+          recipeJson.remove('images');
+        }
+
         final response = await _dio.post(
           '/recipe',
-          data: recipe.toJson(),
+          data: recipeJson,
         );
-        if (response.statusCode == 201) {
+        if (response.statusCode == 200 || response.statusCode == 201) {
           return Recipe.fromJson(response.data);
         } else {
           throw Exception('Failed to create recipe: ${response.statusCode}');

@@ -75,6 +75,12 @@ class _AnimatedStepCheckboxState extends State<AnimatedStepCheckbox> with Single
               value: widget.isCompleted,
               onChanged: widget.isCookingMode ? (value) {
                 final newValue = value ?? false;
+                // Animate the checkbox before calling the parent's callback
+                if (newValue) {
+                  _controller.forward();
+                } else {
+                  _controller.reverse();
+                }
                 widget.onChanged(newValue);
               } : null,
               shape: RoundedRectangleBorder(

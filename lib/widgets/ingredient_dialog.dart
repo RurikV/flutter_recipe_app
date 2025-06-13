@@ -270,9 +270,10 @@ class _IngredientDialogState extends State<IngredientDialog> {
                             ),
                           ),
                           Expanded(
-                            flex: 1,
+                            flex: 2,
                             child: DropdownButtonFormField<String>(
                               value: _selectedUnit.isNotEmpty ? _selectedUnit : null,
+                              isExpanded: true,
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.zero,

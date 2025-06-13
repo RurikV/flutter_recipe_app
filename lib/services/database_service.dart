@@ -63,20 +63,40 @@ class DatabaseService {
   Future<void> saveRecipe(app_model.Recipe recipe) async {
     // Start a transaction to ensure all operations succeed or fail together
     await _database.transaction(() async {
-      // Insert or update the recipe
-      await _database.insertRecipe(
-        RecipesCompanion.insert(
-          uuid: recipe.uuid,
-          name: recipe.name,
-          images: recipe.images,
-          description: recipe.description,
-          instructions: recipe.instructions,
-          difficulty: recipe.difficulty,
-          duration: recipe.duration,
-          rating: recipe.rating,
-          isFavorite: Value(recipe.isFavorite),
-        ),
-      );
+      // Check if the recipe already exists
+      final existingRecipe = await _database.getRecipeByUuid(recipe.uuid);
+
+      if (existingRecipe != null) {
+        // Update the existing recipe
+        await _database.updateRecipe(
+          RecipesCompanion(
+            uuid: Value(recipe.uuid),
+            name: Value(recipe.name),
+            images: Value(recipe.images),
+            description: Value(recipe.description),
+            instructions: Value(recipe.instructions),
+            difficulty: Value(recipe.difficulty),
+            duration: Value(recipe.duration),
+            rating: Value(recipe.rating),
+            isFavorite: Value(recipe.isFavorite),
+          ),
+        );
+      } else {
+        // Insert a new recipe
+        await _database.insertRecipe(
+          RecipesCompanion.insert(
+            uuid: recipe.uuid,
+            name: recipe.name,
+            images: recipe.images,
+            description: recipe.description,
+            instructions: recipe.instructions,
+            difficulty: recipe.difficulty,
+            duration: recipe.duration,
+            rating: recipe.rating,
+            isFavorite: Value(recipe.isFavorite),
+          ),
+        );
+      }
 
       // Delete existing tags, ingredients, and steps for this recipe
       await _database.deleteTagsForRecipe(recipe.uuid);
