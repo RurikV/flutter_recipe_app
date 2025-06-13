@@ -34,18 +34,26 @@ class Recipe {
   });
 
   factory Recipe.fromJson(Map<String, dynamic> json) {
+    // Handle the API response structure which uses 'id' instead of 'uuid'
+    // and 'photo' instead of 'images'
     return Recipe(
-      uuid: json['uuid'] as String,
+      uuid: (json['uuid'] ?? json['id']?.toString() ?? '0') as String,
       name: json['name'] as String,
-      // Assuming 'images' in your JSON is a single URL string.
-      // If it's a list, you might need to adjust how you pick an image.
-      images: json['images'] as String,
-      description: json['description'] as String,
-      instructions: json['instructions'] as String,
-      difficulty: json['difficulty'] as int,
-      duration: json['duration'] as String,
-      rating: json['rating'] as int,
-      tags: List<String>.from(json['tags']),
+      // API uses 'photo' for image URL
+      images: (json['images'] ?? json['photo'] ?? 'default.png') as String,
+      // Provide default values for potentially missing fields
+      description: (json['description'] ?? '') as String,
+      instructions: (json['instructions'] ?? '') as String,
+      difficulty: (json['difficulty'] ?? 0) as int,
+      // Handle duration which could be an int or a String
+      duration: json['duration'] is int 
+          ? (json['duration'] as int).toString() 
+          : (json['duration'] ?? '0') as String,
+      rating: (json['rating'] ?? 0) as int,
+      // Handle potentially missing tags
+      tags: json['tags'] != null 
+          ? List<String>.from(json['tags']) 
+          : [],
       ingredients: json['ingredients'] != null
           ? List<Ingredient>.from(
               (json['ingredients'] as List).map(
