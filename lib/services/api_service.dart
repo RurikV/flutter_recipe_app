@@ -27,7 +27,8 @@ class ApiService {
     ));
 
     // Configure Dio to accept self-signed certificates
-    (_dio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate = (HttpClient client) {
+    (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+      final client = HttpClient();
       client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
       return client;
     };
