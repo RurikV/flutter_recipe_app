@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'step_checkbox.dart';
+import 'animated_step_checkbox.dart';
 import 'step_duration.dart';
 
 /// A stateless widget representing the step actions (checkbox and duration).
@@ -22,7 +22,7 @@ class StepActions extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        StepCheckbox(
+        AnimatedStepCheckbox(
           isCompleted: isCompleted,
           isCookingMode: isCookingMode,
           onChanged: onChanged,
