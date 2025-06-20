@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../models/comment.dart';
+import '../models/recipe_step.dart';
 import '../services/recipe_manager.dart';
 import '../widgets/recipe_header.dart';
 import '../widgets/duration_display.dart';
@@ -34,7 +35,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     final success = await _recipeManager.toggleFavorite(_recipe.uuid);
     if (success && mounted) {
       setState(() {
-        _recipe.isFavorite = !_recipe.isFavorite;
+        _recipe = _recipe.copyWith(isFavorite: !_recipe.isFavorite);
       });
     }
   }
@@ -54,21 +55,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       setState(() {
         // Update the local recipe object with the new comment
         final updatedComments = List<Comment>.from(_recipe.comments)..add(comment);
-        _recipe = Recipe(
-          uuid: _recipe.uuid,
-          name: _recipe.name,
-          images: _recipe.images,
-          description: _recipe.description,
-          instructions: _recipe.instructions,
-          difficulty: _recipe.difficulty,
-          duration: _recipe.duration,
-          rating: _recipe.rating,
-          tags: _recipe.tags,
-          ingredients: _recipe.ingredients,
-          steps: _recipe.steps,
-          isFavorite: _recipe.isFavorite,
-          comments: updatedComments,
-        );
+        _recipe = _recipe.copyWith(comments: updatedComments);
       });
     }
   }
@@ -81,7 +68,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     );
     if (success && mounted) {
       setState(() {
-        _recipe.steps[index].isCompleted = isCompleted;
+        final updatedSteps = List<RecipeStep>.from(_recipe.steps);
+        updatedSteps[index] = updatedSteps[index].copyWith(isCompleted: isCompleted);
+        _recipe = _recipe.copyWith(steps: updatedSteps);
       });
     }
   }

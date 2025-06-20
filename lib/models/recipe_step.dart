@@ -1,7 +1,7 @@
 class RecipeStep {
   final String description;
   final String duration;
-  bool isCompleted;
+  final bool isCompleted;
 
   RecipeStep({
     required this.description,
@@ -23,5 +23,18 @@ class RecipeStep {
       'duration': duration,
       'isCompleted': isCompleted,
     };
+  }
+
+  // Creates a copy of the recipe step with the given fields replaced with the new values
+  RecipeStep copyWith({
+    String? description,
+    String? duration,
+    bool? isCompleted,
+  }) {
+    return RecipeStep(
+      description: description ?? this.description,
+      duration: duration ?? this.duration,
+      isCompleted: isCompleted ?? this.isCompleted,
+    );
   }
 }

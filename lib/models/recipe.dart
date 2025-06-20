@@ -14,7 +14,7 @@ class Recipe {
   final List<String> tags; // Will be removed from the card display
   final List<Ingredient> ingredients; // New field for ingredients
   final List<RecipeStep> steps; // New field for recipe steps
-  bool isFavorite; // Flag to mark recipe as favorite
+  final bool isFavorite; // Flag to mark recipe as favorite
   final List<Comment> comments; // List of comments for the recipe
 
   Recipe({
@@ -101,5 +101,38 @@ class Recipe {
       'isFavorite': isFavorite,
       'comments': comments.map((e) => e.toJson()).toList(),
     };
+  }
+
+  // Creates a copy of the recipe with the given fields replaced with the new values
+  Recipe copyWith({
+    String? uuid,
+    String? name,
+    String? images,
+    String? description,
+    String? instructions,
+    int? difficulty,
+    String? duration,
+    int? rating,
+    List<String>? tags,
+    List<Ingredient>? ingredients,
+    List<RecipeStep>? steps,
+    bool? isFavorite,
+    List<Comment>? comments,
+  }) {
+    return Recipe(
+      uuid: uuid ?? this.uuid,
+      name: name ?? this.name,
+      images: images ?? this.images,
+      description: description ?? this.description,
+      instructions: instructions ?? this.instructions,
+      difficulty: difficulty ?? this.difficulty,
+      duration: duration ?? this.duration,
+      rating: rating ?? this.rating,
+      tags: tags ?? this.tags,
+      ingredients: ingredients ?? this.ingredients,
+      steps: steps ?? this.steps,
+      isFavorite: isFavorite ?? this.isFavorite,
+      comments: comments ?? this.comments,
+    );
   }
 }
