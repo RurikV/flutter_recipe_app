@@ -67,7 +67,13 @@ class Recipe {
                 (x) => RecipeStep.fromJson(x as Map<String, dynamic>),
               ),
             )
-          : [],
+          : json['recipesteplink'] != null
+              ? List<RecipeStep>.from(
+                  (json['recipesteplink'] as List).map(
+                    (x) => RecipeStep.fromJson(x as Map<String, dynamic>),
+                  ),
+                )
+              : [],
       isFavorite: json['isFavorite'] as bool? ?? false,
       comments: json['comments'] != null
           ? List<Comment>.from(

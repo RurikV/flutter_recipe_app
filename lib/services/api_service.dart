@@ -103,7 +103,7 @@ class ApiService {
         // - remove 'rating' as the API doesn't expect it when creating a new recipe
         // - remove 'tags' as the API doesn't expect it when creating a new recipe
         // - remove 'ingredients' as the API doesn't expect it when creating a new recipe
-        // - remove 'steps' as the API doesn't expect it when creating a new recipe
+        // Rename 'steps' to 'recipesteplink' as that's what the API expects
         // - remove 'isFavorite' as the API doesn't expect it when creating a new recipe
         // - set a default value for 'duration' if it's empty as the API requires a non-null value
         final recipeJson = recipe.toJson();
@@ -114,7 +114,6 @@ class ApiService {
         recipeJson.remove('rating');
         recipeJson.remove('tags');
         recipeJson.remove('ingredients');
-        recipeJson.remove('steps');
         recipeJson.remove('isFavorite');
 
         // Set a default value for duration if it's empty or convert to integer
@@ -137,14 +136,49 @@ class ApiService {
           recipeJson.remove('images');
         }
 
-        final response = await _dio.post(
-          '/recipe',
-          data: recipeJson,
-        );
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          return Recipe.fromJson(response.data);
-        } else {
-          throw Exception('Failed to create recipe: ${response.statusCode}');
+        // Rename 'steps' to 'recipesteplink' and convert durations to numeric values
+        if (recipeJson.containsKey('steps')) {
+          final steps = recipeJson['steps'] as List<dynamic>;
+          final processedSteps = steps.map((step) {
+            final stepMap = Map<String, dynamic>.from(step as Map<String, dynamic>);
+            // Convert duration to numeric value
+            if (stepMap.containsKey('duration')) {
+              final durationStr = stepMap['duration'] as String;
+              // Extract numeric value from duration string (e.g., "10 min" -> 10)
+              final numericValue = int.tryParse(durationStr.split(' ').first);
+              if (numericValue != null) {
+                stepMap['duration'] = numericValue;
+              } else {
+                stepMap['duration'] = 0; // Default to 0 if parsing fails
+              }
+            }
+            return stepMap;
+          }).toList();
+
+          recipeJson['recipesteplink'] = processedSteps;
+          recipeJson.remove('steps');
+        }
+
+        // Debug log to see the actual request payload
+        print('DEBUG: Recipe JSON being sent to API: $recipeJson');
+
+        try {
+          final response = await _dio.post(
+            '/recipe',
+            data: recipeJson,
+          );
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            return Recipe.fromJson(response.data);
+          } else {
+            print('DEBUG: Error response: ${response.statusCode} - ${response.data}');
+            throw Exception('Failed to create recipe: ${response.statusCode}');
+          }
+        } catch (e) {
+          if (e is DioException) {
+            print('DEBUG: DioException: ${e.message}');
+            print('DEBUG: Response data: ${e.response?.data}');
+          }
+          rethrow;
         }
       },
       errorMessage: 'Failed to create recipe',

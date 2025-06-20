@@ -12,10 +12,13 @@ class RecipeManager {
   final ConnectivityService _connectivityService;
 
   // Regular class constructor
-  RecipeManager()
-      : _apiService = ApiService(),
-        _databaseService = DatabaseService(),
-        _connectivityService = ConnectivityService();
+  RecipeManager({
+    ApiService? apiService,
+    DatabaseService? databaseService,
+    ConnectivityService? connectivityService,
+  })  : _apiService = apiService ?? ApiService(),
+        _databaseService = databaseService ?? DatabaseService(),
+        _connectivityService = connectivityService ?? ConnectivityService();
 
   // Hardcoded list of ingredients (fallback)
   final List<String> _dummyIngredients = [
