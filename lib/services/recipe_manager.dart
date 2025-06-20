@@ -2,8 +2,8 @@ import '../models/recipe.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_step.dart';
 import '../models/comment.dart';
-import 'api_service.dart';
-import 'database_service.dart';
+import '../data/api_service.dart';
+import '../data/database_service.dart';
 import 'connectivity_service.dart';
 
 class RecipeManager {
