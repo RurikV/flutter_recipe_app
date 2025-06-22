@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import '../models/recipe_step.dart';
+import '../../domain/entities/ingredient.dart';
 
-class StepsSection extends StatelessWidget {
-  final List<RecipeStep> steps;
-  final Function() onAddStep;
-  final Function(int) onEditStep;
-  final Function(int) onRemoveStep;
+class IngredientsSection extends StatelessWidget {
+  final List<Ingredient> ingredients;
+  final Function() onAddIngredient;
+  final Function(int) onEditIngredient;
+  final Function(int) onRemoveIngredient;
 
-  const StepsSection({
+  const IngredientsSection({
     super.key,
-    required this.steps,
-    required this.onAddStep,
-    required this.onEditStep,
-    required this.onRemoveStep,
+    required this.ingredients,
+    required this.onAddIngredient,
+    required this.onEditIngredient,
+    required this.onRemoveIngredient,
   });
 
   @override
@@ -20,11 +20,11 @@ class StepsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Steps header
+        // Ingredients header
         Padding(
-          padding: const EdgeInsets.only(top: 42),
+          padding: const EdgeInsets.only(top: 19),
           child: Text(
-            'Шаги приготовления',
+            'Ингредиенты',
             style: TextStyle(
               fontFamily: 'Roboto',
               fontWeight: FontWeight.w500,
@@ -35,13 +35,13 @@ class StepsSection extends StatelessWidget {
           ),
         ),
 
-        // Steps list or placeholder
-        if (steps.isEmpty)
+        // Ingredients list or placeholder
+        if (ingredients.isEmpty)
           Padding(
-            padding: const EdgeInsets.only(top: 6),
+            padding: const EdgeInsets.only(top: 9),
             child: Center(
               child: Text(
-                'нет шагов приготовления',
+                'нет ингредиентов',
                 style: TextStyle(
                   fontFamily: 'Roboto',
                   fontWeight: FontWeight.w400,
@@ -58,35 +58,26 @@ class StepsSection extends StatelessWidget {
             child: ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: steps.length,
+              itemCount: ingredients.length,
               itemBuilder: (context, index) {
-                final step = steps[index];
+                final ingredient = ingredients[index];
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8.0),
                   child: ListTile(
-                    leading: Text(
-                      '${index + 1}',
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w900,
-                        fontSize: 24,
-                        color: Color(0xFFC2C2C2),
-                      ),
-                    ),
                     title: Text(
-                      step.description,
+                      ingredient.name,
                       style: const TextStyle(
                         fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w400,
-                        fontSize: 12,
-                        color: Color(0xFF797676),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                        color: Colors.black,
                       ),
                     ),
                     subtitle: Text(
-                      'Время: ${step.duration}',
+                      '${ingredient.quantity} ${ingredient.unit}',
                       style: const TextStyle(
                         fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w400,
                         fontSize: 12,
                         color: Color(0xFF797676),
                       ),
@@ -96,11 +87,11 @@ class StepsSection extends StatelessWidget {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.edit),
-                          onPressed: () => onEditStep(index),
+                          onPressed: () => onEditIngredient(index),
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete),
-                          onPressed: () => onRemoveStep(index),
+                          onPressed: () => onRemoveIngredient(index),
                         ),
                       ],
                     ),
@@ -110,14 +101,14 @@ class StepsSection extends StatelessWidget {
             ),
           ),
 
-        // Add step button
+        // Add ingredient button
         Padding(
           padding: const EdgeInsets.only(top: 25),
           child: SizedBox(
             width: 232,
             height: 48,
             child: OutlinedButton(
-              onPressed: onAddStep,
+              onPressed: onAddIngredient,
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xFF165932), width: 3),
                 shape: RoundedRectangleBorder(
@@ -125,7 +116,7 @@ class StepsSection extends StatelessWidget {
                 ),
               ),
               child: const Text(
-                'Добавить шаг',
+                'Добавить ингредиент',
                 style: TextStyle(
                   fontFamily: 'Roboto',
                   fontWeight: FontWeight.w500,

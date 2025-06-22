@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../models/recipe_step.dart';
+import '../../domain/entities/recipe_step.dart';
 
 class StepDialog extends StatefulWidget {
   final Function(RecipeStep) onSave;

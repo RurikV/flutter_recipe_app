@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import '../models/recipe.dart';
-import '../models/ingredient.dart';
-import '../models/recipe_step.dart';
-import '../services/recipe_manager.dart';
-import '../widgets/recipe_name_input.dart';
-import '../widgets/photo_upload_section.dart';
-import '../widgets/ingredients_section.dart';
-import '../widgets/steps_section.dart';
-import '../widgets/save_recipe_button.dart';
-import '../widgets/ingredient_dialog.dart';
-import '../widgets/step_dialog.dart';
+import '../../models/recipe.dart';
+import '../../models/ingredient.dart' as models;
+import '../../models/recipe_step.dart' as models;
+import '../utils/entity_converters.dart';
+import '../domain/usecases/recipe_manager.dart';
+import '../widgets/recipe/recipe_name_input.dart';
+import '../widgets/recipe/photo_upload_section.dart';
+import '../widgets/ingredient/ingredients_section.dart';
+import '../widgets/step/steps_section.dart';
+import '../widgets/recipe/save_recipe_button.dart';
+import '../widgets/ingredient/ingredient_dialog.dart';
+import '../widgets/step/step_dialog.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   final Function onRecipeAdded;
@@ -27,8 +28,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _durationController = TextEditingController();
   final _imageUrlController = TextEditingController();
 
-  final List<Ingredient> _ingredients = [];
-  final List<RecipeStep> _steps = [];
+  // Using dynamic lists to avoid type issues
+  final List _ingredients = [];
+  final List _steps = [];
 
   final RecipeManager _recipeManager = RecipeManager();
 
@@ -106,9 +108,11 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     showDialog(
       context: context,
       builder: (context) => StepDialog(
-        onSave: (step) {
+        onSave: (entityStep) {
+          // Convert domain entity to model
+          final modelStep = EntityConverters.entityToModelRecipeStep(entityStep);
           setState(() {
-            _steps.add(step);
+            _steps.add(modelStep);
           });
         },
       ),
@@ -116,13 +120,17 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   }
 
   void _editStep(int index) {
+    // Convert model to domain entity for the dialog
+    final entityStep = EntityConverters.modelToEntityRecipeStep(_steps[index]);
     showDialog(
       context: context,
       builder: (context) => StepDialog(
-        step: _steps[index],
-        onSave: (step) {
+        step: entityStep,
+        onSave: (updatedEntityStep) {
+          // Convert domain entity back to model
+          final modelStep = EntityConverters.entityToModelRecipeStep(updatedEntityStep);
           setState(() {
-            _steps[index] = step;
+            _steps[index] = modelStep;
           });
         },
       ),
@@ -162,6 +170,18 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       });
 
       try {
+        // Create typed lists from the dynamic lists
+        final List<models.Ingredient> typedIngredients = [];
+        for (var ingredient in _ingredients) {
+          typedIngredients.add(ingredient as models.Ingredient);
+        }
+
+        final List<models.RecipeStep> typedSteps = [];
+        for (var step in _steps) {
+          typedSteps.add(step as models.RecipeStep);
+        }
+
+        // Create a new recipe with the current data
         final recipe = Recipe(
           uuid: DateTime.now().millisecondsSinceEpoch.toString(), // Generate a unique ID
           name: _nameController.text,
@@ -174,8 +194,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
           duration: _durationController.text,
           rating: 0, // Default rating
           tags: [], // Default empty tags
-          ingredients: _ingredients,
-          steps: _steps,
+          ingredients: typedIngredients,
+          steps: typedSteps,
         );
 
         final success = await _recipeManager.saveRecipe(recipe);
@@ -255,7 +275,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
 
                             // Ingredients section
                             IngredientsSection(
-                              ingredients: _ingredients,
+                              ingredients: EntityConverters.modelToEntityIngredients(_ingredients.cast<models.Ingredient>()),
                               onAddIngredient: _addIngredient,
                               onEditIngredient: _editIngredient,
                               onRemoveIngredient: _removeIngredient,
@@ -263,7 +283,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
 
                             // Steps section
                             StepsSection(
-                              steps: _steps,
+                              steps: EntityConverters.modelToEntityRecipeSteps(_steps.cast<models.RecipeStep>()),
                               onAddStep: _addStep,
                               onEditStep: _editStep,
                               onRemoveStep: _removeStep,

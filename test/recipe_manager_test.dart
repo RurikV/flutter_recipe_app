@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
 import 'package:flutter_recipe_app/models/ingredient.dart';
-import 'package:flutter_recipe_app/services/recipe_manager.dart';
+import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
 import 'package:flutter_recipe_app/data/api_service.dart';
 import 'package:flutter_recipe_app/data/database_service.dart';
 import 'package:flutter_recipe_app/services/connectivity_service.dart';
@@ -73,7 +73,7 @@ class MockApiService extends ApiService {
 // Mock implementation of DatabaseService for testing
 class MockDatabaseService implements DatabaseService {
   final Map<String, Recipe> _recipes = {};
-  
+
   @override
   Future<List<Recipe>> getAllRecipes() async {
     // Return a list with one mock recipe
@@ -139,23 +139,23 @@ class MockDatabaseService implements DatabaseService {
     // Simulate successful update
     return true;
   }
-  
+
   @override
   Future<void> saveRecipe(Recipe recipe) async {
     // Simulate successful save
     _recipes[recipe.uuid] = recipe;
   }
-  
+
   @override
   Future<Recipe?> getRecipeByUuid(String uuid) async {
     return _recipes[uuid];
   }
-  
+
   @override
   Future<int?> getStepId(String recipeUuid, int stepIndex) async {
     return 1; // Mock step ID
   }
-  
+
   @override
   Future<bool> deleteRecipe(String recipeId) async {
     if (_recipes.containsKey(recipeId)) {
@@ -164,7 +164,7 @@ class MockDatabaseService implements DatabaseService {
     }
     return false;
   }
-  
+
   @override
   Future<void> close() async {
     // No need to do anything in the mock

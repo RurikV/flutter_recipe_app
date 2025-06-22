@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/comment.dart';
+import '../../models/comment.dart';
 
 class CommentsSection extends StatefulWidget {
   final List<Comment> comments;

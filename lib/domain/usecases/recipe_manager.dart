@@ -1,10 +1,10 @@
-import '../models/recipe.dart';
-import '../models/ingredient.dart';
-import '../models/recipe_step.dart';
-import '../models/comment.dart';
-import '../data/api_service.dart';
-import '../data/database_service.dart';
-import 'connectivity_service.dart';
+import '../../models/recipe.dart';
+import '../../models/ingredient.dart';
+import '../../models/recipe_step.dart';
+import '../../models/comment.dart';
+import '../../data/api_service.dart';
+import '../../data/database_service.dart';
+import '../../services/connectivity_service.dart';
 
 class RecipeManager {
   final ApiService _apiService;

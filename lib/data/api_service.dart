@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
-import '../models/recipe.dart';
-import '../models/comment.dart';
+import '../../models/recipe.dart';
+import '../../models/comment.dart';
 
 class ApiService {
   final Dio _dio;

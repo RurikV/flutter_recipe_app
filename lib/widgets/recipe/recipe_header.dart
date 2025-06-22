@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/favorite_button.dart';
+import '../../widgets/recipe/favorite_button.dart';
 
 class RecipeHeader extends StatelessWidget {
   final String recipeName;

@@ -1,7 +1,7 @@
 import '../database/app_database.dart';
-import '../models/recipe.dart' as app_model;
-import '../models/ingredient.dart' as app_model;
-import '../models/recipe_step.dart' as app_model;
+import '../../models/recipe.dart' as app_model;
+import '../../models/ingredient.dart' as app_model;
+import '../../models/recipe_step.dart' as app_model;
 import 'package:drift/drift.dart';
 
 class DatabaseService {

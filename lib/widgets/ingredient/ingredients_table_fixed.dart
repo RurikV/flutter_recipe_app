@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/ingredient.dart';
 
 class IngredientsTable extends StatelessWidget {
-  final List<Ingredient> ingredients;
+  final List ingredients;
 
   const IngredientsTable({
     super.key,
@@ -46,12 +45,37 @@ class IngredientsTable extends StatelessWidget {
                   1: FlexColumnWidth(1),
                 },
                 children: ingredients.map((ingredient) {
+                  // Safely extract properties with null checks
+                  String name = '';
+                  String quantity = '';
+                  String unit = '';
+                  
+                  if (ingredient != null) {
+                    try {
+                      name = ingredient.name ?? '';
+                    } catch (e) {
+                      // Ignore property access errors
+                    }
+                    
+                    try {
+                      quantity = ingredient.quantity ?? '';
+                    } catch (e) {
+                      // Ignore property access errors
+                    }
+                    
+                    try {
+                      unit = ingredient.unit ?? '';
+                    } catch (e) {
+                      // Ignore property access errors
+                    }
+                  }
+                  
                   return TableRow(
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4.0),
                         child: Text(
-                          ingredient.name,
+                          name,
                           style: const TextStyle(
                             fontFamily: 'Roboto',
                             fontWeight: FontWeight.w500,
@@ -64,7 +88,7 @@ class IngredientsTable extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4.0),
                         child: Text(
-                          '${ingredient.quantity} ${ingredient.unit}',
+                          '$quantity $unit',
                           style: const TextStyle(
                             fontFamily: 'Roboto',
                             fontWeight: FontWeight.w400,
