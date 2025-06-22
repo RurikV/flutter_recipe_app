@@ -1,32 +1,30 @@
-import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_recipe_app/models/recipe.dart';
-import 'package:flutter_recipe_app/models/recipe_step.dart';
-import 'package:flutter_recipe_app/models/ingredient.dart';
-import 'package:flutter_recipe_app/services/database_service.dart';
-import 'package:flutter_recipe_app/models/comment.dart';
+import 'package:flutter_recipe_app/models/recipe.dart' as app_model;
+import 'package:flutter_recipe_app/models/recipe_step.dart' as app_model;
+import 'package:flutter_recipe_app/models/ingredient.dart' as app_model;
+import 'package:flutter_recipe_app/data/database_service.dart';
 
 // Mock implementation of DatabaseService for testing
-class MockDatabaseService extends DatabaseService {
-  final Map<String, Recipe> _recipes = {};
+class MockDatabaseService implements DatabaseService {
+  final Map<String, app_model.Recipe> _recipes = {};
 
   @override
-  Future<List<Recipe>> getAllRecipes() async {
+  Future<List<app_model.Recipe>> getAllRecipes() async {
     return _recipes.values.toList();
   }
 
   @override
-  Future<List<Recipe>> getFavoriteRecipes() async {
+  Future<List<app_model.Recipe>> getFavoriteRecipes() async {
     return _recipes.values.where((recipe) => recipe.isFavorite).toList();
   }
 
   @override
-  Future<Recipe?> getRecipeByUuid(String uuid) async {
+  Future<app_model.Recipe?> getRecipeByUuid(String uuid) async {
     return _recipes[uuid];
   }
 
   @override
-  Future<void> saveRecipe(Recipe recipe) async {
+  Future<void> saveRecipe(app_model.Recipe recipe) async {
     _recipes[recipe.uuid] = recipe;
   }
 
@@ -34,7 +32,7 @@ class MockDatabaseService extends DatabaseService {
   Future<bool> toggleFavorite(String recipeId) async {
     if (_recipes.containsKey(recipeId)) {
       final recipe = _recipes[recipeId]!;
-      final updatedRecipe = Recipe(
+      final updatedRecipe = app_model.Recipe(
         uuid: recipe.uuid,
         name: recipe.name,
         images: recipe.images,
@@ -68,6 +66,18 @@ class MockDatabaseService extends DatabaseService {
   Future<void> close() async {
     // No need to do anything in the mock
   }
+
+  @override
+  Future<int?> getStepId(String recipeUuid, int stepIndex) async {
+    // Mock implementation
+    return null;
+  }
+
+  @override
+  Future<bool> updateStepStatus(int stepId, bool isCompleted) async {
+    // Mock implementation
+    return false;
+  }
 }
 
 void main() {
@@ -86,7 +96,7 @@ void main() {
 
     test('Save and retrieve recipe', () async {
       // Create a recipe with valid data
-      final recipe = Recipe(
+      final recipe = app_model.Recipe(
         uuid: 'test-uuid-${DateTime.now().millisecondsSinceEpoch}',
         name: 'Test Recipe ${DateTime.now().millisecondsSinceEpoch}',
         images: 'https://via.placeholder.com/400x300?text=Test+Recipe',
@@ -97,18 +107,18 @@ void main() {
         rating: 0,
         tags: ['test', 'recipe'],
         ingredients: [
-          Ingredient(
+          app_model.Ingredient(
             name: 'Test ingredient',
             quantity: '100',
             unit: 'g',
           ),
         ],
         steps: [
-          RecipeStep(
+          app_model.RecipeStep(
             description: 'Test step 1',
             duration: '10 min',
           ),
-          RecipeStep(
+          app_model.RecipeStep(
             description: 'Test step 2',
             duration: '15 min',
           ),
@@ -158,7 +168,7 @@ void main() {
 
     test('Update recipe', () async {
       // Create a recipe
-      final recipe = Recipe(
+      final recipe = app_model.Recipe(
         uuid: 'test-uuid-update-${DateTime.now().millisecondsSinceEpoch}',
         name: 'Test Recipe Update ${DateTime.now().millisecondsSinceEpoch}',
         images: 'https://via.placeholder.com/400x300?text=Test+Recipe',
@@ -169,14 +179,14 @@ void main() {
         rating: 0,
         tags: ['test', 'recipe'],
         ingredients: [
-          Ingredient(
+          app_model.Ingredient(
             name: 'Test ingredient',
             quantity: '100',
             unit: 'g',
           ),
         ],
         steps: [
-          RecipeStep(
+          app_model.RecipeStep(
             description: 'Test step 1',
             duration: '10 min',
           ),
@@ -187,7 +197,7 @@ void main() {
       await databaseService.saveRecipe(recipe);
 
       // Update the recipe
-      final updatedRecipe = Recipe(
+      final updatedRecipe = app_model.Recipe(
         uuid: recipe.uuid,
         name: 'Updated Recipe ${DateTime.now().millisecondsSinceEpoch}',
         images: recipe.images,
@@ -199,11 +209,11 @@ void main() {
         tags: recipe.tags,
         ingredients: recipe.ingredients,
         steps: [
-          RecipeStep(
+          app_model.RecipeStep(
             description: 'Updated step 1',
             duration: '15 min',
           ),
-          RecipeStep(
+          app_model.RecipeStep(
             description: 'New step 2',
             duration: '20 min',
           ),
@@ -233,7 +243,7 @@ void main() {
 
     test('Delete recipe', () async {
       // Create a recipe
-      final recipe = Recipe(
+      final recipe = app_model.Recipe(
         uuid: 'test-uuid-delete-${DateTime.now().millisecondsSinceEpoch}',
         name: 'Test Recipe Delete ${DateTime.now().millisecondsSinceEpoch}',
         images: 'https://via.placeholder.com/400x300?text=Test+Recipe',
@@ -267,7 +277,7 @@ void main() {
 
     test('Toggle favorite status', () async {
       // Create a recipe
-      final recipe = Recipe(
+      final recipe = app_model.Recipe(
         uuid: 'test-uuid-favorite-${DateTime.now().millisecondsSinceEpoch}',
         name: 'Test Recipe Favorite ${DateTime.now().millisecondsSinceEpoch}',
         images: 'https://via.placeholder.com/400x300?text=Test+Recipe',

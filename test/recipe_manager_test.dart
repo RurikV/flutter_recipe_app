@@ -3,10 +3,9 @@ import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
 import 'package:flutter_recipe_app/models/ingredient.dart';
 import 'package:flutter_recipe_app/services/recipe_manager.dart';
-import 'package:flutter_recipe_app/services/api_service.dart';
-import 'package:flutter_recipe_app/services/database_service.dart';
+import 'package:flutter_recipe_app/data/api_service.dart';
+import 'package:flutter_recipe_app/data/database_service.dart';
 import 'package:flutter_recipe_app/services/connectivity_service.dart';
-import 'package:flutter_recipe_app/models/comment.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 // Mock implementation of ApiService for testing
@@ -72,13 +71,9 @@ class MockApiService extends ApiService {
 }
 
 // Mock implementation of DatabaseService for testing
-class MockDatabaseService extends DatabaseService {
-  @override
-  Future<bool> saveRecipe(Recipe recipe) async {
-    // Simulate successful save
-    return true;
-  }
-
+class MockDatabaseService implements DatabaseService {
+  final Map<String, Recipe> _recipes = {};
+  
   @override
   Future<List<Recipe>> getAllRecipes() async {
     // Return a list with one mock recipe
@@ -143,6 +138,36 @@ class MockDatabaseService extends DatabaseService {
   Future<bool> updateStepStatus(int stepId, bool isCompleted) async {
     // Simulate successful update
     return true;
+  }
+  
+  @override
+  Future<void> saveRecipe(Recipe recipe) async {
+    // Simulate successful save
+    _recipes[recipe.uuid] = recipe;
+  }
+  
+  @override
+  Future<Recipe?> getRecipeByUuid(String uuid) async {
+    return _recipes[uuid];
+  }
+  
+  @override
+  Future<int?> getStepId(String recipeUuid, int stepIndex) async {
+    return 1; // Mock step ID
+  }
+  
+  @override
+  Future<bool> deleteRecipe(String recipeId) async {
+    if (_recipes.containsKey(recipeId)) {
+      _recipes.remove(recipeId);
+      return true;
+    }
+    return false;
+  }
+  
+  @override
+  Future<void> close() async {
+    // No need to do anything in the mock
   }
 }
 

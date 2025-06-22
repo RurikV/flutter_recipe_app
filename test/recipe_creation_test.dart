@@ -1,9 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
-import 'package:flutter_recipe_app/services/api_service.dart';
-import 'package:flutter_recipe_app/services/recipe_manager.dart';
-import 'package:flutter_recipe_app/models/comment.dart';
+import 'package:flutter_recipe_app/data/api_service.dart';
 
 // Mock implementation of ApiService for testing
 class MockApiService extends ApiService {
@@ -32,12 +30,10 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   group('Recipe Creation Tests', () {
     late ApiService apiService;
-    late RecipeManager recipeManager;
 
     setUp(() {
       // Use mock API service instead of real one
       apiService = MockApiService();
-      recipeManager = RecipeManager(apiService: apiService);
     });
 
     test('Create recipe with valid data', () async {
