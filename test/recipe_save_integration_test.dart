@@ -1,0 +1,66 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_recipe_app/models/recipe.dart';
+import 'package:flutter_recipe_app/models/recipe_step.dart';
+import 'package:flutter_recipe_app/models/ingredient.dart';
+import 'package:flutter_recipe_app/data/api_service.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  group('Recipe Save Integration Tests', () {
+    late ApiService apiService;
+
+    setUp(() {
+      apiService = ApiService();
+    });
+
+    test('Create recipe with steps - verify API accepts the request', () async {
+      // Create a recipe with steps
+      final recipe = Recipe(
+        uuid: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: 'Integration Test Recipe ${DateTime.now().millisecondsSinceEpoch}',
+        images: 'https://via.placeholder.com/400x300?text=Test+Recipe',
+        description: 'Integration test description',
+        instructions: 'Integration test instructions',
+        difficulty: 2,
+        duration: '30 min',
+        rating: 0,
+        tags: ['integration', 'test'],
+        ingredients: [
+          Ingredient(
+            name: 'Test ingredient',
+            quantity: '100',
+            unit: 'g',
+          ),
+        ],
+        steps: [
+          RecipeStep(
+            description: 'Integration test step 1',
+            duration: '10 min',
+          ),
+          RecipeStep(
+            description: 'Integration test step 2',
+            duration: '15 min',
+          ),
+        ],
+        isFavorite: false,
+        comments: [],
+      );
+
+      // Try to save the recipe
+      try {
+        print('[DEBUG_LOG] Attempting to create recipe with steps');
+        final createdRecipe = await apiService.createRecipe(recipe);
+
+        // Verify the recipe was created successfully
+        expect(createdRecipe, isNotNull);
+        expect(createdRecipe.name, equals(recipe.name));
+        expect(createdRecipe.steps.length, equals(recipe.steps.length));
+
+        print('[DEBUG_LOG] Recipe with steps created successfully: ${createdRecipe.uuid}');
+      } catch (e) {
+        print('[DEBUG_LOG] Failed to create recipe with steps: $e');
+        fail('Failed to create recipe with steps: $e');
+      }
+    });
+  });
+}

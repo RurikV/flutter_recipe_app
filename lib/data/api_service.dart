@@ -136,7 +136,7 @@ class ApiService {
           recipeJson.remove('images');
         }
 
-        // Rename 'steps' to 'recipesteplink' and convert durations to numeric values
+        // Process steps and convert durations to numeric values
         if (recipeJson.containsKey('steps')) {
           final steps = recipeJson['steps'] as List<dynamic>;
           final processedSteps = steps.map((step) {
