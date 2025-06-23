@@ -48,7 +48,7 @@ class _TestRecipeCreationScreenState extends State<TestRecipeCreationScreen> {
       final recipe = Recipe(
         uuid: DateTime.now().millisecondsSinceEpoch.toString(),
         name: 'Test Recipe ${DateTime.now().millisecondsSinceEpoch}',
-        images: 'https://via.placeholder.com/400x300?text=Test+Recipe',
+        images: 'https://placehold.co/400x300/png?text=Test+Recipe',
         description: 'Test description',
         instructions: 'Test instructions',
         difficulty: 2,
@@ -61,7 +61,7 @@ class _TestRecipeCreationScreenState extends State<TestRecipeCreationScreen> {
 
       // Try to save the recipe
       final createdRecipe = await _apiService.createRecipe(recipe);
-      
+
       setState(() {
         _testResults = 'Test passed: Recipe created successfully!\n'
             'Recipe ID: ${createdRecipe.uuid}\n'
@@ -89,7 +89,7 @@ class _TestRecipeCreationScreenState extends State<TestRecipeCreationScreen> {
       final recipe = Recipe(
         uuid: DateTime.now().millisecondsSinceEpoch.toString(),
         name: 'Test Recipe Empty Duration ${DateTime.now().millisecondsSinceEpoch}',
-        images: 'https://via.placeholder.com/400x300?text=Test+Recipe',
+        images: 'https://placehold.co/400x300/png?text=Test+Recipe',
         description: 'Test description',
         instructions: 'Test instructions',
         difficulty: 2,
@@ -102,7 +102,7 @@ class _TestRecipeCreationScreenState extends State<TestRecipeCreationScreen> {
 
       // Try to save the recipe
       final createdRecipe = await _apiService.createRecipe(recipe);
-      
+
       setState(() {
         _testResults = 'Test passed: Recipe with empty duration created successfully!\n'
             'Recipe ID: ${createdRecipe.uuid}\n'
@@ -130,7 +130,7 @@ class _TestRecipeCreationScreenState extends State<TestRecipeCreationScreen> {
       final recipe = Recipe(
         uuid: DateTime.now().millisecondsSinceEpoch.toString(),
         name: 'Test Recipe Non-Numeric Duration ${DateTime.now().millisecondsSinceEpoch}',
-        images: 'https://via.placeholder.com/400x300?text=Test+Recipe',
+        images: 'https://placehold.co/400x300/png?text=Test+Recipe',
         description: 'Test description',
         instructions: 'Test instructions',
         difficulty: 2,
@@ -143,7 +143,7 @@ class _TestRecipeCreationScreenState extends State<TestRecipeCreationScreen> {
 
       // Try to save the recipe
       final createdRecipe = await _apiService.createRecipe(recipe);
-      
+
       setState(() {
         _testResults = 'Test passed: Recipe with non-numeric duration created successfully!\n'
             'Recipe ID: ${createdRecipe.uuid}\n'

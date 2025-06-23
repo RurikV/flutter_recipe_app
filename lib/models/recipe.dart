@@ -40,7 +40,15 @@ class Recipe {
       uuid: (json['uuid'] ?? json['id']?.toString() ?? '0') as String,
       name: json['name'] as String,
       // API uses 'photo' for image URL
-      images: (json['images'] ?? json['photo'] ?? 'https://via.placeholder.com/400x300?text=No+Image') as String,
+      // Check if the image URL is valid (starts with http:// or https://)
+      images: (() {
+        final imageUrl = (json['images'] ?? json['photo'] ?? 'https://placehold.co/400x300/png?text=No+Image') as String;
+        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+          return imageUrl;
+        }
+        // If it's just a filename like "default.png", use a placeholder
+        return 'https://placehold.co/400x300/png?text=No+Image';
+      })(),
       // Provide default values for potentially missing fields
       description: (json['description'] ?? '') as String,
       instructions: (json['instructions'] ?? '') as String,
@@ -176,6 +184,17 @@ class Recipe {
       'isFavorite': isFavorite,
       'comments': comments.map((e) => e.toJson()).toList(),
     };
+  }
+
+  // Helper method to ensure image URL is valid
+  static String _getValidImageUrl(String url) {
+    // Check if the URL is a valid HTTP or HTTPS URL
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+
+    // If it's just a filename like "default.png", use a placeholder
+    return 'https://placehold.co/400x300/png?text=No+Image';
   }
 
   // Creates a copy of the recipe with the given fields replaced with the new values

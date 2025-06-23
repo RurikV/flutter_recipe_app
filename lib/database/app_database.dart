@@ -13,7 +13,16 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   late final DatabaseExtensions _extensions;
 
-  AppDatabase() : super(_openConnection()) {
+  // Singleton instance
+  static AppDatabase? _instance;
+
+  // Factory constructor to return the singleton instance
+  factory AppDatabase() {
+    return _instance ??= AppDatabase._internal();
+  }
+
+  // Private constructor for singleton
+  AppDatabase._internal() : super(_openConnection()) {
     _extensions = DatabaseExtensions(this);
   }
 

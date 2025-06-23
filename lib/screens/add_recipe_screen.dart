@@ -186,7 +186,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
           uuid: DateTime.now().millisecondsSinceEpoch.toString(), // Generate a unique ID
           name: _nameController.text,
           images: _imageUrlController.text.isEmpty 
-              ? 'https://via.placeholder.com/400x300?text=No+Image' 
+              ? 'https://placehold.co/400x300/png?text=No+Image' 
               : _imageUrlController.text,
           description: _descriptionController.text,
           instructions: '', // This field is not used in the new model

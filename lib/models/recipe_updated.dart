@@ -12,30 +12,30 @@ class Recipe {
   final int id;
   final String uuid; // For backward compatibility
   final String name;
-  
+
   @JsonKey(name: 'photo')
   final String images; // For backward compatibility
-  
+
   final String description;
   final String instructions;
   final int difficulty;
-  
+
   @JsonKey(name: 'duration')
   final int durationMinutes;
-  
+
   final String durationStr; // For backward compatibility
   final int rating;
   final List<String> tags;
-  
+
   @JsonKey(name: 'recipeIngredients')
   final List<RecipeIngredient>? recipeIngredients;
-  
+
   @JsonKey(name: 'recipeStepLinks')
   final List<RecipeStepLink>? stepLinks;
-  
+
   final List<Ingredient> ingredients; // For backward compatibility
   final List<RecipeStep> steps; // For backward compatibility
-  
+
   final bool isFavorite;
   final List<Comment> comments;
 
@@ -65,28 +65,28 @@ class Recipe {
     final id = json['id'] as int? ?? 0;
     final uuid = (json['uuid'] ?? id.toString()) as String;
     final name = json['name'] as String;
-    final images = (json['images'] ?? json['photo'] ?? 'https://via.placeholder.com/400x300?text=No+Image') as String;
+    final images = (json['images'] ?? json['photo'] ?? 'https://placehold.co/400x300/png?text=No+Image') as String;
     final description = (json['description'] ?? '') as String;
     final instructions = (json['instructions'] ?? '') as String;
     final difficulty = (json['difficulty'] ?? 0) as int;
-    
+
     // Handle duration which could be an int or a String
     final durationMinutes = json['duration'] is int ? json['duration'] as int : 0;
     final durationStr = json['duration'] is int 
         ? (json['duration'] as int).toString() 
         : (json['duration'] ?? '0') as String;
-    
+
     final rating = (json['rating'] ?? 0) as int;
-    
+
     // Handle potentially missing tags
     final tags = json['tags'] != null 
         ? List<String>.from(json['tags']) 
         : <String>[];
-    
+
     // Handle ingredients from different API structures
     List<Ingredient> ingredients = [];
     List<RecipeIngredient>? recipeIngredients;
-    
+
     if (json['ingredients'] != null) {
       ingredients = List<Ingredient>.from(
         (json['ingredients'] as List).map(
@@ -116,14 +116,14 @@ class Recipe {
           (x) => RecipeIngredient.fromJson(x as Map<String, dynamic>),
         ),
       );
-      
+
       // Also create simple ingredients for backward compatibility
       ingredients = List<Ingredient>.from(
         (json['recipeIngredients'] as List).map(
           (x) {
             final ingredientData = x['ingredient'] as Map<String, dynamic>?;
             final count = x['count']?.toString() ?? '';
-            
+
             if (ingredientData != null) {
               return Ingredient.simple(
                 name: ingredientData['name'] as String? ?? '',
@@ -139,11 +139,11 @@ class Recipe {
         ),
       );
     }
-    
+
     // Handle steps from different API structures
     List<RecipeStep> steps = [];
     List<RecipeStepLink>? stepLinks;
-    
+
     if (json['steps'] != null) {
       steps = List<RecipeStep>.from(
         (json['steps'] as List).map(
@@ -179,13 +179,13 @@ class Recipe {
           (x) => RecipeStepLink.fromJson(x as Map<String, dynamic>),
         ),
       );
-      
+
       // Also create simple steps for backward compatibility
       steps = List<RecipeStep>.from(
         (json['recipeStepLinks'] as List).map(
           (x) {
             final stepData = x['step'] as Map<String, dynamic>?;
-            
+
             if (stepData != null) {
               return RecipeStep(
                 id: 0,
@@ -207,9 +207,9 @@ class Recipe {
         ),
       );
     }
-    
+
     final isFavorite = json['isFavorite'] as bool? ?? false;
-    
+
     List<Comment> comments = [];
     if (json['comments'] != null) {
       comments = List<Comment>.from(
@@ -218,7 +218,7 @@ class Recipe {
         ),
       );
     }
-    
+
     return Recipe(
       id: id,
       uuid: uuid,
