@@ -70,12 +70,14 @@ void main() {
         ingredients: [],
         steps: [
           RecipeStep(
-            description: 'Test step 1',
-            duration: '10 min',
+            id: 1,
+            name: 'Test step 1',
+            duration: 10,
           ),
           RecipeStep(
-            description: 'Test step 2',
-            duration: '15 min',
+            id: 2,
+            name: 'Test step 2',
+            duration: 15,
           ),
         ],
       );
@@ -109,8 +111,9 @@ void main() {
         ingredients: [],
         steps: [
           RecipeStep(
-            description: 'Test step with empty duration',
-            duration: '5 min',
+            id: 1,
+            name: 'Test step with empty duration',
+            duration: 5,
           ),
         ],
       );
@@ -144,8 +147,9 @@ void main() {
         ingredients: [],
         steps: [
           RecipeStep(
-            description: 'Test step with non-numeric duration',
-            duration: '20 min',
+            id: 1,
+            name: 'Test step with non-numeric duration',
+            duration: 20,
           ),
         ],
       );

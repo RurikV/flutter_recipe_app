@@ -62,7 +62,7 @@ void main() {
         description: 'A delicious pasta dish',
         instructions: 'Cook pasta, mix with eggs and bacon',
         difficulty: 2,
-        duration: '30',
+        duration: '30 мин',
         rating: 5,
         tags: ['pasta', 'italian'],
         ingredients: [

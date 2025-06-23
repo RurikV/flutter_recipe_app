@@ -26,7 +26,7 @@ void main() {
         rating: 0,
         tags: ['integration', 'test'],
         ingredients: [
-          Ingredient(
+          Ingredient.simple(
             name: 'Test ingredient',
             quantity: '100',
             unit: 'g',
@@ -34,12 +34,14 @@ void main() {
         ],
         steps: [
           RecipeStep(
-            description: 'Integration test step 1',
-            duration: '10 min',
+            id: 1,
+            name: 'Integration test step 1',
+            duration: 10,
           ),
           RecipeStep(
-            description: 'Integration test step 2',
-            duration: '15 min',
+            id: 2,
+            name: 'Integration test step 2',
+            duration: 15,
           ),
         ],
         isFavorite: false,

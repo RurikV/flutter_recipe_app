@@ -107,7 +107,7 @@ void main() {
         rating: 0,
         tags: ['test', 'recipe'],
         ingredients: [
-          app_model.Ingredient(
+          app_model.Ingredient.simple(
             name: 'Test ingredient',
             quantity: '100',
             unit: 'g',
@@ -115,12 +115,14 @@ void main() {
         ],
         steps: [
           app_model.RecipeStep(
-            description: 'Test step 1',
-            duration: '10 min',
+            id: 1,
+            name: 'Test step 1',
+            duration: 10,
           ),
           app_model.RecipeStep(
-            description: 'Test step 2',
-            duration: '15 min',
+            id: 2,
+            name: 'Test step 2',
+            duration: 15,
           ),
         ],
       );
@@ -158,7 +160,7 @@ void main() {
       // Verify steps
       expect(retrievedRecipe.steps.length, equals(recipe.steps.length));
       for (var i = 0; i < recipe.steps.length; i++) {
-        expect(retrievedRecipe.steps[i].description, equals(recipe.steps[i].description));
+        expect(retrievedRecipe.steps[i].name, equals(recipe.steps[i].name));
         expect(retrievedRecipe.steps[i].duration, equals(recipe.steps[i].duration));
         expect(retrievedRecipe.steps[i].isCompleted, equals(recipe.steps[i].isCompleted));
       }
@@ -179,7 +181,7 @@ void main() {
         rating: 0,
         tags: ['test', 'recipe'],
         ingredients: [
-          app_model.Ingredient(
+          app_model.Ingredient.simple(
             name: 'Test ingredient',
             quantity: '100',
             unit: 'g',
@@ -187,8 +189,9 @@ void main() {
         ],
         steps: [
           app_model.RecipeStep(
-            description: 'Test step 1',
-            duration: '10 min',
+            id: 1,
+            name: 'Test step 1',
+            duration: 10,
           ),
         ],
       );
@@ -210,12 +213,14 @@ void main() {
         ingredients: recipe.ingredients,
         steps: [
           app_model.RecipeStep(
-            description: 'Updated step 1',
-            duration: '15 min',
+            id: 1,
+            name: 'Updated step 1',
+            duration: 15,
           ),
           app_model.RecipeStep(
-            description: 'New step 2',
-            duration: '20 min',
+            id: 2,
+            name: 'New step 2',
+            duration: 20,
           ),
         ],
       );
@@ -234,7 +239,7 @@ void main() {
       // Verify steps were updated
       expect(retrievedRecipe.steps.length, equals(updatedRecipe.steps.length));
       for (var i = 0; i < updatedRecipe.steps.length; i++) {
-        expect(retrievedRecipe.steps[i].description, equals(updatedRecipe.steps[i].description));
+        expect(retrievedRecipe.steps[i].name, equals(updatedRecipe.steps[i].name));
         expect(retrievedRecipe.steps[i].duration, equals(updatedRecipe.steps[i].duration));
       }
 

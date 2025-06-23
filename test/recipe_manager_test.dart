@@ -47,8 +47,9 @@ class MockApiService extends ApiService {
         ingredients: [],
         steps: [
           RecipeStep(
-            description: 'Mock step 1',
-            duration: '10 min',
+            id: 1,
+            name: 'Mock step 1',
+            duration: 10,
           ),
         ],
         isFavorite: false,
@@ -91,8 +92,9 @@ class MockDatabaseService implements DatabaseService {
         ingredients: [],
         steps: [
           RecipeStep(
-            description: 'Mock step 1',
-            duration: '10 min',
+            id: 1,
+            name: 'Mock step 1',
+            duration: 10,
           ),
         ],
         isFavorite: false,
@@ -118,8 +120,9 @@ class MockDatabaseService implements DatabaseService {
         ingredients: [],
         steps: [
           RecipeStep(
-            description: 'Mock step 1',
-            duration: '10 min',
+            id: 1,
+            name: 'Mock step 1',
+            duration: 10,
           ),
         ],
         isFavorite: true,
@@ -222,7 +225,7 @@ void main() {
         rating: 0,
         tags: ['test', 'recipe'],
         ingredients: [
-          Ingredient(
+          Ingredient.simple(
             name: 'Test ingredient',
             quantity: '100',
             unit: 'g',
@@ -230,8 +233,9 @@ void main() {
         ],
         steps: [
           RecipeStep(
-            description: 'Test step 1',
-            duration: '10 min',
+            id: 1,
+            name: 'Test step 1',
+            duration: 10,
           ),
         ],
       );
@@ -258,7 +262,7 @@ void main() {
         rating: 0,
         tags: ['test', 'recipe', 'offline'],
         ingredients: [
-          Ingredient(
+          Ingredient.simple(
             name: 'Test ingredient',
             quantity: '100',
             unit: 'g',
@@ -266,8 +270,9 @@ void main() {
         ],
         steps: [
           RecipeStep(
-            description: 'Test step 1',
-            duration: '10 min',
+            id: 1,
+            name: 'Test step 1',
+            duration: 10,
           ),
         ],
       );
