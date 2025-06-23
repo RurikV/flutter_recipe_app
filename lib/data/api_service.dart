@@ -63,13 +63,45 @@ class ApiService {
   Future<List<Recipe>> getRecipes() async {
     return _requestWithRetry(
       request: () async {
-        final response = await _dio.get('/recipe');
-        if (response.statusCode == 200) {
-          final List<dynamic> data = response.data;
-          return data.map((json) => Recipe.fromJson(json)).toList();
-        } else {
-          throw Exception('Failed to load recipes: ${response.statusCode}');
+        // First, get all recipes
+        final recipesResponse = await _dio.get('/recipe');
+        if (recipesResponse.statusCode != 200) {
+          throw Exception('Failed to load recipes: ${recipesResponse.statusCode}');
         }
+
+        final List<dynamic> recipesData = recipesResponse.data;
+
+        // Now, get all recipe ingredients
+        final ingredientsResponse = await _dio.get('/recipe_ingredient');
+        if (ingredientsResponse.statusCode != 200) {
+          throw Exception('Failed to load recipe ingredients: ${ingredientsResponse.statusCode}');
+        }
+
+        final List<dynamic> allIngredients = ingredientsResponse.data;
+
+        // Create a map of recipe ID to ingredients
+        final Map<String, List<dynamic>> ingredientsByRecipeId = {};
+        for (final ingredient in allIngredients) {
+          if (ingredient['recipe'] != null && ingredient['recipe']['id'] != null) {
+            final recipeId = ingredient['recipe']['id'].toString();
+            if (!ingredientsByRecipeId.containsKey(recipeId)) {
+              ingredientsByRecipeId[recipeId] = [];
+            }
+            ingredientsByRecipeId[recipeId]!.add(ingredient);
+          }
+        }
+
+        // Add ingredients to each recipe and parse
+        final List<Recipe> recipes = [];
+        for (final recipeData in recipesData) {
+          final recipeId = recipeData['id'].toString();
+          if (ingredientsByRecipeId.containsKey(recipeId)) {
+            recipeData['recipeIngredients'] = ingredientsByRecipeId[recipeId];
+          }
+          recipes.add(Recipe.fromJson(recipeData));
+        }
+
+        return recipes;
       },
       errorMessage: 'Failed to load recipes',
     );
@@ -79,12 +111,33 @@ class ApiService {
   Future<Recipe> getRecipe(String id) async {
     return _requestWithRetry(
       request: () async {
-        final response = await _dio.get('/recipe/$id');
-        if (response.statusCode == 200) {
-          return Recipe.fromJson(response.data);
-        } else {
-          throw Exception('Failed to load recipe: ${response.statusCode}');
+        // First, get the basic recipe data
+        final recipeResponse = await _dio.get('/recipe/$id');
+        if (recipeResponse.statusCode != 200) {
+          throw Exception('Failed to load recipe: ${recipeResponse.statusCode}');
         }
+
+        // Parse the basic recipe data
+        final recipeData = recipeResponse.data;
+
+        // Now, get the recipe ingredients
+        final ingredientsResponse = await _dio.get('/recipe_ingredient');
+        if (ingredientsResponse.statusCode != 200) {
+          throw Exception('Failed to load recipe ingredients: ${ingredientsResponse.statusCode}');
+        }
+
+        // Filter ingredients for this recipe
+        final List<dynamic> allIngredients = ingredientsResponse.data;
+        final recipeIngredients = allIngredients.where((ingredient) {
+          return ingredient['recipe'] != null && 
+                 ingredient['recipe']['id'].toString() == id;
+        }).toList();
+
+        // Add ingredients to recipe data
+        recipeData['recipeIngredients'] = recipeIngredients;
+
+        // Return the complete recipe
+        return Recipe.fromJson(recipeData);
       },
       errorMessage: 'Failed to load recipe $id',
     );
