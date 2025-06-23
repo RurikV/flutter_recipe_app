@@ -422,15 +422,65 @@ class ApiService {
           // Step 2: Create recipe ingredients
           for (var ingredient in recipe.ingredients) {
             try {
-              // Skip ingredients with ID 0 as they would cause a foreign key violation
-              if (ingredient.id == 0) {
-                print('DEBUG: Skipping ingredient with ID 0: ${ingredient.name}');
-                continue;
+              int ingredientId = ingredient.id;
+
+              // If ingredient has ID 0, we need to create it or find an existing one
+              if (ingredientId == 0) {
+                print('DEBUG: Ingredient has ID 0, attempting to create or find it: ${ingredient.name}');
+
+                try {
+                  // First, try to find an existing ingredient with the same name
+                  final ingredientsResponse = await _dio.get('/ingredient');
+                  if (ingredientsResponse.statusCode == 200) {
+                    final List<dynamic> allIngredients = ingredientsResponse.data;
+                    dynamic existingIngredient;
+                    try {
+                      existingIngredient = allIngredients.firstWhere(
+                        (ing) => ing['name'] == ingredient.name,
+                      );
+                    } catch (e) {
+                      existingIngredient = null;
+                    }
+
+                    if (existingIngredient != null) {
+                      // Use the existing ingredient's ID
+                      ingredientId = existingIngredient['id'];
+                      print('DEBUG: Found existing ingredient with name ${ingredient.name}, ID: $ingredientId');
+                    } else {
+                      // Create a new ingredient
+                      final newIngredientJson = {
+                        'name': ingredient.name,
+                        'caloriesForUnit': 0.0,
+                        'measureUnit': {'id': 1} // Default measure unit ID
+                      };
+
+                      final createResponse = await _dio.post(
+                        '/ingredient',
+                        data: newIngredientJson,
+                      );
+
+                      if (createResponse.statusCode == 200 || createResponse.statusCode == 201) {
+                        ingredientId = createResponse.data['id'];
+                        print('DEBUG: Created new ingredient with name ${ingredient.name}, ID: $ingredientId');
+                      } else {
+                        print('DEBUG: Failed to create ingredient: ${createResponse.statusCode}');
+                        continue;
+                      }
+                    }
+                  } else {
+                    print('DEBUG: Failed to get ingredients: ${ingredientsResponse.statusCode}');
+                    continue;
+                  }
+                } catch (e) {
+                  print('DEBUG: Error creating or finding ingredient: $e');
+                  continue;
+                }
               }
 
+              // Now create the recipe ingredient with the valid ingredient ID
               final ingredientJson = {
                 'count': int.tryParse(ingredient.quantity) ?? 0,
-                'ingredient': {'id': ingredient.id},
+                'ingredient': {'id': ingredientId},
                 'recipe': {'id': recipeId}
               };
 
@@ -438,6 +488,8 @@ class ApiService {
                 '/recipe_ingredient',
                 data: ingredientJson,
               );
+
+              print('DEBUG: Successfully added ingredient ${ingredient.name} to recipe');
             } catch (e) {
               // Log the error but continue with the next ingredient
               print('DEBUG: Error creating ingredient: $e');
