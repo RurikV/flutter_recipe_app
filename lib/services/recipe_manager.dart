@@ -1,6 +1,7 @@
 import '../models/recipe.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_step.dart';
+import '../models/comment.dart';
 
 class RecipeManager {
   // Regular class constructor
@@ -71,6 +72,15 @@ class RecipeManager {
     return _dummyRecipes;
   }
 
+  // Method to get favorite recipes
+  Future<List<Recipe>> getFavoriteRecipes() async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Filter recipes to return only favorites
+    return _dummyRecipes.where((recipe) => recipe.isFavorite).toList();
+  }
+
   // Method to get ingredients (currently returns hardcoded data)
   Future<List<String>> getIngredients() async {
     // Simulate network delay
@@ -98,8 +108,80 @@ class RecipeManager {
     return true;
   }
 
-  // Hardcoded list of recipes
-  final List<Recipe> _dummyRecipes = [
+  // Method to toggle favorite status
+  Future<bool> toggleFavorite(String recipeId) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    // Find the recipe by ID
+    final recipeIndex = _dummyRecipes.indexWhere((recipe) => recipe.uuid == recipeId);
+    if (recipeIndex == -1) {
+      return false;
+    }
+
+    // Toggle the favorite status
+    _dummyRecipes[recipeIndex].isFavorite = !_dummyRecipes[recipeIndex].isFavorite;
+
+    return true;
+  }
+
+  // Method to add a comment to a recipe
+  Future<bool> addComment(String recipeId, Comment comment) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Find the recipe by ID
+    final recipeIndex = _dummyRecipes.indexWhere((recipe) => recipe.uuid == recipeId);
+    if (recipeIndex == -1) {
+      return false;
+    }
+
+    // Add the comment to the recipe
+    final recipe = _dummyRecipes[recipeIndex];
+    final updatedComments = List<Comment>.from(recipe.comments)..add(comment);
+
+    // Create a new recipe with the updated comments
+    final updatedRecipe = Recipe(
+      uuid: recipe.uuid,
+      name: recipe.name,
+      images: recipe.images,
+      description: recipe.description,
+      instructions: recipe.instructions,
+      difficulty: recipe.difficulty,
+      duration: recipe.duration,
+      rating: recipe.rating,
+      tags: recipe.tags,
+      ingredients: recipe.ingredients,
+      steps: recipe.steps,
+      isFavorite: recipe.isFavorite,
+      comments: updatedComments,
+    );
+
+    // Replace the old recipe with the updated one
+    _dummyRecipes[recipeIndex] = updatedRecipe;
+
+    return true;
+  }
+
+  // Method to update step completion status
+  Future<bool> updateStepStatus(String recipeId, int stepIndex, bool isCompleted) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    // Find the recipe by ID
+    final recipeIndex = _dummyRecipes.indexWhere((recipe) => recipe.uuid == recipeId);
+    if (recipeIndex == -1 || stepIndex < 0 || stepIndex >= _dummyRecipes[recipeIndex].steps.length) {
+      return false;
+    }
+
+    // Update the step completion status
+    _dummyRecipes[recipeIndex].steps[stepIndex].isCompleted = isCompleted;
+
+    return true;
+  }
+
+  // Hardcoded list of recipes (static to be shared across instances)
+  static final List<Recipe> _dummyRecipes = [
     Recipe(
       uuid: '1',
       name: 'Спагетти Карбонара',

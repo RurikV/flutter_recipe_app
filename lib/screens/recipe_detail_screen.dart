@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
+import '../models/comment.dart';
+import '../services/recipe_manager.dart';
+import '../widgets/recipe_header.dart';
+import '../widgets/duration_display.dart';
+import '../widgets/recipe_image.dart';
+import '../widgets/ingredients_table.dart';
+import '../widgets/recipe_steps_list.dart';
+import '../widgets/cooking_mode_button.dart';
+import '../widgets/comments_section.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   final Recipe recipe;
@@ -11,6 +20,72 @@ class RecipeDetailScreen extends StatefulWidget {
 }
 
 class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
+  final RecipeManager _recipeManager = RecipeManager();
+  late Recipe _recipe;
+  bool _isCookingMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _recipe = widget.recipe;
+  }
+
+  void _toggleFavorite() async {
+    final success = await _recipeManager.toggleFavorite(_recipe.uuid);
+    if (success && mounted) {
+      setState(() {
+        _recipe.isFavorite = !_recipe.isFavorite;
+      });
+    }
+  }
+
+  void _addComment(String commentText) async {
+    if (commentText.isEmpty) return;
+
+    final comment = Comment(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      authorName: 'User', // In a real app, this would be the current user's name
+      text: commentText,
+      date: DateTime.now().toString().substring(0, 10), // Format: YYYY-MM-DD
+    );
+
+    final success = await _recipeManager.addComment(_recipe.uuid, comment);
+    if (success && mounted) {
+      setState(() {
+        // Update the local recipe object with the new comment
+        final updatedComments = List<Comment>.from(_recipe.comments)..add(comment);
+        _recipe = Recipe(
+          uuid: _recipe.uuid,
+          name: _recipe.name,
+          images: _recipe.images,
+          description: _recipe.description,
+          instructions: _recipe.instructions,
+          difficulty: _recipe.difficulty,
+          duration: _recipe.duration,
+          rating: _recipe.rating,
+          tags: _recipe.tags,
+          ingredients: _recipe.ingredients,
+          steps: _recipe.steps,
+          isFavorite: _recipe.isFavorite,
+          comments: updatedComments,
+        );
+      });
+    }
+  }
+
+  void _updateStepStatus(int index, bool isCompleted) async {
+    final success = await _recipeManager.updateStepStatus(
+      _recipe.uuid,
+      index,
+      isCompleted,
+    );
+    if (success && mounted) {
+      setState(() {
+        _recipe.steps[index].isCompleted = isCompleted;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,278 +117,55 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-            // Recipe name
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-              child: Text(
-                widget.recipe.name,
-                style: const TextStyle(
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 24,
-                  height: 22 / 24, // line-height from design
-                  color: Colors.black,
-                ),
-              ),
-            ),
-
-            // Duration with clock icon
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.access_time,
-                    size: 16,
-                    color: Color(0xFF2ECC71),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    widget.recipe.duration,
-                    style: const TextStyle(
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w400,
-                      fontSize: 16,
-                      height: 19 / 16, // line-height from design
-                      color: Color(0xFF2ECC71),
+                    // Recipe header with name and favorite button
+                    RecipeHeader(
+                      recipeName: _recipe.name,
+                      isFavorite: _recipe.isFavorite,
+                      onFavoriteToggle: _toggleFavorite,
                     ),
-                  ),
-                ],
-              ),
-            ),
 
-            // Recipe image
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(5),
-                child: Image.network(
-                  widget.recipe.images,
-                  width: double.infinity,
-                  height: 200,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: double.infinity,
-                      height: 200,
-                      color: Colors.grey[300],
-                      child: const Center(
-                        child: Icon(
-                          Icons.image_not_supported,
-                          size: 40,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
+                    // Duration display
+                    DurationDisplay(duration: _recipe.duration),
 
-            // Ingredients section
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 24, 16, 0),
-              child: Text(
-                'Ингредиенты',
-                style: TextStyle(
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                  height: 23 / 16, // line-height from design
-                  color: Color(0xFF165932),
-                ),
-              ),
-            ),
+                    // Recipe image
+                    RecipeImage(imageUrl: _recipe.images),
 
-            // Ingredients list
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFF797676), width: 3),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Table(
-                    columnWidths: const {
-                      0: FlexColumnWidth(3),
-                      1: FlexColumnWidth(1),
-                    },
-                    children: widget.recipe.ingredients.map((ingredient) {
-                      return TableRow(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: Text(
-                              ingredient.name,
-                              style: const TextStyle(
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                                height: 27 / 14, // line-height from design
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: Text(
-                              '${ingredient.quantity} ${ingredient.unit}',
-                              style: const TextStyle(
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w400,
-                                fontSize: 13,
-                                height: 27 / 13, // line-height from design
-                                color: Color(0xFF797676),
-                              ),
-                              textAlign: TextAlign.right,
-                            ),
-                          ),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-            ),
+                    // Ingredients table
+                    IngredientsTable(ingredients: _recipe.ingredients),
 
-            // Steps section
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 24, 16, 0),
-              child: Text(
-                'Шаги приготовления',
-                style: TextStyle(
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                  height: 23 / 16, // line-height from design
-                  color: Color(0xFF165932),
-                ),
-              ),
-            ),
+                    // Recipe steps list
+                    RecipeStepsList(
+                      steps: _recipe.steps,
+                      isCookingMode: _isCookingMode,
+                      recipeId: _recipe.uuid,
+                      onStepStatusChanged: _updateStepStatus,
+                    ),
 
-            // Steps list
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              child: Column(
-                children: List.generate(widget.recipe.steps.length, (index) {
-                  final step = widget.recipe.steps[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFECECEC),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Step number
-                            SizedBox(
-                              width: 30,
-                              child: Text(
-                                '${index + 1}',
-                                style: const TextStyle(
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 40,
-                                  height: 27 / 40, // line-height from design
-                                  color: Color(0xFFC2C2C2),
-                                ),
-                              ),
-                            ),
+                    // Cooking mode button
+                    CookingModeButton(
+                      isCookingMode: _isCookingMode,
+                      onPressed: () {
+                        setState(() {
+                          _isCookingMode = !_isCookingMode;
+                        });
+                      },
+                    ),
 
-                            // Step description
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                child: Text(
-                                  step.description,
-                                  style: const TextStyle(
-                                    fontFamily: 'Roboto',
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 12,
-                                    height: 18 / 12, // line-height from design
-                                    color: Color(0xFF797676),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            // Step duration and checkbox
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Checkbox(
-                                  value: step.isCompleted,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      step.isCompleted = value ?? false;
-                                    });
-                                  },
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  side: const BorderSide(
-                                    color: Color(0xFF797676),
-                                    width: 4,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  step.duration,
-                                  style: const TextStyle(
-                                    fontFamily: 'Roboto',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 13,
-                                    height: 20 / 13, // line-height from design
-                                    color: Color(0xFF797676),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                    // Divider
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Divider(
+                        color: Color(0xFF797676),
+                        thickness: 0.5,
                       ),
                     ),
-                  );
-                }),
-              ),
-            ),
 
-            // Start cooking button
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
-              child: Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Start cooking functionality would go here
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF165932),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
+                    // Comments section
+                    CommentsSection(
+                      comments: _recipe.comments,
+                      onAddComment: _addComment,
                     ),
-                    minimumSize: const Size(232, 48),
-                  ),
-                  child: const Text(
-                    'Начать готовить',
-                    style: TextStyle(
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                      height: 23 / 16, // line-height from design
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+                  ],
                 ),
               ),
             ),
