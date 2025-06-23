@@ -264,9 +264,9 @@ class RecipeManager {
       // Update the step in the local database
       // In a real app, we need to update both the local database and the API
       final updatedSteps = List<RecipeStep>.from(recipe.steps);
-      updatedSteps[stepIndex] = RecipeStep(
-        description: recipe.steps[stepIndex].description,
-        duration: recipe.steps[stepIndex].duration,
+      updatedSteps[stepIndex] = RecipeStep.simple(
+        description: recipe.steps[stepIndex].name,
+        duration: recipe.steps[stepIndex].duration.toString(),
         isCompleted: isCompleted,
       );
 
@@ -327,37 +327,43 @@ class RecipeManager {
       rating: 5,
       tags: ['Итальянская кухня', 'Паста', 'Ужин'],
       ingredients: [
-        Ingredient(name: 'Спагетти', quantity: '400', unit: 'г'),
-        Ingredient(name: 'Гуанчиале', quantity: '150', unit: 'г'),
-        Ingredient(name: 'Яйца', quantity: '4', unit: 'шт'),
-        Ingredient(name: 'Сыр пармезан', quantity: '50', unit: 'г'),
-        Ingredient(name: 'Черный перец', quantity: '1', unit: 'ч. ложка'),
-        Ingredient(name: 'Соль', quantity: '1', unit: 'по вкусу'),
+        Ingredient.simple(name: 'Спагетти', quantity: '400', unit: 'г'),
+        Ingredient.simple(name: 'Гуанчиале', quantity: '150', unit: 'г'),
+        Ingredient.simple(name: 'Яйца', quantity: '4', unit: 'шт'),
+        Ingredient.simple(name: 'Сыр пармезан', quantity: '50', unit: 'г'),
+        Ingredient.simple(name: 'Черный перец', quantity: '1', unit: 'ч. ложка'),
+        Ingredient.simple(name: 'Соль', quantity: '1', unit: 'по вкусу'),
       ],
       steps: [
         RecipeStep(
-          description: 'Отварите спагетти в подсоленной воде до состояния аль денте.',
-          duration: '10:00',
+          id: 1,
+          name: 'Отварите спагетти в подсоленной воде до состояния аль денте.',
+          duration: 10,
         ),
         RecipeStep(
-          description: 'Нарежьте гуанчиале небольшими кубиками и обжарьте на сковороде до золотистого цвета.',
-          duration: '05:00',
+          id: 2,
+          name: 'Нарежьте гуанчиале небольшими кубиками и обжарьте на сковороде до золотистого цвета.',
+          duration: 5,
         ),
         RecipeStep(
-          description: 'Смешайте яйца, тертый пармезан и черный перец в миске.',
-          duration: '03:00',
+          id: 3,
+          name: 'Смешайте яйца, тертый пармезан и черный перец в миске.',
+          duration: 3,
         ),
         RecipeStep(
-          description: 'Добавьте горячие спагетти к гуанчиале, перемешайте и снимите с огня.',
-          duration: '02:00',
+          id: 4,
+          name: 'Добавьте горячие спагетти к гуанчиале, перемешайте и снимите с огня.',
+          duration: 2,
         ),
         RecipeStep(
-          description: 'Влейте яичную смесь и быстро перемешайте, чтобы получился кремовый соус.',
-          duration: '01:00',
+          id: 5,
+          name: 'Влейте яичную смесь и быстро перемешайте, чтобы получился кремовый соус.',
+          duration: 1,
         ),
         RecipeStep(
-          description: 'Подавайте сразу же, посыпав дополнительным пармезаном и черным перцем.',
-          duration: '01:00',
+          id: 6,
+          name: 'Подавайте сразу же, посыпав дополнительным пармезаном и черным перцем.',
+          duration: 1,
         ),
       ],
     ),

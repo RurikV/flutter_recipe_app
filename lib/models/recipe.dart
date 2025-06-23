@@ -40,7 +40,7 @@ class Recipe {
       uuid: (json['uuid'] ?? json['id']?.toString() ?? '0') as String,
       name: json['name'] as String,
       // API uses 'photo' for image URL
-      images: (json['images'] ?? json['photo'] ?? 'default.png') as String,
+      images: (json['images'] ?? json['photo'] ?? 'https://via.placeholder.com/400x300?text=No+Image') as String,
       // Provide default values for potentially missing fields
       description: (json['description'] ?? '') as String,
       instructions: (json['instructions'] ?? '') as String,
@@ -71,7 +71,7 @@ class Recipe {
 
                       if (ingredientData != null) {
                         // Create ingredient with data from the relationship
-                        return Ingredient(
+                        return Ingredient.simple(
                           name: ingredientData['name'] as String? ?? '',
                           quantity: count,
                           unit: ingredientData['measureUnit'] != null 
@@ -80,12 +80,36 @@ class Recipe {
                         );
                       } else {
                         // Fallback if ingredient data is missing
-                        return Ingredient(name: '', quantity: '', unit: '');
+                        return Ingredient.simple(name: '', quantity: '', unit: '');
                       }
                     },
                   ),
                 )
-              : [],
+              : json['recipeIngredientLinks'] != null
+                  ? List<Ingredient>.from(
+                      (json['recipeIngredientLinks'] as List).map(
+                        (x) {
+                          // Extract ingredient from recipeIngredientLink
+                          final ingredientData = x['ingredient'] as Map<String, dynamic>?;
+                          final count = x['count']?.toString() ?? '';
+
+                          if (ingredientData != null) {
+                            // Create ingredient with data from the relationship
+                            return Ingredient.simple(
+                              name: ingredientData['name'] as String? ?? '',
+                              quantity: count,
+                              unit: ingredientData['measureUnit'] != null 
+                                  ? (ingredientData['measureUnit']['one'] as String? ?? '') 
+                                  : '',
+                            );
+                          } else {
+                            // Fallback if ingredient data is missing
+                            return Ingredient.simple(name: '', quantity: '', unit: '');
+                          }
+                        },
+                      ),
+                    )
+                  : [],
       // Handle steps from different API structures
       steps: json['steps'] != null
           ? List<RecipeStep>.from(
@@ -105,19 +129,21 @@ class Recipe {
                         (x) {
                           // Extract step from recipeStepLink
                           final stepData = x['step'] as Map<String, dynamic>?;
-                          final number = x['number']?.toString() ?? '';
+                          // The number field is used to order steps but not needed for display
+                          // final number = x['number']?.toString() ?? '';
 
                           if (stepData != null) {
                             // Create step with data from the relationship
                             return RecipeStep(
-                              description: stepData['name'] as String? ?? '',
+                              id: 0,
+                              name: stepData['name'] as String? ?? '',
                               duration: stepData['duration'] is int 
-                                  ? (stepData['duration'] as int).toString() 
-                                  : (stepData['duration'] ?? '0') as String,
+                                  ? stepData['duration'] as int
+                                  : int.tryParse((stepData['duration'] ?? '0') as String) ?? 0,
                             );
                           } else {
                             // Fallback if step data is missing
-                            return RecipeStep(description: '', duration: '0');
+                            return RecipeStep(id: 0, name: '', duration: 0);
                           }
                         },
                       ),

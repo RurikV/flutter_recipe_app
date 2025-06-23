@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../models/ingredient.dart';
+import '../../domain/entities/ingredient.dart';
 
 class IngredientDialog extends StatefulWidget {
   final List<String> availableIngredients;

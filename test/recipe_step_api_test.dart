@@ -9,19 +9,19 @@ class MockApiService extends ApiService {
   Future<Recipe> createRecipe(Recipe recipe) async {
     // Verify that the recipe steps are correctly formatted
     final recipeJson = recipe.toJson();
-    
+
     // Process the JSON as the real service would
     final processedJson = _processRecipeJson(recipeJson);
-    
+
     // Verify that the recipesteplink key is present and steps key is not
     if (!processedJson.containsKey('recipesteplink')) {
       throw Exception('recipesteplink key is missing from the processed JSON');
     }
-    
+
     if (processedJson.containsKey('steps')) {
       throw Exception('steps key should not be present in the processed JSON');
     }
-    
+
     // Simulate successful recipe creation
     return Recipe(
       uuid: 'mock-uuid',
@@ -39,11 +39,11 @@ class MockApiService extends ApiService {
       comments: recipe.comments,
     );
   }
-  
+
   // Simplified version of the processing logic in the real service
   Map<String, dynamic> _processRecipeJson(Map<String, dynamic> recipeJson) {
     final processedJson = Map<String, dynamic>.from(recipeJson);
-    
+
     // Remove fields not needed for API
     processedJson.remove('uuid');
     processedJson.remove('description');
@@ -53,13 +53,13 @@ class MockApiService extends ApiService {
     processedJson.remove('tags');
     processedJson.remove('ingredients');
     processedJson.remove('isFavorite');
-    
+
     // Rename 'images' to 'photo'
     if (processedJson.containsKey('images')) {
       processedJson['photo'] = processedJson['images'];
       processedJson.remove('images');
     }
-    
+
     // Process steps
     if (processedJson.containsKey('steps')) {
       final steps = processedJson['steps'] as List<dynamic>;
@@ -67,22 +67,29 @@ class MockApiService extends ApiService {
         final stepMap = Map<String, dynamic>.from(step as Map<String, dynamic>);
         // Convert duration to numeric value
         if (stepMap.containsKey('duration')) {
-          final durationStr = stepMap['duration'] as String;
-          final numericValue = int.tryParse(durationStr.split(' ').first);
-          if (numericValue != null) {
-            stepMap['duration'] = numericValue;
+          if (stepMap['duration'] is int) {
+            // Duration is already an int, no conversion needed
+          } else if (stepMap['duration'] is String) {
+            final durationStr = stepMap['duration'] as String;
+            final numericValue = int.tryParse(durationStr.split(' ').first);
+            if (numericValue != null) {
+              stepMap['duration'] = numericValue;
+            } else {
+              stepMap['duration'] = 0;
+            }
           } else {
+            // Unknown type, default to 0
             stepMap['duration'] = 0;
           }
         }
         return stepMap;
       }).toList();
-      
+
       // Rename 'steps' to 'recipesteplink'
       processedJson['recipesteplink'] = processedSteps;
       processedJson.remove('steps');
     }
-    
+
     return processedJson;
   }
 }
@@ -111,12 +118,14 @@ void main() {
         ingredients: [],
         steps: [
           RecipeStep(
-            description: 'Test step 1',
-            duration: '10 min',
+            id: 1,
+            name: 'Test step 1',
+            duration: 10,
           ),
           RecipeStep(
-            description: 'Test step 2',
-            duration: '15 min',
+            id: 2,
+            name: 'Test step 2',
+            duration: 15,
           ),
         ],
       );

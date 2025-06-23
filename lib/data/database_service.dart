@@ -44,14 +44,15 @@ class DatabaseService {
       duration: recipe.duration,
       rating: recipe.rating,
       tags: tags,
-      ingredients: ingredients.map((i) => app_model.Ingredient(
+      ingredients: ingredients.map((i) => app_model.Ingredient.simple(
         name: i.name,
         quantity: i.quantity,
         unit: i.unit,
       )).toList(),
       steps: steps.map((s) => app_model.RecipeStep(
-        description: s.description,
-        duration: s.duration,
+        id: s.id,
+        name: s.description,
+        duration: int.tryParse(s.duration) ?? 0,
         isCompleted: s.isCompleted,
       )).toList(),
       isFavorite: recipe.isFavorite,
@@ -122,8 +123,8 @@ class DatabaseService {
         recipe.uuid,
         recipe.steps.map((s) => RecipeStepsCompanion.insert(
           recipeUuid: recipe.uuid,
-          description: s.description,
-          duration: s.duration,
+          description: s.name,
+          duration: s.duration.toString(),
           isCompleted: Value(s.isCompleted),
         )).toList(),
       );

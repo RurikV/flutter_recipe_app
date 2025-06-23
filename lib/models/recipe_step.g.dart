@@ -7,14 +7,21 @@ part of 'recipe_step.dart';
 // **************************************************************************
 
 RecipeStep _$RecipeStepFromJson(Map<String, dynamic> json) => RecipeStep(
-  description: json['description'] as String,
-  duration: json['duration'] as String,
+  id: (json['id'] as num).toInt(),
+  name: json['name'] as String,
+  duration: (json['duration'] as num).toInt(),
+  stepLinks:
+      (json['recipeStepLinks'] as List<dynamic>?)
+          ?.map((e) => RecipeStepLink.fromJson(e as Map<String, dynamic>))
+          .toList(),
   isCompleted: json['isCompleted'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$RecipeStepToJson(RecipeStep instance) =>
     <String, dynamic>{
-      'description': instance.description,
+      'id': instance.id,
+      'name': instance.name,
       'duration': instance.duration,
       'isCompleted': instance.isCompleted,
+      'recipeStepLinks': instance.stepLinks?.map((e) => e.toJson()).toList(),
     };
