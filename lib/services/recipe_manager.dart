@@ -2,12 +2,22 @@ import '../models/recipe.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_step.dart';
 import '../models/comment.dart';
+import 'api_service.dart';
+import 'database_service.dart';
+import 'connectivity_service.dart';
 
 class RecipeManager {
-  // Regular class constructor
-  RecipeManager();
+  final ApiService _apiService;
+  final DatabaseService _databaseService;
+  final ConnectivityService _connectivityService;
 
-  // Hardcoded list of ingredients
+  // Regular class constructor
+  RecipeManager()
+      : _apiService = ApiService(),
+        _databaseService = DatabaseService(),
+        _connectivityService = ConnectivityService();
+
+  // Hardcoded list of ingredients (fallback)
   final List<String> _dummyIngredients = [
     'Соевый соус',
     'Вода',
@@ -49,7 +59,7 @@ class RecipeManager {
     'Какао',
   ];
 
-  // Hardcoded list of units of measurement
+  // Hardcoded list of units of measurement (fallback)
   final List<String> _dummyUnits = [
     'ст. ложка',
     'ч. ложка',
@@ -64,120 +74,241 @@ class RecipeManager {
     'щепотка',
   ];
 
-  // Method to get recipes (currently returns hardcoded data)
+  // Method to get recipes
   Future<List<Recipe>> getRecipes() async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      // Check if the device is connected to the internet
+      final isConnected = await _connectivityService.isConnected();
 
-    return _dummyRecipes;
+      if (isConnected) {
+        // Get recipes from the API
+        final recipes = await _apiService.getRecipes();
+
+        // Save recipes to the local database
+        for (var recipe in recipes) {
+          await _databaseService.saveRecipe(recipe);
+        }
+
+        return recipes;
+      } else {
+        // Get recipes from the local database
+        return await _databaseService.getAllRecipes();
+      }
+    } catch (e) {
+      // If there's an error, try to get recipes from the local database
+      try {
+        return await _databaseService.getAllRecipes();
+      } catch (e) {
+        // If that also fails, return the dummy recipes as a last resort
+        return _dummyRecipes;
+      }
+    }
   }
 
   // Method to get favorite recipes
   Future<List<Recipe>> getFavoriteRecipes() async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      // Check if the device is connected to the internet
+      final isConnected = await _connectivityService.isConnected();
 
-    // Filter recipes to return only favorites
-    return _dummyRecipes.where((recipe) => recipe.isFavorite).toList();
+      if (isConnected) {
+        // Get all recipes from the API
+        final recipes = await _apiService.getRecipes();
+
+        // Filter to get only favorites
+        final favoriteRecipes = recipes.where((recipe) => recipe.isFavorite).toList();
+
+        // Save recipes to the local database
+        for (var recipe in recipes) {
+          await _databaseService.saveRecipe(recipe);
+        }
+
+        return favoriteRecipes;
+      } else {
+        // Get favorite recipes from the local database
+        return await _databaseService.getFavoriteRecipes();
+      }
+    } catch (e) {
+      // If there's an error, try to get favorite recipes from the local database
+      try {
+        return await _databaseService.getFavoriteRecipes();
+      } catch (e) {
+        // If that also fails, return the dummy favorite recipes as a last resort
+        return _dummyRecipes.where((recipe) => recipe.isFavorite).toList();
+      }
+    }
   }
 
-  // Method to get ingredients (currently returns hardcoded data)
+  // Method to get ingredients
   Future<List<String>> getIngredients() async {
-    // Simulate network delay
+    // For now, we'll just return the hardcoded list
+    // In a real app, this would come from the API or database
     await Future.delayed(const Duration(milliseconds: 300));
-
     return _dummyIngredients;
   }
 
-  // Method to get units of measurement (currently returns hardcoded data)
+  // Method to get units of measurement
   Future<List<String>> getUnits() async {
-    // Simulate network delay
+    // For now, we'll just return the hardcoded list
+    // In a real app, this would come from the API or database
     await Future.delayed(const Duration(milliseconds: 300));
-
     return _dummyUnits;
   }
 
   // Method to save a new recipe
   Future<bool> saveRecipe(Recipe recipe) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 800));
+    try {
+      // Check if the device is connected to the internet
+      final isConnected = await _connectivityService.isConnected();
 
-    // Add the recipe to the list
-    _dummyRecipes.add(recipe);
+      // Always save to the local database
+      await _databaseService.saveRecipe(recipe);
 
-    return true;
+      if (isConnected) {
+        // If connected, also save to the API
+        await _apiService.createRecipe(recipe);
+      }
+
+      return true;
+    } catch (e) {
+      // If there's an error saving to the API, at least we saved locally
+      return false;
+    }
   }
 
   // Method to toggle favorite status
   Future<bool> toggleFavorite(String recipeId) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 300));
+    try {
+      // Get the recipe from the local database
+      final recipe = await _databaseService.getRecipeByUuid(recipeId);
+      if (recipe == null) {
+        return false;
+      }
 
-    // Find the recipe by ID
-    final recipeIndex = _dummyRecipes.indexWhere((recipe) => recipe.uuid == recipeId);
-    if (recipeIndex == -1) {
+      // Toggle the favorite status locally
+      final success = await _databaseService.toggleFavorite(recipeId);
+
+      // Check if the device is connected to the internet
+      final isConnected = await _connectivityService.isConnected();
+
+      if (isConnected) {
+        // If connected, also update on the API
+        await _apiService.toggleFavorite(recipeId, !recipe.isFavorite);
+      }
+
+      return success;
+    } catch (e) {
       return false;
     }
-
-    // Toggle the favorite status
-    _dummyRecipes[recipeIndex].isFavorite = !_dummyRecipes[recipeIndex].isFavorite;
-
-    return true;
   }
 
   // Method to add a comment to a recipe
   Future<bool> addComment(String recipeId, Comment comment) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      // Get the recipe from the local database
+      final recipe = await _databaseService.getRecipeByUuid(recipeId);
+      if (recipe == null) {
+        return false;
+      }
 
-    // Find the recipe by ID
-    final recipeIndex = _dummyRecipes.indexWhere((recipe) => recipe.uuid == recipeId);
-    if (recipeIndex == -1) {
+      // Add the comment to the recipe
+      final updatedComments = List<Comment>.from(recipe.comments)..add(comment);
+
+      // Create a new recipe with the updated comments
+      final updatedRecipe = Recipe(
+        uuid: recipe.uuid,
+        name: recipe.name,
+        images: recipe.images,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        difficulty: recipe.difficulty,
+        duration: recipe.duration,
+        rating: recipe.rating,
+        tags: recipe.tags,
+        ingredients: recipe.ingredients,
+        steps: recipe.steps,
+        isFavorite: recipe.isFavorite,
+        comments: updatedComments,
+      );
+
+      // Save the updated recipe to the local database
+      await _databaseService.saveRecipe(updatedRecipe);
+
+      // Check if the device is connected to the internet
+      final isConnected = await _connectivityService.isConnected();
+
+      if (isConnected) {
+        // If connected, also update on the API
+        await _apiService.addComment(recipeId, comment);
+      }
+
+      return true;
+    } catch (e) {
       return false;
     }
-
-    // Add the comment to the recipe
-    final recipe = _dummyRecipes[recipeIndex];
-    final updatedComments = List<Comment>.from(recipe.comments)..add(comment);
-
-    // Create a new recipe with the updated comments
-    final updatedRecipe = Recipe(
-      uuid: recipe.uuid,
-      name: recipe.name,
-      images: recipe.images,
-      description: recipe.description,
-      instructions: recipe.instructions,
-      difficulty: recipe.difficulty,
-      duration: recipe.duration,
-      rating: recipe.rating,
-      tags: recipe.tags,
-      ingredients: recipe.ingredients,
-      steps: recipe.steps,
-      isFavorite: recipe.isFavorite,
-      comments: updatedComments,
-    );
-
-    // Replace the old recipe with the updated one
-    _dummyRecipes[recipeIndex] = updatedRecipe;
-
-    return true;
   }
 
   // Method to update step completion status
   Future<bool> updateStepStatus(String recipeId, int stepIndex, bool isCompleted) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 300));
+    try {
+      // Get the recipe from the local database
+      final recipe = await _databaseService.getRecipeByUuid(recipeId);
+      if (recipe == null || stepIndex < 0 || stepIndex >= recipe.steps.length) {
+        print('Invalid recipe or step index: recipeId=$recipeId, stepIndex=$stepIndex');
+        return false;
+      }
 
-    // Find the recipe by ID
-    final recipeIndex = _dummyRecipes.indexWhere((recipe) => recipe.uuid == recipeId);
-    if (recipeIndex == -1 || stepIndex < 0 || stepIndex >= _dummyRecipes[recipeIndex].steps.length) {
+      // Update the step in the local database
+      // In a real app, we need to update both the local database and the API
+      final updatedSteps = List<RecipeStep>.from(recipe.steps);
+      updatedSteps[stepIndex] = RecipeStep(
+        description: recipe.steps[stepIndex].description,
+        duration: recipe.steps[stepIndex].duration,
+        isCompleted: isCompleted,
+      );
+
+      // Create a new recipe with the updated steps
+      final updatedRecipe = Recipe(
+        uuid: recipe.uuid,
+        name: recipe.name,
+        images: recipe.images,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        difficulty: recipe.difficulty,
+        duration: recipe.duration,
+        rating: recipe.rating,
+        tags: recipe.tags,
+        ingredients: recipe.ingredients,
+        steps: updatedSteps,
+        isFavorite: recipe.isFavorite,
+        comments: recipe.comments,
+      );
+
+      // Save the updated recipe to the local database
+      await _databaseService.saveRecipe(updatedRecipe);
+
+      // Check if the device is connected to the internet
+      final isConnected = await _connectivityService.isConnected();
+
+      if (isConnected) {
+        try {
+          // If connected, also update on the API
+          // In a real app, we would use the step ID from the database
+          // For now, we'll use the step index as the ID
+          await _apiService.updateStep(recipeId, stepIndex, isCompleted);
+          print('Successfully updated step $stepIndex for recipe $recipeId on API');
+        } catch (e) {
+          // If there's an error updating on the API, log it but don't fail the operation
+          // since we've already updated the local database
+          print('Error updating step on API: $e');
+        }
+      }
+
+      return true;
+    } catch (e) {
+      print('Error updating step status: $e');
       return false;
     }
-
-    // Update the step completion status
-    _dummyRecipes[recipeIndex].steps[stepIndex].isCompleted = isCompleted;
-
-    return true;
   }
 
   // Hardcoded list of recipes (static to be shared across instances)
