@@ -77,17 +77,68 @@ class ApiService {
           throw Exception('Failed to load recipe ingredients: ${ingredientsResponse.statusCode}');
         }
 
-        final List<dynamic> allIngredients = ingredientsResponse.data;
+        final List<dynamic> allRecipeIngredients = ingredientsResponse.data;
 
-        // Create a map of recipe ID to ingredients
+        // Get all ingredients
+        final ingredientDetailsResponse = await _dio.get('/ingredient');
+        if (ingredientDetailsResponse.statusCode != 200) {
+          throw Exception('Failed to load ingredients: ${ingredientDetailsResponse.statusCode}');
+        }
+
+        final List<dynamic> allIngredientDetails = ingredientDetailsResponse.data;
+
+        // Create a map of ingredient ID to ingredient details
+        final Map<int, Map<String, dynamic>> ingredientDetailsById = {};
+        for (final ingredient in allIngredientDetails) {
+          if (ingredient['id'] != null) {
+            ingredientDetailsById[ingredient['id'] as int] = ingredient;
+          }
+        }
+
+        // Get all measure units
+        final measureUnitsResponse = await _dio.get('/measure_unit');
+        if (measureUnitsResponse.statusCode != 200) {
+          throw Exception('Failed to load measure units: ${measureUnitsResponse.statusCode}');
+        }
+
+        final List<dynamic> allMeasureUnits = measureUnitsResponse.data;
+
+        // Create a map of measure unit ID to measure unit details
+        final Map<int, Map<String, dynamic>> measureUnitsById = {};
+        for (final unit in allMeasureUnits) {
+          if (unit['id'] != null) {
+            measureUnitsById[unit['id'] as int] = unit;
+          }
+        }
+
+        // Create a map of recipe ID to ingredients with full details
         final Map<String, List<dynamic>> ingredientsByRecipeId = {};
-        for (final ingredient in allIngredients) {
-          if (ingredient['recipe'] != null && ingredient['recipe']['id'] != null) {
-            final recipeId = ingredient['recipe']['id'].toString();
+        for (final recipeIngredient in allRecipeIngredients) {
+          if (recipeIngredient['recipe'] != null && recipeIngredient['recipe']['id'] != null) {
+            final recipeId = recipeIngredient['recipe']['id'].toString();
             if (!ingredientsByRecipeId.containsKey(recipeId)) {
               ingredientsByRecipeId[recipeId] = [];
             }
-            ingredientsByRecipeId[recipeId]!.add(ingredient);
+
+            // Enhance recipe ingredient with full ingredient details and measure unit details
+            if (recipeIngredient['ingredient'] != null && recipeIngredient['ingredient']['id'] != null) {
+              final ingredientId = recipeIngredient['ingredient']['id'] as int;
+              if (ingredientDetailsById.containsKey(ingredientId)) {
+                // Add full ingredient details
+                final ingredientDetails = ingredientDetailsById[ingredientId]!;
+                recipeIngredient['ingredient'] = ingredientDetails;
+
+                // Add full measure unit details if available
+                if (ingredientDetails['measureUnit'] != null && ingredientDetails['measureUnit']['id'] != null) {
+                  final measureUnitId = ingredientDetails['measureUnit']['id'] as int;
+                  if (measureUnitsById.containsKey(measureUnitId)) {
+                    ingredientDetails['measureUnit'] = measureUnitsById[measureUnitId]!;
+                  }
+                }
+              }
+            }
+
+            ingredientsByRecipeId[recipeId]!.add(recipeIngredient);
           }
         }
 
@@ -127,11 +178,63 @@ class ApiService {
         }
 
         // Filter ingredients for this recipe
-        final List<dynamic> allIngredients = ingredientsResponse.data;
-        final recipeIngredients = allIngredients.where((ingredient) {
+        final List<dynamic> allRecipeIngredients = ingredientsResponse.data;
+        final recipeIngredients = allRecipeIngredients.where((ingredient) {
           return ingredient['recipe'] != null && 
                  ingredient['recipe']['id'].toString() == id;
         }).toList();
+
+        // Get all ingredients
+        final ingredientDetailsResponse = await _dio.get('/ingredient');
+        if (ingredientDetailsResponse.statusCode != 200) {
+          throw Exception('Failed to load ingredients: ${ingredientDetailsResponse.statusCode}');
+        }
+
+        final List<dynamic> allIngredientDetails = ingredientDetailsResponse.data;
+
+        // Create a map of ingredient ID to ingredient details
+        final Map<int, Map<String, dynamic>> ingredientDetailsById = {};
+        for (final ingredient in allIngredientDetails) {
+          if (ingredient['id'] != null) {
+            ingredientDetailsById[ingredient['id'] as int] = ingredient;
+          }
+        }
+
+        // Get all measure units
+        final measureUnitsResponse = await _dio.get('/measure_unit');
+        if (measureUnitsResponse.statusCode != 200) {
+          throw Exception('Failed to load measure units: ${measureUnitsResponse.statusCode}');
+        }
+
+        final List<dynamic> allMeasureUnits = measureUnitsResponse.data;
+
+        // Create a map of measure unit ID to measure unit details
+        final Map<int, Map<String, dynamic>> measureUnitsById = {};
+        for (final unit in allMeasureUnits) {
+          if (unit['id'] != null) {
+            measureUnitsById[unit['id'] as int] = unit;
+          }
+        }
+
+        // Enhance recipe ingredients with full ingredient details and measure unit details
+        for (final recipeIngredient in recipeIngredients) {
+          if (recipeIngredient['ingredient'] != null && recipeIngredient['ingredient']['id'] != null) {
+            final ingredientId = recipeIngredient['ingredient']['id'] as int;
+            if (ingredientDetailsById.containsKey(ingredientId)) {
+              // Add full ingredient details
+              final ingredientDetails = ingredientDetailsById[ingredientId]!;
+              recipeIngredient['ingredient'] = ingredientDetails;
+
+              // Add full measure unit details if available
+              if (ingredientDetails['measureUnit'] != null && ingredientDetails['measureUnit']['id'] != null) {
+                final measureUnitId = ingredientDetails['measureUnit']['id'] as int;
+                if (measureUnitsById.containsKey(measureUnitId)) {
+                  ingredientDetails['measureUnit'] = measureUnitsById[measureUnitId]!;
+                }
+              }
+            }
+          }
+        }
 
         // Add ingredients to recipe data
         recipeData['recipeIngredients'] = recipeIngredients;

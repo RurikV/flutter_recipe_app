@@ -79,12 +79,25 @@ class Recipe {
 
                       if (ingredientData != null) {
                         // Create ingredient with data from the relationship
+                        // Determine which form of the measure unit to use based on the count
+                        String unitForm = '';
+                        if (ingredientData['measureUnit'] != null) {
+                          final measureUnit = ingredientData['measureUnit'] as Map<String, dynamic>;
+                          final countNum = int.tryParse(count) ?? 0;
+
+                          if (countNum == 1) {
+                            unitForm = measureUnit['one'] as String? ?? '';
+                          } else if (countNum >= 2 && countNum <= 4) {
+                            unitForm = measureUnit['few'] as String? ?? '';
+                          } else {
+                            unitForm = measureUnit['many'] as String? ?? '';
+                          }
+                        }
+
                         return Ingredient.simple(
                           name: ingredientData['name'] as String? ?? '',
                           quantity: count,
-                          unit: ingredientData['measureUnit'] != null 
-                              ? (ingredientData['measureUnit']['one'] as String? ?? '') 
-                              : '',
+                          unit: unitForm,
                         );
                       } else {
                         // Fallback if ingredient data is missing
@@ -103,12 +116,25 @@ class Recipe {
 
                           if (ingredientData != null) {
                             // Create ingredient with data from the relationship
+                            // Determine which form of the measure unit to use based on the count
+                            String unitForm = '';
+                            if (ingredientData['measureUnit'] != null) {
+                              final measureUnit = ingredientData['measureUnit'] as Map<String, dynamic>;
+                              final countNum = int.tryParse(count) ?? 0;
+
+                              if (countNum == 1) {
+                                unitForm = measureUnit['one'] as String? ?? '';
+                              } else if (countNum >= 2 && countNum <= 4) {
+                                unitForm = measureUnit['few'] as String? ?? '';
+                              } else {
+                                unitForm = measureUnit['many'] as String? ?? '';
+                              }
+                            }
+
                             return Ingredient.simple(
                               name: ingredientData['name'] as String? ?? '',
                               quantity: count,
-                              unit: ingredientData['measureUnit'] != null 
-                                  ? (ingredientData['measureUnit']['one'] as String? ?? '') 
-                                  : '',
+                              unit: unitForm,
                             );
                           } else {
                             // Fallback if ingredient data is missing
