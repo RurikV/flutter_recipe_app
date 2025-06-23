@@ -54,13 +54,39 @@ class Recipe {
       tags: json['tags'] != null 
           ? List<String>.from(json['tags']) 
           : [],
+      // Handle ingredients from different API structures
       ingredients: json['ingredients'] != null
           ? List<Ingredient>.from(
               (json['ingredients'] as List).map(
                 (x) => Ingredient.fromJson(x as Map<String, dynamic>),
               ),
             )
-          : [],
+          : json['recipeIngredients'] != null
+              ? List<Ingredient>.from(
+                  (json['recipeIngredients'] as List).map(
+                    (x) {
+                      // Extract ingredient from recipeIngredient
+                      final ingredientData = x['ingredient'] as Map<String, dynamic>?;
+                      final count = x['count']?.toString() ?? '';
+
+                      if (ingredientData != null) {
+                        // Create ingredient with data from the relationship
+                        return Ingredient(
+                          name: ingredientData['name'] as String? ?? '',
+                          quantity: count,
+                          unit: ingredientData['measureUnit'] != null 
+                              ? (ingredientData['measureUnit']['one'] as String? ?? '') 
+                              : '',
+                        );
+                      } else {
+                        // Fallback if ingredient data is missing
+                        return Ingredient(name: '', quantity: '', unit: '');
+                      }
+                    },
+                  ),
+                )
+              : [],
+      // Handle steps from different API structures
       steps: json['steps'] != null
           ? List<RecipeStep>.from(
               (json['steps'] as List).map(
@@ -73,7 +99,30 @@ class Recipe {
                     (x) => RecipeStep.fromJson(x as Map<String, dynamic>),
                   ),
                 )
-              : [],
+              : json['recipeStepLinks'] != null
+                  ? List<RecipeStep>.from(
+                      (json['recipeStepLinks'] as List).map(
+                        (x) {
+                          // Extract step from recipeStepLink
+                          final stepData = x['step'] as Map<String, dynamic>?;
+                          final number = x['number']?.toString() ?? '';
+
+                          if (stepData != null) {
+                            // Create step with data from the relationship
+                            return RecipeStep(
+                              description: stepData['name'] as String? ?? '',
+                              duration: stepData['duration'] is int 
+                                  ? (stepData['duration'] as int).toString() 
+                                  : (stepData['duration'] ?? '0') as String,
+                            );
+                          } else {
+                            // Fallback if step data is missing
+                            return RecipeStep(description: '', duration: '0');
+                          }
+                        },
+                      ),
+                    )
+                  : [],
       isFavorite: json['isFavorite'] as bool? ?? false,
       comments: json['comments'] != null
           ? List<Comment>.from(
