@@ -143,13 +143,20 @@ class ApiService {
             final stepMap = Map<String, dynamic>.from(step as Map<String, dynamic>);
             // Convert duration to numeric value
             if (stepMap.containsKey('duration')) {
-              final durationStr = stepMap['duration'] as String;
-              // Extract numeric value from duration string (e.g., "10 min" -> 10)
-              final numericValue = int.tryParse(durationStr.split(' ').first);
-              if (numericValue != null) {
-                stepMap['duration'] = numericValue;
+              if (stepMap['duration'] is int) {
+                // Duration is already an int, no conversion needed
+              } else if (stepMap['duration'] is String) {
+                final durationStr = stepMap['duration'] as String;
+                // Extract numeric value from duration string (e.g., "10 min" -> 10)
+                final numericValue = int.tryParse(durationStr.split(' ').first);
+                if (numericValue != null) {
+                  stepMap['duration'] = numericValue;
+                } else {
+                  stepMap['duration'] = 0; // Default to 0 if parsing fails
+                }
               } else {
-                stepMap['duration'] = 0; // Default to 0 if parsing fails
+                // Unknown type, default to 0
+                stepMap['duration'] = 0;
               }
             }
             return stepMap;
