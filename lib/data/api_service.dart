@@ -142,12 +142,67 @@ class ApiService {
           }
         }
 
-        // Add ingredients to each recipe and parse
+        // Get all recipe step links
+        final stepLinksResponse = await _dio.get('/recipe_step_link');
+        if (stepLinksResponse.statusCode != 200) {
+          throw Exception('Failed to load recipe step links: ${stepLinksResponse.statusCode}');
+        }
+
+        final List<dynamic> allRecipeStepLinks = stepLinksResponse.data;
+
+        // Get all recipe steps
+        final stepsResponse = await _dio.get('/recipe_step');
+        if (stepsResponse.statusCode != 200) {
+          throw Exception('Failed to load recipe steps: ${stepsResponse.statusCode}');
+        }
+
+        final List<dynamic> allRecipeSteps = stepsResponse.data;
+
+        // Create a map of step ID to step details
+        final Map<int, Map<String, dynamic>> stepDetailsById = {};
+        for (final step in allRecipeSteps) {
+          if (step['id'] != null) {
+            stepDetailsById[step['id'] as int] = step;
+          }
+        }
+
+        // Create a map of recipe ID to steps with full details
+        final Map<String, List<dynamic>> stepsByRecipeId = {};
+        for (final stepLink in allRecipeStepLinks) {
+          if (stepLink['recipe'] != null && stepLink['recipe']['id'] != null) {
+            final recipeId = stepLink['recipe']['id'].toString();
+            if (!stepsByRecipeId.containsKey(recipeId)) {
+              stepsByRecipeId[recipeId] = [];
+            }
+
+            // Enhance step link with full step details
+            if (stepLink['step'] != null && stepLink['step']['id'] != null) {
+              final stepId = stepLink['step']['id'] as int;
+              if (stepDetailsById.containsKey(stepId)) {
+                // Add full step details
+                final stepDetails = stepDetailsById[stepId]!;
+                stepLink['step'] = stepDetails;
+              }
+            }
+
+            stepsByRecipeId[recipeId]!.add(stepLink);
+          }
+        }
+
+        // Sort step links by number for each recipe
+        for (final recipeId in stepsByRecipeId.keys) {
+          stepsByRecipeId[recipeId]!.sort((a, b) => (a['number'] as int).compareTo(b['number'] as int));
+        }
+
+        // Add ingredients and steps to each recipe and parse
         final List<Recipe> recipes = [];
         for (final recipeData in recipesData) {
           final recipeId = recipeData['id'].toString();
           if (ingredientsByRecipeId.containsKey(recipeId)) {
             recipeData['recipeIngredients'] = ingredientsByRecipeId[recipeId];
+          }
+          if (stepsByRecipeId.containsKey(recipeId)) {
+            recipeData['recipeStepLinks'] = stepsByRecipeId[recipeId];
           }
           recipes.add(Recipe.fromJson(recipeData));
         }
@@ -236,8 +291,53 @@ class ApiService {
           }
         }
 
-        // Add ingredients to recipe data
+        // Now, get the recipe step links
+        final stepLinksResponse = await _dio.get('/recipe_step_link');
+        if (stepLinksResponse.statusCode != 200) {
+          throw Exception('Failed to load recipe step links: ${stepLinksResponse.statusCode}');
+        }
+
+        // Filter step links for this recipe
+        final List<dynamic> allRecipeStepLinks = stepLinksResponse.data;
+        final recipeStepLinks = allRecipeStepLinks.where((stepLink) {
+          return stepLink['recipe'] != null && 
+                 stepLink['recipe']['id'].toString() == id;
+        }).toList();
+
+        // Get all recipe steps
+        final stepsResponse = await _dio.get('/recipe_step');
+        if (stepsResponse.statusCode != 200) {
+          throw Exception('Failed to load recipe steps: ${stepsResponse.statusCode}');
+        }
+
+        final List<dynamic> allRecipeSteps = stepsResponse.data;
+
+        // Create a map of step ID to step details
+        final Map<int, Map<String, dynamic>> stepDetailsById = {};
+        for (final step in allRecipeSteps) {
+          if (step['id'] != null) {
+            stepDetailsById[step['id'] as int] = step;
+          }
+        }
+
+        // Enhance step links with full step details
+        for (final stepLink in recipeStepLinks) {
+          if (stepLink['step'] != null && stepLink['step']['id'] != null) {
+            final stepId = stepLink['step']['id'] as int;
+            if (stepDetailsById.containsKey(stepId)) {
+              // Add full step details
+              final stepDetails = stepDetailsById[stepId]!;
+              stepLink['step'] = stepDetails;
+            }
+          }
+        }
+
+        // Sort step links by number
+        recipeStepLinks.sort((a, b) => (a['number'] as int).compareTo(b['number'] as int));
+
+        // Add ingredients and steps to recipe data
         recipeData['recipeIngredients'] = recipeIngredients;
+        recipeData['recipeStepLinks'] = recipeStepLinks;
 
         // Return the complete recipe
         return Recipe.fromJson(recipeData);
