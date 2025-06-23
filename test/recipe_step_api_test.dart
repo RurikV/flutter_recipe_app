@@ -13,9 +13,9 @@ class MockApiService extends ApiService {
     // Process the JSON as the real service would
     final processedJson = _processRecipeJson(recipeJson);
 
-    // Verify that the recipesteplink key is present and steps key is not
-    if (!processedJson.containsKey('recipesteplink')) {
-      throw Exception('recipesteplink key is missing from the processed JSON');
+    // Verify that the recipeStepLinks key is present and steps key is not
+    if (!processedJson.containsKey('recipeStepLinks')) {
+      throw Exception('recipeStepLinks key is missing from the processed JSON');
     }
 
     if (processedJson.containsKey('steps')) {
@@ -85,8 +85,8 @@ class MockApiService extends ApiService {
         return stepMap;
       }).toList();
 
-      // Rename 'steps' to 'recipesteplink'
-      processedJson['recipesteplink'] = processedSteps;
+      // Rename 'steps' to 'recipeStepLinks'
+      processedJson['recipeStepLinks'] = processedSteps;
       processedJson.remove('steps');
     }
 
@@ -103,7 +103,7 @@ void main() {
       apiService = MockApiService();
     });
 
-    test('Create recipe with steps - verify steps key is renamed to recipesteplink', () async {
+    test('Create recipe with steps - verify steps key is renamed to recipeStepLinks', () async {
       // Create a recipe with steps
       final recipe = Recipe(
         uuid: DateTime.now().millisecondsSinceEpoch.toString(),

@@ -359,7 +359,7 @@ class ApiService {
         // - remove 'rating' as the API doesn't expect it when creating a new recipe
         // - remove 'tags' as the API doesn't expect it when creating a new recipe
         // - remove 'ingredients' as the API doesn't expect it when creating a new recipe
-        // Rename 'steps' to 'recipesteplink' as that's what the API expects
+        // Rename 'steps' to 'recipeStepLinks' as that's what the API expects
         // - remove 'isFavorite' as the API doesn't expect it when creating a new recipe
         // - set a default value for 'duration' if it's empty as the API requires a non-null value
         final recipeJson = recipe.toJson();
@@ -418,17 +418,24 @@ class ApiService {
             return stepMap;
           }).toList();
 
-          recipeJson['recipesteplink'] = processedSteps;
+          recipeJson['recipeStepLinks'] = processedSteps;
           recipeJson.remove('steps');
         }
 
+        // Create a simplified JSON structure for the API
+        final simplifiedJson = {
+          'name': recipeJson['name'],
+          'duration': recipeJson['duration'],
+          'photo': recipeJson['photo'],
+        };
+
         // Debug log to see the actual request payload
-        print('DEBUG: Recipe JSON being sent to API: $recipeJson');
+        print('DEBUG: Recipe JSON being sent to API: $simplifiedJson');
 
         try {
           final response = await _dio.post(
             '/recipe',
-            data: recipeJson,
+            data: simplifiedJson,
           );
           if (response.statusCode == 200 || response.statusCode == 201) {
             return Recipe.fromJson(response.data);

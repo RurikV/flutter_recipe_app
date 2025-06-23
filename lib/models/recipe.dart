@@ -206,7 +206,7 @@ class Recipe {
       'rating': rating,
       'tags': tags,
       'ingredients': ingredients.map((e) => e.toJson()).toList(),
-      'steps': steps.map((e) => e.toJson()).toList(),
+      'recipeStepLinks': steps.map((e) => e.toJson()).toList(),
       'isFavorite': isFavorite,
       'comments': comments.map((e) => e.toJson()).toList(),
     };
