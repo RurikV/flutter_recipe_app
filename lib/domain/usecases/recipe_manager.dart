@@ -261,12 +261,15 @@ class RecipeManager {
         return false;
       }
 
-      // Update the step in the local database
-      // In a real app, we need to update both the local database and the API
+      // Get the actual step ID from the model
+      final stepId = recipe.steps[stepIndex].id;
+
+      // Update the step in the local database immediately (optimistic update)
       final updatedSteps = List<RecipeStep>.from(recipe.steps);
-      updatedSteps[stepIndex] = RecipeStep.simple(
-        description: recipe.steps[stepIndex].name,
-        duration: recipe.steps[stepIndex].duration.toString(),
+      updatedSteps[stepIndex] = RecipeStep(
+        id: stepId,
+        name: recipe.steps[stepIndex].name,
+        duration: recipe.steps[stepIndex].duration,
         isCompleted: isCompleted,
       );
 
@@ -290,22 +293,23 @@ class RecipeManager {
       // Save the updated recipe to the local database
       await _databaseService.saveRecipe(updatedRecipe);
 
-      // Check if the device is connected to the internet
-      final isConnected = await _connectivityService.isConnected();
+      // Return true immediately to allow the UI to update without waiting for the API
+      // This ensures the animation is smooth and not blocked by API calls
 
-      if (isConnected) {
-        try {
-          // If connected, also update on the API
-          // In a real app, we would use the step ID from the database
-          // For now, we'll use the step index as the ID
-          await _apiService.updateStep(recipeId, stepIndex, isCompleted);
-          print('Successfully updated step $stepIndex for recipe $recipeId on API');
-        } catch (e) {
-          // If there's an error updating on the API, log it but don't fail the operation
-          // since we've already updated the local database
-          print('Error updating step on API: $e');
+      // Check if the device is connected to the internet and update the API in the background
+      _connectivityService.isConnected().then((isConnected) {
+        if (isConnected) {
+          // If connected, update on the API using the actual step ID
+          // This is done asynchronously without blocking the UI
+          _apiService.updateStep(recipeId, stepId, isCompleted).then((_) {
+            print('Successfully updated step $stepId for recipe $recipeId on API');
+          }).catchError((e) {
+            // If there's an error updating on the API, log it but don't fail the operation
+            // since we've already updated the local database
+            print('Error updating step on API: $e');
+          });
         }
-      }
+      });
 
       return true;
     } catch (e) {

@@ -646,8 +646,9 @@ class ApiService {
   Future<bool> updateStep(String recipeId, int stepId, bool isCompleted) async {
     return _requestWithRetry(
       request: () async {
+        // Use the correct API endpoint format with the step ID
         final response = await _dio.put(
-          '/recipe/$recipeId/steps/$stepId',
+          '/recipe_step/$stepId',
           data: {'isCompleted': isCompleted},
         );
         return response.statusCode == 200;
