@@ -359,7 +359,7 @@ class ApiService {
         // - remove 'rating' as the API doesn't expect it when creating a new recipe
         // - remove 'tags' as the API doesn't expect it when creating a new recipe
         // - remove 'ingredients' as the API doesn't expect it when creating a new recipe
-        // Rename 'steps' to 'recipeStepLinks' as that's what the API expects
+        // - remove 'steps' as the API doesn't expect it when creating a new recipe
         // - remove 'isFavorite' as the API doesn't expect it when creating a new recipe
         // - set a default value for 'duration' if it's empty as the API requires a non-null value
         final recipeJson = recipe.toJson();
@@ -370,6 +370,7 @@ class ApiService {
         recipeJson.remove('rating');
         recipeJson.remove('tags');
         recipeJson.remove('ingredients');
+        recipeJson.remove('steps');
         recipeJson.remove('isFavorite');
 
         // Set a default value for duration if it's empty or convert to integer
@@ -392,36 +393,6 @@ class ApiService {
           recipeJson.remove('images');
         }
 
-        // Process steps and convert durations to numeric values
-        if (recipeJson.containsKey('steps')) {
-          final steps = recipeJson['steps'] as List<dynamic>;
-          final processedSteps = steps.map((step) {
-            final stepMap = Map<String, dynamic>.from(step as Map<String, dynamic>);
-            // Convert duration to numeric value
-            if (stepMap.containsKey('duration')) {
-              if (stepMap['duration'] is int) {
-                // Duration is already an int, no conversion needed
-              } else if (stepMap['duration'] is String) {
-                final durationStr = stepMap['duration'] as String;
-                // Extract numeric value from duration string (e.g., "10 min" -> 10)
-                final numericValue = int.tryParse(durationStr.split(' ').first);
-                if (numericValue != null) {
-                  stepMap['duration'] = numericValue;
-                } else {
-                  stepMap['duration'] = 0; // Default to 0 if parsing fails
-                }
-              } else {
-                // Unknown type, default to 0
-                stepMap['duration'] = 0;
-              }
-            }
-            return stepMap;
-          }).toList();
-
-          recipeJson['recipeStepLinks'] = processedSteps;
-          recipeJson.remove('steps');
-        }
-
         // Create a simplified JSON structure for the API
         final simplifiedJson = {
           'name': recipeJson['name'],
@@ -433,16 +404,71 @@ class ApiService {
         print('DEBUG: Recipe JSON being sent to API: $simplifiedJson');
 
         try {
+          // Step 1: Create the recipe with basic information
           final response = await _dio.post(
             '/recipe',
             data: simplifiedJson,
           );
-          if (response.statusCode == 200 || response.statusCode == 201) {
-            return Recipe.fromJson(response.data);
-          } else {
+
+          if (response.statusCode != 200 && response.statusCode != 201) {
             print('DEBUG: Error response: ${response.statusCode} - ${response.data}');
             throw Exception('Failed to create recipe: ${response.statusCode}');
           }
+
+          final createdRecipe = Recipe.fromJson(response.data);
+          final recipeId = createdRecipe.uuid;
+
+          // Step 2: Create recipe ingredients
+          for (var ingredient in recipe.ingredients) {
+            final ingredientJson = {
+              'count': int.tryParse(ingredient.quantity) ?? 0,
+              'ingredient': {'id': ingredient.id},
+              'recipe': {'id': int.tryParse(recipeId) ?? 0}
+            };
+
+            await _dio.post(
+              '/recipe_ingredient',
+              data: ingredientJson,
+            );
+          }
+
+          // Step 3: Create recipe steps
+          for (var i = 0; i < recipe.steps.length; i++) {
+            final step = recipe.steps[i];
+
+            // First create the step
+            final stepJson = {
+              'name': step.name,
+              'duration': step.duration,
+            };
+
+            final stepResponse = await _dio.post(
+              '/recipe_step',
+              data: stepJson,
+            );
+
+            if (stepResponse.statusCode != 200 && stepResponse.statusCode != 201) {
+              continue;
+            }
+
+            final createdStep = stepResponse.data;
+            final stepId = createdStep['id'];
+
+            // Then link the step to the recipe
+            final stepLinkJson = {
+              'number': i + 1,
+              'recipe': {'id': int.tryParse(recipeId) ?? 0},
+              'step': {'id': stepId}
+            };
+
+            await _dio.post(
+              '/recipe_step_link',
+              data: stepLinkJson,
+            );
+          }
+
+          // Return the created recipe
+          return createdRecipe;
         } catch (e) {
           if (e is DioException) {
             print('DEBUG: DioException: ${e.message}');

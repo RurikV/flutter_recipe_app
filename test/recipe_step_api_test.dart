@@ -1,25 +1,63 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
+import 'package:flutter_recipe_app/models/ingredient.dart';
 import 'package:flutter_recipe_app/data/api_service.dart';
 
 // Mock implementation of ApiService for testing
 class MockApiService extends ApiService {
+  List<Map<String, dynamic>> createdSteps = [];
+  List<Map<String, dynamic>> createdStepLinks = [];
+  List<Map<String, dynamic>> createdIngredients = [];
+
   @override
   Future<Recipe> createRecipe(Recipe recipe) async {
-    // Verify that the recipe steps are correctly formatted
+    // Simulate the new approach to recipe creation:
+    // 1. Create the recipe with basic information
+    // 2. Create recipe ingredients
+    // 3. Create recipe steps and link them to the recipe
+
+    // Verify that the recipe JSON doesn't contain steps or ingredients
     final recipeJson = recipe.toJson();
+    final simplifiedJson = {
+      'name': recipe.name,
+      'duration': recipe.duration is String ? int.tryParse(recipe.duration.split(' ').first) ?? 0 : recipe.duration,
+      'photo': recipe.images,
+    };
 
-    // Process the JSON as the real service would
-    final processedJson = _processRecipeJson(recipeJson);
+    print('[DEBUG_LOG] MockApiService: Creating recipe with basic info: $simplifiedJson');
 
-    // Verify that the recipeStepLinks key is present and steps key is not
-    if (!processedJson.containsKey('recipeStepLinks')) {
-      throw Exception('recipeStepLinks key is missing from the processed JSON');
+    // Simulate creating recipe ingredients
+    for (var ingredient in recipe.ingredients) {
+      final ingredientJson = {
+        'count': int.tryParse(ingredient.quantity) ?? 0,
+        'ingredient': {'id': ingredient.id},
+        'recipe': {'id': 999} // Mock recipe ID
+      };
+      createdIngredients.add(ingredientJson);
+      print('[DEBUG_LOG] MockApiService: Creating recipe ingredient: $ingredientJson');
     }
 
-    if (processedJson.containsKey('steps')) {
-      throw Exception('steps key should not be present in the processed JSON');
+    // Simulate creating recipe steps and linking them to the recipe
+    for (var i = 0; i < recipe.steps.length; i++) {
+      final step = recipe.steps[i];
+
+      // Create step
+      final stepJson = {
+        'name': step.name,
+        'duration': step.duration,
+      };
+      createdSteps.add(stepJson);
+      print('[DEBUG_LOG] MockApiService: Creating recipe step: $stepJson');
+
+      // Link step to recipe
+      final stepLinkJson = {
+        'number': i + 1,
+        'recipe': {'id': 999}, // Mock recipe ID
+        'step': {'id': step.id}
+      };
+      createdStepLinks.add(stepLinkJson);
+      print('[DEBUG_LOG] MockApiService: Creating recipe step link: $stepLinkJson');
     }
 
     // Simulate successful recipe creation
@@ -39,59 +77,6 @@ class MockApiService extends ApiService {
       comments: recipe.comments,
     );
   }
-
-  // Simplified version of the processing logic in the real service
-  Map<String, dynamic> _processRecipeJson(Map<String, dynamic> recipeJson) {
-    final processedJson = Map<String, dynamic>.from(recipeJson);
-
-    // Remove fields not needed for API
-    processedJson.remove('uuid');
-    processedJson.remove('description');
-    processedJson.remove('instructions');
-    processedJson.remove('difficulty');
-    processedJson.remove('rating');
-    processedJson.remove('tags');
-    processedJson.remove('ingredients');
-    processedJson.remove('isFavorite');
-
-    // Rename 'images' to 'photo'
-    if (processedJson.containsKey('images')) {
-      processedJson['photo'] = processedJson['images'];
-      processedJson.remove('images');
-    }
-
-    // Process steps
-    if (processedJson.containsKey('steps')) {
-      final steps = processedJson['steps'] as List<dynamic>;
-      final processedSteps = steps.map((step) {
-        final stepMap = Map<String, dynamic>.from(step as Map<String, dynamic>);
-        // Convert duration to numeric value
-        if (stepMap.containsKey('duration')) {
-          if (stepMap['duration'] is int) {
-            // Duration is already an int, no conversion needed
-          } else if (stepMap['duration'] is String) {
-            final durationStr = stepMap['duration'] as String;
-            final numericValue = int.tryParse(durationStr.split(' ').first);
-            if (numericValue != null) {
-              stepMap['duration'] = numericValue;
-            } else {
-              stepMap['duration'] = 0;
-            }
-          } else {
-            // Unknown type, default to 0
-            stepMap['duration'] = 0;
-          }
-        }
-        return stepMap;
-      }).toList();
-
-      // Rename 'steps' to 'recipeStepLinks'
-      processedJson['recipeStepLinks'] = processedSteps;
-      processedJson.remove('steps');
-    }
-
-    return processedJson;
-  }
 }
 
 void main() {
@@ -103,8 +88,8 @@ void main() {
       apiService = MockApiService();
     });
 
-    test('Create recipe with steps - verify steps key is renamed to recipeStepLinks', () async {
-      // Create a recipe with steps
+    test('Create recipe with steps - verify steps are created and linked separately', () async {
+      // Create a recipe with steps and ingredients
       final recipe = Recipe(
         uuid: DateTime.now().millisecondsSinceEpoch.toString(),
         name: 'Test Recipe with Steps',
@@ -115,7 +100,13 @@ void main() {
         duration: '30 min',
         rating: 0,
         tags: [],
-        ingredients: [],
+        ingredients: [
+          Ingredient.simple(
+            name: 'Test ingredient',
+            quantity: '100',
+            unit: 'g',
+          ),
+        ],
         steps: [
           RecipeStep(
             id: 1,
@@ -138,6 +129,20 @@ void main() {
         expect(createdRecipe, isNotNull);
         expect(createdRecipe.name, equals(recipe.name));
         expect(createdRecipe.steps.length, equals(recipe.steps.length));
+
+        // Verify that steps were created separately
+        expect(apiService.createdSteps.length, equals(recipe.steps.length));
+        expect(apiService.createdSteps[0]['name'], equals(recipe.steps[0].name));
+        expect(apiService.createdSteps[1]['name'], equals(recipe.steps[1].name));
+
+        // Verify that step links were created
+        expect(apiService.createdStepLinks.length, equals(recipe.steps.length));
+        expect(apiService.createdStepLinks[0]['number'], equals(1));
+        expect(apiService.createdStepLinks[1]['number'], equals(2));
+
+        // Verify that ingredients were created
+        expect(apiService.createdIngredients.length, equals(recipe.ingredients.length));
+        expect(apiService.createdIngredients[0]['count'], equals(100));
 
         print('[DEBUG_LOG] Recipe with steps created successfully: ${createdRecipe.uuid}');
       } catch (e) {
