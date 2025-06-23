@@ -416,55 +416,88 @@ class ApiService {
           }
 
           final createdRecipe = Recipe.fromJson(response.data);
-          final recipeId = createdRecipe.uuid;
+          // Extract the recipe ID directly from the response data
+          final recipeId = response.data['id'] as int;
 
           // Step 2: Create recipe ingredients
           for (var ingredient in recipe.ingredients) {
-            final ingredientJson = {
-              'count': int.tryParse(ingredient.quantity) ?? 0,
-              'ingredient': {'id': ingredient.id},
-              'recipe': {'id': int.tryParse(recipeId) ?? 0}
-            };
+            try {
+              // Skip ingredients with ID 0 as they would cause a foreign key violation
+              if (ingredient.id == 0) {
+                print('DEBUG: Skipping ingredient with ID 0: ${ingredient.name}');
+                continue;
+              }
 
-            await _dio.post(
-              '/recipe_ingredient',
-              data: ingredientJson,
-            );
+              final ingredientJson = {
+                'count': int.tryParse(ingredient.quantity) ?? 0,
+                'ingredient': {'id': ingredient.id},
+                'recipe': {'id': recipeId}
+              };
+
+              await _dio.post(
+                '/recipe_ingredient',
+                data: ingredientJson,
+              );
+            } catch (e) {
+              // Log the error but continue with the next ingredient
+              print('DEBUG: Error creating ingredient: $e');
+            }
           }
 
           // Step 3: Create recipe steps
           for (var i = 0; i < recipe.steps.length; i++) {
-            final step = recipe.steps[i];
+            try {
+              final step = recipe.steps[i];
 
-            // First create the step
-            final stepJson = {
-              'name': step.name,
-              'duration': step.duration,
-            };
+              // If the step has a non-zero ID, assume it already exists
+              if (step.id != 0) {
+                // Just link the existing step to the recipe
+                final stepLinkJson = {
+                  'number': i + 1,
+                  'recipe': {'id': recipeId},
+                  'step': {'id': step.id}
+                };
 
-            final stepResponse = await _dio.post(
-              '/recipe_step',
-              data: stepJson,
-            );
+                await _dio.post(
+                  '/recipe_step_link',
+                  data: stepLinkJson,
+                );
+                continue;
+              }
 
-            if (stepResponse.statusCode != 200 && stepResponse.statusCode != 201) {
-              continue;
+              // First create the step
+              final stepJson = {
+                'name': step.name,
+                'duration': step.duration,
+              };
+
+              final stepResponse = await _dio.post(
+                '/recipe_step',
+                data: stepJson,
+              );
+
+              if (stepResponse.statusCode != 200 && stepResponse.statusCode != 201) {
+                continue;
+              }
+
+              final createdStep = stepResponse.data;
+              final stepId = createdStep['id'];
+
+              // Then link the step to the recipe
+              final stepLinkJson = {
+                'number': i + 1,
+                'recipe': {'id': recipeId},
+                'step': {'id': stepId}
+              };
+
+              await _dio.post(
+                '/recipe_step_link',
+                data: stepLinkJson,
+              );
+            } catch (e) {
+              // Log the error but continue with the next step
+              print('DEBUG: Error creating step: $e');
             }
-
-            final createdStep = stepResponse.data;
-            final stepId = createdStep['id'];
-
-            // Then link the step to the recipe
-            final stepLinkJson = {
-              'number': i + 1,
-              'recipe': {'id': int.tryParse(recipeId) ?? 0},
-              'step': {'id': stepId}
-            };
-
-            await _dio.post(
-              '/recipe_step_link',
-              data: stepLinkJson,
-            );
           }
 
           // Return the created recipe
