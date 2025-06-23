@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../models/recipe.dart';
 import '../../models/ingredient.dart' as models;
 import '../../models/recipe_step.dart' as models;
+import '../../domain/entities/ingredient.dart';
+import '../../domain/entities/recipe_step.dart';
 import '../utils/entity_converters.dart';
 import '../domain/usecases/recipe_manager.dart';
 import '../widgets/recipe/recipe_name_input.dart';
@@ -28,9 +30,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _durationController = TextEditingController();
   final _imageUrlController = TextEditingController();
 
-  // Using dynamic lists to avoid type issues
-  final List _ingredients = [];
-  final List _steps = [];
+  // Using typed lists to ensure proper type handling
+  final List<Ingredient> _ingredients = [];
+  final List<RecipeStep> _steps = [];
 
   final RecipeManager _recipeManager = RecipeManager();
 
@@ -109,10 +111,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       context: context,
       builder: (context) => StepDialog(
         onSave: (entityStep) {
-          // Convert domain entity to model
-          final modelStep = EntityConverters.entityToModelRecipeStep(entityStep);
           setState(() {
-            _steps.add(modelStep);
+            _steps.add(entityStep);
           });
         },
       ),
@@ -120,17 +120,13 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   }
 
   void _editStep(int index) {
-    // Convert model to domain entity for the dialog
-    final entityStep = EntityConverters.modelToEntityRecipeStep(_steps[index]);
     showDialog(
       context: context,
       builder: (context) => StepDialog(
-        step: entityStep,
+        step: _steps[index],
         onSave: (updatedEntityStep) {
-          // Convert domain entity back to model
-          final modelStep = EntityConverters.entityToModelRecipeStep(updatedEntityStep);
           setState(() {
-            _steps[index] = modelStep;
+            _steps[index] = updatedEntityStep;
           });
         },
       ),
@@ -170,16 +166,11 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       });
 
       try {
-        // Create typed lists from the dynamic lists
-        final List<models.Ingredient> typedIngredients = [];
-        for (var ingredient in _ingredients) {
-          typedIngredients.add(ingredient as models.Ingredient);
-        }
+        // Convert domain entity Ingredient objects to model Ingredient objects
+        final List<models.Ingredient> typedIngredients = EntityConverters.entityToModelIngredients(List<Ingredient>.from(_ingredients));
 
-        final List<models.RecipeStep> typedSteps = [];
-        for (var step in _steps) {
-          typedSteps.add(step as models.RecipeStep);
-        }
+        // Convert domain entity RecipeStep objects to model RecipeStep objects
+        final List<models.RecipeStep> typedSteps = EntityConverters.entityToModelRecipeSteps(List<RecipeStep>.from(_steps));
 
         // Create a new recipe with the current data
         final recipe = Recipe(
@@ -275,7 +266,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
 
                             // Ingredients section
                             IngredientsSection(
-                              ingredients: EntityConverters.modelToEntityIngredients(_ingredients.cast<models.Ingredient>()),
+                              ingredients: List<Ingredient>.from(_ingredients),
                               onAddIngredient: _addIngredient,
                               onEditIngredient: _editIngredient,
                               onRemoveIngredient: _removeIngredient,
@@ -283,7 +274,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
 
                             // Steps section
                             StepsSection(
-                              steps: EntityConverters.modelToEntityRecipeSteps(_steps.cast<models.RecipeStep>()),
+                              steps: _steps,
                               onAddStep: _addStep,
                               onEditStep: _editStep,
                               onRemoveStep: _removeStep,
