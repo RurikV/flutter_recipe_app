@@ -4,6 +4,7 @@ import 'recipe_step.dart';
 import 'comment.dart';
 import 'recipe_ingredient.dart';
 import 'recipe_step_link.dart';
+import 'recipe_image.dart';
 
 part 'recipe_updated.g.dart';
 
@@ -13,8 +14,11 @@ class Recipe {
   final String uuid; // For backward compatibility
   final String name;
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final List<RecipeImage> recipeImages; // New field for multiple images with detected objects
+
   @JsonKey(name: 'photo')
-  final String images; // For backward compatibility
+  final String images; // For backward compatibility - will store JSON string of recipeImages
 
   final String description;
   final String instructions;
@@ -44,6 +48,7 @@ class Recipe {
     required this.uuid,
     required this.name,
     required this.images,
+    List<RecipeImage>? recipeImages,
     required this.description,
     required this.instructions,
     required this.difficulty,
@@ -57,7 +62,39 @@ class Recipe {
     this.stepLinks,
     this.isFavorite = false,
     this.comments = const [],
-  });
+  }) : recipeImages = recipeImages ?? _parseRecipeImages(images);
+
+  // Helper method to parse recipe images from a string
+  static List<RecipeImage> _parseRecipeImages(String imagesStr) {
+    if (imagesStr.isEmpty) {
+      return [];
+    }
+
+    // Check if it's a JSON string of RecipeImage objects
+    try {
+      return RecipeImage.decodeList(imagesStr);
+    } catch (e) {
+      // If it's not a valid JSON string, treat it as a single image URL
+      final validUrl = _getValidImageUrl(imagesStr);
+      return [RecipeImage(path: validUrl)];
+    }
+  }
+
+  // Helper method to ensure image URL is valid
+  static String _getValidImageUrl(String url) {
+    // Check if the URL is a valid HTTP or HTTPS URL
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+
+    // Check if it's a file path (starts with /)
+    if (url.startsWith('/')) {
+      return url;
+    }
+
+    // If it's just a filename like "default.png", use a placeholder
+    return 'https://placehold.co/400x300/png?text=No+Image';
+  }
 
   factory Recipe.fromJson(Map<String, dynamic> json) {
     // Handle the API response structure which uses 'id' instead of 'uuid'
@@ -65,7 +102,35 @@ class Recipe {
     final id = json['id'] as int? ?? 0;
     final uuid = (json['uuid'] ?? id.toString()) as String;
     final name = json['name'] as String;
-    final images = (json['images'] ?? json['photo'] ?? 'https://placehold.co/400x300/png?text=No+Image') as String;
+
+    // Process images - could be a string, a list of RecipeImage objects, or a JSON string
+    String imagesStr = '';
+    List<RecipeImage> recipeImages = [];
+
+    if (json['images'] != null) {
+      if (json['images'] is String) {
+        imagesStr = json['images'] as String;
+        recipeImages = _parseRecipeImages(imagesStr);
+      } else if (json['images'] is List) {
+        // If it's already a list, convert each item to a RecipeImage
+        recipeImages = (json['images'] as List)
+            .map((img) => img is Map<String, dynamic> 
+                ? RecipeImage.fromJson(img) 
+                : RecipeImage(path: _getValidImageUrl(img.toString())))
+            .toList();
+        // Convert the list to a JSON string for storage
+        imagesStr = RecipeImage.encodeList(recipeImages);
+      }
+    } else if (json['photo'] != null) {
+      // Handle legacy 'photo' field
+      imagesStr = json['photo'] as String;
+      recipeImages = _parseRecipeImages(imagesStr);
+    } else {
+      // Default placeholder
+      imagesStr = 'https://placehold.co/400x300/png?text=No+Image';
+      recipeImages = [RecipeImage(path: imagesStr)];
+    }
+
     final description = (json['description'] ?? '') as String;
     final instructions = (json['instructions'] ?? '') as String;
     final difficulty = (json['difficulty'] ?? 0) as int;
@@ -223,7 +288,8 @@ class Recipe {
       id: id,
       uuid: uuid,
       name: name,
-      images: images,
+      images: imagesStr,
+      recipeImages: recipeImages,
       description: description,
       instructions: instructions,
       difficulty: difficulty,
@@ -240,7 +306,14 @@ class Recipe {
     );
   }
 
-  Map<String, dynamic> toJson() => _$RecipeToJson(this);
+  Map<String, dynamic> toJson() {
+    final json = _$RecipeToJson(this);
+    // Update the 'photo' field with the encoded recipeImages
+    if (recipeImages.isNotEmpty) {
+      json['photo'] = RecipeImage.encodeList(recipeImages);
+    }
+    return json;
+  }
 
   // Creates a copy of the recipe with the given fields replaced with the new values
   Recipe copyWith({
@@ -248,6 +321,7 @@ class Recipe {
     String? uuid,
     String? name,
     String? images,
+    List<RecipeImage>? recipeImages,
     String? description,
     String? instructions,
     int? difficulty,
@@ -262,11 +336,20 @@ class Recipe {
     bool? isFavorite,
     List<Comment>? comments,
   }) {
+    // If recipeImages is provided but images is not, encode recipeImages to images
+    String updatedImages = images ?? this.images;
+    List<RecipeImage> updatedRecipeImages = recipeImages ?? this.recipeImages;
+
+    if (recipeImages != null && images == null) {
+      updatedImages = RecipeImage.encodeList(updatedRecipeImages);
+    }
+
     return Recipe(
       id: id ?? this.id,
       uuid: uuid ?? this.uuid,
       name: name ?? this.name,
-      images: images ?? this.images,
+      images: updatedImages,
+      recipeImages: updatedRecipeImages,
       description: description ?? this.description,
       instructions: instructions ?? this.instructions,
       difficulty: difficulty ?? this.difficulty,

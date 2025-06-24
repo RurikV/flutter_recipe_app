@@ -43,11 +43,24 @@ class RecipeCard extends StatelessWidget {
                     child: SizedBox(
                       width: 150, // Width of the image (about 37.63% of card width)
                       height: 136, // Full height of the card
-                      child: Image.network(
-                        recipe.images,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
+                      child: recipe.images.isNotEmpty
+                        ? Image.network(
+                            recipe.images.first.path,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[300],
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.image_not_supported,
+                                    size: 40,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                        : Container(
                             color: Colors.grey[300],
                             child: const Center(
                               child: Icon(
@@ -56,9 +69,7 @@ class RecipeCard extends StatelessWidget {
                                 color: Colors.grey,
                               ),
                             ),
-                          );
-                        },
-                      ),
+                          ),
                     ),
                   ),
 
@@ -131,7 +142,7 @@ class RecipeCard extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Bookmark indicator for favorite recipes
           if (recipe.isFavorite)
             Positioned(

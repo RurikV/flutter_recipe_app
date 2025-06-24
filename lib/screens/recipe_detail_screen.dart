@@ -6,7 +6,7 @@ import '../domain/usecases/recipe_manager.dart';
 import '../utils/entity_converters.dart';
 import '../widgets/recipe/recipe_header.dart';
 import '../widgets/recipe/duration_display.dart';
-import '../widgets/recipe/recipe_image.dart';
+import '../widgets/recipe/recipe_image_gallery.dart';
 import '../widgets/ingredient/ingredients_table.dart';
 import '../widgets/step/recipe_steps_list.dart';
 import '../widgets/recipe/cooking_mode_button.dart';
@@ -25,6 +25,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   final RecipeManager _recipeManager = RecipeManager();
   late Recipe _recipe;
   bool _isCookingMode = false;
+
 
   @override
   void initState() {
@@ -120,8 +121,16 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                     // Duration display
                     DurationDisplay(duration: _recipe.duration),
 
-                    // Recipe image
-                    RecipeImage(imageUrl: _recipe.images),
+                    // Recipe image gallery
+                    RecipeImageGallery(
+                      images: _recipe.images,
+                      onImagesChanged: (updatedImages) {
+                        setState(() {
+                          // Update the recipe with the new images
+                          _recipe = _recipe.copyWith(images: updatedImages);
+                        });
+                      },
+                    ),
 
                     // Ingredients table
                     IngredientsTable(

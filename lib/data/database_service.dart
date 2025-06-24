@@ -1,7 +1,9 @@
+import 'dart:convert';
 import '../database/app_database.dart';
 import '../../models/recipe.dart' as app_model;
 import '../../models/ingredient.dart' as app_model;
 import '../../models/recipe_step.dart' as app_model;
+import '../../models/recipe_image.dart';
 import 'package:drift/drift.dart';
 
 class DatabaseService {
@@ -34,10 +36,30 @@ class DatabaseService {
     final ingredients = await _database.getIngredientsForRecipe(recipe.uuid);
     final steps = await _database.getStepsForRecipe(recipe.uuid);
 
+    // Convert the images string from the database to a List<RecipeImage>
+    List<RecipeImage> recipeImages = [];
+    try {
+      if (recipe.images.isNotEmpty) {
+        try {
+          // Try to parse as JSON first
+          final List<dynamic> decodedList = jsonDecode(recipe.images);
+          recipeImages = decodedList
+              .map((item) => RecipeImage.fromJson(item as Map<String, dynamic>))
+              .toList();
+        } catch (e) {
+          // If parsing fails, treat it as a single image URL
+          recipeImages = [RecipeImage(path: recipe.images)];
+        }
+      }
+    } catch (e) {
+      // If any error occurs, use an empty list
+      recipeImages = [];
+    }
+
     return app_model.Recipe(
       uuid: recipe.uuid,
       name: recipe.name,
-      images: recipe.images,
+      images: recipeImages,
       description: recipe.description,
       instructions: recipe.instructions,
       difficulty: recipe.difficulty,
@@ -67,13 +89,31 @@ class DatabaseService {
       // Check if the recipe already exists
       final existingRecipe = await _database.getRecipeByUuid(recipe.uuid);
 
+      // Convert the List<RecipeImage> to a JSON string for storage
+      String imagesJson = "";
+      try {
+        // Convert each RecipeImage to a Map and then encode the list to JSON
+        final List<Map<String, dynamic>> imagesList = recipe.images.map((img) => {
+          'path': img.path,
+          'detectedObjects': img.detectedObjects.map((obj) => {
+            'label': obj.label,
+            'confidence': obj.confidence,
+            'boundingBox': obj.boundingBox,
+          }).toList(),
+        }).toList();
+        imagesJson = jsonEncode(imagesList);
+      } catch (e) {
+        // If encoding fails, use the first image's path or an empty string
+        imagesJson = recipe.images.isNotEmpty ? recipe.images.first.path : "";
+      }
+
       if (existingRecipe != null) {
         // Update the existing recipe
         await _database.updateRecipe(
           RecipesCompanion(
             uuid: Value(recipe.uuid),
             name: Value(recipe.name),
-            images: Value(recipe.images),
+            images: Value(imagesJson),
             description: Value(recipe.description),
             instructions: Value(recipe.instructions),
             difficulty: Value(recipe.difficulty),
@@ -88,7 +128,7 @@ class DatabaseService {
           RecipesCompanion.insert(
             uuid: recipe.uuid,
             name: recipe.name,
-            images: recipe.images,
+            images: imagesJson,
             description: recipe.description,
             instructions: recipe.instructions,
             difficulty: recipe.difficulty,

@@ -17,11 +17,10 @@ class MockApiService extends ApiService {
     // 2. Create recipe ingredients
     // 3. Create recipe steps and link them to the recipe
 
-    // Verify that the recipe JSON doesn't contain steps or ingredients
-    final recipeJson = recipe.toJson();
+    // Create a simplified JSON directly
     final simplifiedJson = {
       'name': recipe.name,
-      'duration': recipe.duration is String ? int.tryParse(recipe.duration.split(' ').first) ?? 0 : recipe.duration,
+      'duration': int.tryParse(recipe.duration.split(' ').first) ?? 0,
       'photo': recipe.images,
     };
 
