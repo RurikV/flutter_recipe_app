@@ -89,11 +89,20 @@ class _RiveFavoriteButtonState extends State<RiveFavoriteButton> {
               color: widget.isFavorite ? const Color(0xFF2ECC71) : Colors.grey,
               size: 30,
             ),
-            // Rive animation on top
-            RiveAnimation.asset(
-              'assets/animations/heart.riv',
-              fit: BoxFit.contain,
-              onInit: _onRiveInit,
+            // Rive animation on top - wrapped in a try-catch to handle missing animation file
+            Builder(
+              builder: (context) {
+                try {
+                  return RiveAnimation.asset(
+                    'assets/animations/heart.riv',
+                    fit: BoxFit.contain,
+                    onInit: _onRiveInit,
+                  );
+                } catch (e) {
+                  // If there's an exception, just use the fallback icon
+                  return const SizedBox.shrink();
+                }
+              },
             ),
           ],
         ),

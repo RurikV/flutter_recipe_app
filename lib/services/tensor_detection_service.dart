@@ -12,9 +12,15 @@ class ObjectDetectionService {
 
   Interpreter? _interpreter;
   List<String>? _labels;
+  bool _initializationFailed = false;
 
   // Initialize the TensorFlow Lite interpreter
   Future<void> initialize() async {
+    // Skip initialization if it has already failed
+    if (_initializationFailed) {
+      return;
+    }
+
     try {
       // Load the model
       final interpreterOptions = InterpreterOptions();
@@ -30,14 +36,21 @@ class ObjectDetectionService {
       debugPrint('TensorFlow Lite model loaded successfully');
     } catch (e) {
       debugPrint('Error initializing TensorFlow Lite: $e');
+      _initializationFailed = true;
     }
   }
 
   // Detect objects in an image
   Future<List<DetectedObject>> detectObjects(String imagePath, {int maxResults = 5}) async {
+    // Return empty results if initialization has failed
+    if (_initializationFailed) {
+      return [];
+    }
+
+    // Try to initialize if not already done
     if (_interpreter == null || _labels == null) {
       await initialize();
-      if (_interpreter == null || _labels == null) {
+      if (_interpreter == null || _labels == null || _initializationFailed) {
         return [];
       }
     }
