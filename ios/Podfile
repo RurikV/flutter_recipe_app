@@ -47,9 +47,16 @@ post_install do |installer|
       end
     end
 
-    # Exclude arm64 architecture for simulator builds to fix issues
+    # Remove arm64 exclusion for simulator builds on Apple Silicon Macs
     target.build_configurations.each do |config|
-      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "i386"
+    end
+
+    # Ensure Flutter.framework is properly embedded
+    if target.name == 'Flutter'
+      target.build_configurations.each do |config|
+        config.build_settings['MACH_O_TYPE'] = 'mh_dylib'
+      end
     end
   end
 

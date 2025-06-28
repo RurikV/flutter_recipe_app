@@ -17,7 +17,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 4,
         shadowColor: const Color.fromRGBO(149, 146, 146, 0.1), // Shadow color as per design
         shape: RoundedRectangleBorder(
