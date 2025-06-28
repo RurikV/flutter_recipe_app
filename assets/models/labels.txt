@@ -1,0 +1,5 @@
+# This is a placeholder file for the TensorFlow Lite model labels
+# It's used to prevent errors during testing
+apple
+banana
+orange

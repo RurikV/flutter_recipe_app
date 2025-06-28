@@ -10,11 +10,11 @@ class RecipeImageGallery extends StatefulWidget {
   final bool isEditable;
 
   const RecipeImageGallery({
-    Key? key,
+    super.key,
     required this.images,
     required this.onImagesChanged,
     this.isEditable = false,
-  }) : super(key: key);
+  });
 
   @override
   State<RecipeImageGallery> createState() => _RecipeImageGalleryState();
@@ -215,7 +215,7 @@ class _RecipeImageGalleryState extends State<RecipeImageGallery> {
                                           color: Colors.white,
                                         ),
                                       );
-                                    }).toList(),
+                                    }),
                                   ],
                                 ),
                               ),

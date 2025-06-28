@@ -67,6 +67,8 @@ dependencies:
 
   # PageView is used for image gallery (built into Flutter)
 
+  ffi: any
+  quiver: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,4 +1,4 @@
-library tflite_flutter;
+library;
 
 export 'package:tflite_flutter/src/bindings/bindings.dart';
 export 'package:tflite_flutter/src/bindings/tensorflow_lite_bindings_generated.dart';
