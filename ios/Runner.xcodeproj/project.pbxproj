@@ -198,7 +198,8 @@
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
-				6BB0FE7113832D6A239FC13B /* [CP] Embed Pods Frameworks */,
+				DA7C65562FC806AADD26FC01 /* [CP] Embed Pods Frameworks */,
+				F5A2F3A12B4F1E1000000001 /* Fix Flutter Framework */,
 			);
 			buildRules = (
 			);
@@ -330,7 +331,22 @@
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
 		};
-		6BB0FE7113832D6A239FC13B /* [CP] Embed Pods Frameworks */ = {
+		9740EEB61CF901F6004384FC /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+		};
+		DA7C65562FC806AADD26FC01 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -347,20 +363,23 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		9740EEB61CF901F6004384FC /* Run Script */ = {
+		F5A2F3A12B4F1E1000000001 /* Fix Flutter Framework */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+			);
 			inputPaths = (
 			);
-			name = "Run Script";
+			name = "Fix Flutter Framework";
+			outputFileListPaths = (
+			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+			shellScript = "# Fix for Flutter.framework nested framework issue\nAPP_PATH=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app\"\necho \"Checking for nested Flutter.framework in: $APP_PATH\"\n\n# Find the Flutter.framework directory\nFLUTTER_FRAMEWORK=$(find \"$APP_PATH\" -name \"Flutter.framework\" -type d | head -n 1)\n\nif [ -z \"$FLUTTER_FRAMEWORK\" ]; then\n  echo \"Flutter.framework not found in $APP_PATH\"\n  exit 0\nfi\n\necho \"Found Flutter.framework: $FLUTTER_FRAMEWORK\"\n\n# Find any nested Flutter.framework directories\nNESTED_FRAMEWORKS=$(find \"$FLUTTER_FRAMEWORK\" -name \"Flutter.framework\" -type d)\n\nif [ -z \"$NESTED_FRAMEWORKS\" ]; then\n  echo \"No nested Flutter.framework found. Nothing to fix.\"\n  exit 0\nfi\n\n# Remove the nested Flutter.framework directories\nfor NESTED_FRAMEWORK in $NESTED_FRAMEWORKS; do\n  echo \"Removing nested framework: $NESTED_FRAMEWORK\"\n  rm -rf \"$NESTED_FRAMEWORK\"\ndone\n\necho \"Fixed Flutter.framework nested framework issue.\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -455,7 +474,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
@@ -584,7 +603,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -635,7 +654,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
