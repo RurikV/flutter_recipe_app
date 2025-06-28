@@ -7,7 +7,7 @@ import 'package:image/image.dart' as img;
 import '../models/recipe_image.dart';
 
 class ObjectDetectionService {
-  static const String _modelPath = 'assets/models/mobilenet_v1_1.0_224_quant.tflite';
+  static const String _modelPath = 'assets/models/model_unquant.tflite';
   static const String _labelsPath = 'assets/models/labels.txt';
 
   Interpreter? _interpreter;

@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../services/image_service.dart';
-import 'package:image_picker/image_picker.dart';
 
-class PhotoUploadSection extends StatelessWidget {
+class PhotoUploadSection extends StatefulWidget {
   final TextEditingController controller;
-  final ImageService _imageService = ImageService();
 
-  PhotoUploadSection({
+  const PhotoUploadSection({
     super.key,
     required this.controller,
   });
+
+  @override
+  State<PhotoUploadSection> createState() => _PhotoUploadSectionState();
+}
+
+class _PhotoUploadSectionState extends State<PhotoUploadSection> {
+  final ImageService _imageService = ImageService();
 
   Future<void> _showImageSourceDialog(BuildContext context) async {
     showDialog(
@@ -50,34 +55,52 @@ class PhotoUploadSection extends StatelessWidget {
   }
 
   Future<void> _takePhoto(BuildContext context) async {
+    // Store the context before the async operation
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     try {
       final recipeImage = await _imageService.takePhoto();
-      if (recipeImage != null) {
-        controller.text = recipeImage.path;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Фото добавлено')),
-        );
+      if (recipeImage != null && mounted) {
+        widget.controller.text = recipeImage.path;
+        // Only show SnackBar if the widget is still mounted
+        if (mounted) {
+          scaffoldMessenger.showSnackBar(
+            const SnackBar(content: Text('Фото добавлено')),
+          );
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка при добавлении фото: $e')),
-      );
+      // Only show error SnackBar if the widget is still mounted
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text('Ошибка при добавлении фото: $e')),
+        );
+      }
     }
   }
 
   Future<void> _pickImage(BuildContext context) async {
+    // Store the context before the async operation
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     try {
       final recipeImage = await _imageService.pickImage();
-      if (recipeImage != null) {
-        controller.text = recipeImage.path;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Фото добавлено')),
-        );
+      if (recipeImage != null && mounted) {
+        widget.controller.text = recipeImage.path;
+        // Only show SnackBar if the widget is still mounted
+        if (mounted) {
+          scaffoldMessenger.showSnackBar(
+            const SnackBar(content: Text('Фото добавлено')),
+          );
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка при добавлении фото: $e')),
-      );
+      // Only show error SnackBar if the widget is still mounted
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text('Ошибка при добавлении фото: $e')),
+        );
+      }
     }
   }
 
@@ -122,7 +145,7 @@ class PhotoUploadSection extends StatelessWidget {
                 Opacity(
                   opacity: 0,
                   child: TextFormField(
-                    controller: controller,
+                    controller: widget.controller,
                   ),
                 ),
               ],

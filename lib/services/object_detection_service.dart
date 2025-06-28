@@ -12,7 +12,7 @@ int getGreen(int pixel) => (pixel >> 8) & 0xFF;
 int getBlue(int pixel) => pixel & 0xFF;
 
 class ObjectDetectionService {
-  static const String _modelPath = 'assets/models/mobilenet_v1_1.0_224_quant.tflite';
+  static const String _modelPath = 'assets/models/model_unquant.tflite';
   static const String _labelsPath = 'assets/models/labels.txt';
 
   Interpreter? _interpreter;
