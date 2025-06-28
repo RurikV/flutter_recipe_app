@@ -1,5 +1,7 @@
-# This is a placeholder file for the TensorFlow Lite model labels
-# It's used to prevent errors during testing
-apple
-banana
-orange
+0 Лосось в соусе терияки
+1 Поке боул с сыром тофу
+2 Стейк из говядины по-грузински
+3 Тосты с голубикой и бананом
+4 Паста с морепродуктами
+5 Бургер с двумя котлетами
+6 Пицца Маргарита домашняя

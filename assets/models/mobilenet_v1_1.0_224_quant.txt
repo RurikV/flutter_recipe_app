@@ -1,2 +1,0 @@
-# This is a placeholder file for the TensorFlow Lite model
-# It's used to prevent errors during testing

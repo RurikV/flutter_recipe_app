@@ -6,9 +6,6 @@ part of 'recipe_updated.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-// This function is used by the json_serializable package and is referenced indirectly
-// ignore: unused_element
-@pragma('vm:entry-point')
 Recipe _$RecipeFromJson(Map<String, dynamic> json) => Recipe(
   id: (json['id'] as num?)?.toInt() ?? 0,
   uuid: json['uuid'] as String,

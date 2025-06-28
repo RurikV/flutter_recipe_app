@@ -589,6 +589,376 @@ class RecipesCompanion extends UpdateCompanion<Recipe> {
   }
 }
 
+class $PhotosTable extends Photos with TableInfo<$PhotosTable, Photo> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PhotosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _recipeUuidMeta = const VerificationMeta(
+    'recipeUuid',
+  );
+  @override
+  late final GeneratedColumn<String> recipeUuid = GeneratedColumn<String>(
+    'recipe_uuid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES recipes (uuid)',
+    ),
+  );
+  static const VerificationMeta _photoNameMeta = const VerificationMeta(
+    'photoName',
+  );
+  @override
+  late final GeneratedColumn<String> photoName = GeneratedColumn<String>(
+    'photo_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _detectedInfoMeta = const VerificationMeta(
+    'detectedInfo',
+  );
+  @override
+  late final GeneratedColumn<String> detectedInfo = GeneratedColumn<String>(
+    'detected_info',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pictMeta = const VerificationMeta('pict');
+  @override
+  late final GeneratedColumn<Uint8List> pict = GeneratedColumn<Uint8List>(
+    'pict',
+    aliasedName,
+    false,
+    type: DriftSqlType.blob,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    recipeUuid,
+    photoName,
+    detectedInfo,
+    pict,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'photos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Photo> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('recipe_uuid')) {
+      context.handle(
+        _recipeUuidMeta,
+        recipeUuid.isAcceptableOrUnknown(data['recipe_uuid']!, _recipeUuidMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_recipeUuidMeta);
+    }
+    if (data.containsKey('photo_name')) {
+      context.handle(
+        _photoNameMeta,
+        photoName.isAcceptableOrUnknown(data['photo_name']!, _photoNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_photoNameMeta);
+    }
+    if (data.containsKey('detected_info')) {
+      context.handle(
+        _detectedInfoMeta,
+        detectedInfo.isAcceptableOrUnknown(
+          data['detected_info']!,
+          _detectedInfoMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_detectedInfoMeta);
+    }
+    if (data.containsKey('pict')) {
+      context.handle(
+        _pictMeta,
+        pict.isAcceptableOrUnknown(data['pict']!, _pictMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pictMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Photo map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Photo(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      recipeUuid:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}recipe_uuid'],
+          )!,
+      photoName:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}photo_name'],
+          )!,
+      detectedInfo:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}detected_info'],
+          )!,
+      pict:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.blob,
+            data['${effectivePrefix}pict'],
+          )!,
+    );
+  }
+
+  @override
+  $PhotosTable createAlias(String alias) {
+    return $PhotosTable(attachedDatabase, alias);
+  }
+}
+
+class Photo extends DataClass implements Insertable<Photo> {
+  final int id;
+  final String recipeUuid;
+  final String photoName;
+  final String detectedInfo;
+  final Uint8List pict;
+  const Photo({
+    required this.id,
+    required this.recipeUuid,
+    required this.photoName,
+    required this.detectedInfo,
+    required this.pict,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['recipe_uuid'] = Variable<String>(recipeUuid);
+    map['photo_name'] = Variable<String>(photoName);
+    map['detected_info'] = Variable<String>(detectedInfo);
+    map['pict'] = Variable<Uint8List>(pict);
+    return map;
+  }
+
+  PhotosCompanion toCompanion(bool nullToAbsent) {
+    return PhotosCompanion(
+      id: Value(id),
+      recipeUuid: Value(recipeUuid),
+      photoName: Value(photoName),
+      detectedInfo: Value(detectedInfo),
+      pict: Value(pict),
+    );
+  }
+
+  factory Photo.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Photo(
+      id: serializer.fromJson<int>(json['id']),
+      recipeUuid: serializer.fromJson<String>(json['recipeUuid']),
+      photoName: serializer.fromJson<String>(json['photoName']),
+      detectedInfo: serializer.fromJson<String>(json['detectedInfo']),
+      pict: serializer.fromJson<Uint8List>(json['pict']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'recipeUuid': serializer.toJson<String>(recipeUuid),
+      'photoName': serializer.toJson<String>(photoName),
+      'detectedInfo': serializer.toJson<String>(detectedInfo),
+      'pict': serializer.toJson<Uint8List>(pict),
+    };
+  }
+
+  Photo copyWith({
+    int? id,
+    String? recipeUuid,
+    String? photoName,
+    String? detectedInfo,
+    Uint8List? pict,
+  }) => Photo(
+    id: id ?? this.id,
+    recipeUuid: recipeUuid ?? this.recipeUuid,
+    photoName: photoName ?? this.photoName,
+    detectedInfo: detectedInfo ?? this.detectedInfo,
+    pict: pict ?? this.pict,
+  );
+  Photo copyWithCompanion(PhotosCompanion data) {
+    return Photo(
+      id: data.id.present ? data.id.value : this.id,
+      recipeUuid:
+          data.recipeUuid.present ? data.recipeUuid.value : this.recipeUuid,
+      photoName: data.photoName.present ? data.photoName.value : this.photoName,
+      detectedInfo:
+          data.detectedInfo.present
+              ? data.detectedInfo.value
+              : this.detectedInfo,
+      pict: data.pict.present ? data.pict.value : this.pict,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Photo(')
+          ..write('id: $id, ')
+          ..write('recipeUuid: $recipeUuid, ')
+          ..write('photoName: $photoName, ')
+          ..write('detectedInfo: $detectedInfo, ')
+          ..write('pict: $pict')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    recipeUuid,
+    photoName,
+    detectedInfo,
+    $driftBlobEquality.hash(pict),
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Photo &&
+          other.id == this.id &&
+          other.recipeUuid == this.recipeUuid &&
+          other.photoName == this.photoName &&
+          other.detectedInfo == this.detectedInfo &&
+          $driftBlobEquality.equals(other.pict, this.pict));
+}
+
+class PhotosCompanion extends UpdateCompanion<Photo> {
+  final Value<int> id;
+  final Value<String> recipeUuid;
+  final Value<String> photoName;
+  final Value<String> detectedInfo;
+  final Value<Uint8List> pict;
+  const PhotosCompanion({
+    this.id = const Value.absent(),
+    this.recipeUuid = const Value.absent(),
+    this.photoName = const Value.absent(),
+    this.detectedInfo = const Value.absent(),
+    this.pict = const Value.absent(),
+  });
+  PhotosCompanion.insert({
+    this.id = const Value.absent(),
+    required String recipeUuid,
+    required String photoName,
+    required String detectedInfo,
+    required Uint8List pict,
+  }) : recipeUuid = Value(recipeUuid),
+       photoName = Value(photoName),
+       detectedInfo = Value(detectedInfo),
+       pict = Value(pict);
+  static Insertable<Photo> custom({
+    Expression<int>? id,
+    Expression<String>? recipeUuid,
+    Expression<String>? photoName,
+    Expression<String>? detectedInfo,
+    Expression<Uint8List>? pict,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (recipeUuid != null) 'recipe_uuid': recipeUuid,
+      if (photoName != null) 'photo_name': photoName,
+      if (detectedInfo != null) 'detected_info': detectedInfo,
+      if (pict != null) 'pict': pict,
+    });
+  }
+
+  PhotosCompanion copyWith({
+    Value<int>? id,
+    Value<String>? recipeUuid,
+    Value<String>? photoName,
+    Value<String>? detectedInfo,
+    Value<Uint8List>? pict,
+  }) {
+    return PhotosCompanion(
+      id: id ?? this.id,
+      recipeUuid: recipeUuid ?? this.recipeUuid,
+      photoName: photoName ?? this.photoName,
+      detectedInfo: detectedInfo ?? this.detectedInfo,
+      pict: pict ?? this.pict,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (recipeUuid.present) {
+      map['recipe_uuid'] = Variable<String>(recipeUuid.value);
+    }
+    if (photoName.present) {
+      map['photo_name'] = Variable<String>(photoName.value);
+    }
+    if (detectedInfo.present) {
+      map['detected_info'] = Variable<String>(detectedInfo.value);
+    }
+    if (pict.present) {
+      map['pict'] = Variable<Uint8List>(pict.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PhotosCompanion(')
+          ..write('id: $id, ')
+          ..write('recipeUuid: $recipeUuid, ')
+          ..write('photoName: $photoName, ')
+          ..write('detectedInfo: $detectedInfo, ')
+          ..write('pict: $pict')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $RecipeTagsTable extends RecipeTags
     with TableInfo<$RecipeTagsTable, RecipeTag> {
   @override
@@ -1533,6 +1903,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $RecipesTable recipes = $RecipesTable(this);
+  late final $PhotosTable photos = $PhotosTable(this);
   late final $RecipeTagsTable recipeTags = $RecipeTagsTable(this);
   late final $IngredientsTable ingredients = $IngredientsTable(this);
   late final $RecipeStepsTable recipeSteps = $RecipeStepsTable(this);
@@ -1542,6 +1913,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     recipes,
+    photos,
     recipeTags,
     ingredients,
     recipeSteps,
@@ -1578,6 +1950,25 @@ typedef $$RecipesTableUpdateCompanionBuilder =
 final class $$RecipesTableReferences
     extends BaseReferences<_$AppDatabase, $RecipesTable, Recipe> {
   $$RecipesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$PhotosTable, List<Photo>> _photosRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.photos,
+    aliasName: $_aliasNameGenerator(db.recipes.uuid, db.photos.recipeUuid),
+  );
+
+  $$PhotosTableProcessedTableManager get photosRefs {
+    final manager = $$PhotosTableTableManager(
+      $_db,
+      $_db.photos,
+    ).filter((f) => f.recipeUuid.uuid.sqlEquals($_itemColumn<String>('uuid')!));
+
+    final cache = $_typedResult.readTableOrNull(_photosRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<$RecipeTagsTable, List<RecipeTag>>
   _recipeTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
@@ -1687,6 +2078,31 @@ class $$RecipesTableFilterComposer
     column: $table.isFavorite,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> photosRefs(
+    Expression<bool> Function($$PhotosTableFilterComposer f) f,
+  ) {
+    final $$PhotosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.photos,
+      getReferencedColumn: (t) => t.recipeUuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PhotosTableFilterComposer(
+            $db: $db,
+            $table: $db.photos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> recipeTagsRefs(
     Expression<bool> Function($$RecipeTagsTableFilterComposer f) f,
@@ -1863,6 +2279,31 @@ class $$RecipesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  Expression<T> photosRefs<T extends Object>(
+    Expression<T> Function($$PhotosTableAnnotationComposer a) f,
+  ) {
+    final $$PhotosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.photos,
+      getReferencedColumn: (t) => t.recipeUuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PhotosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.photos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> recipeTagsRefs<T extends Object>(
     Expression<T> Function($$RecipeTagsTableAnnotationComposer a) f,
   ) {
@@ -1953,6 +2394,7 @@ class $$RecipesTableTableManager
           (Recipe, $$RecipesTableReferences),
           Recipe,
           PrefetchHooks Function({
+            bool photosRefs,
             bool recipeTagsRefs,
             bool ingredientsRefs,
             bool recipeStepsRefs,
@@ -2028,6 +2470,7 @@ class $$RecipesTableTableManager
                       )
                       .toList(),
           prefetchHooksCallback: ({
+            photosRefs = false,
             recipeTagsRefs = false,
             ingredientsRefs = false,
             recipeStepsRefs = false,
@@ -2035,6 +2478,7 @@ class $$RecipesTableTableManager
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
+                if (photosRefs) db.photos,
                 if (recipeTagsRefs) db.recipeTags,
                 if (ingredientsRefs) db.ingredients,
                 if (recipeStepsRefs) db.recipeSteps,
@@ -2042,6 +2486,24 @@ class $$RecipesTableTableManager
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
+                  if (photosRefs)
+                    await $_getPrefetchedData<Recipe, $RecipesTable, Photo>(
+                      currentTable: table,
+                      referencedTable: $$RecipesTableReferences
+                          ._photosRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$RecipesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).photosRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.recipeUuid == item.uuid,
+                          ),
+                      typedResults: items,
+                    ),
                   if (recipeTagsRefs)
                     await $_getPrefetchedData<Recipe, $RecipesTable, RecipeTag>(
                       currentTable: table,
@@ -2125,10 +2587,326 @@ typedef $$RecipesTableProcessedTableManager =
       (Recipe, $$RecipesTableReferences),
       Recipe,
       PrefetchHooks Function({
+        bool photosRefs,
         bool recipeTagsRefs,
         bool ingredientsRefs,
         bool recipeStepsRefs,
       })
+    >;
+typedef $$PhotosTableCreateCompanionBuilder =
+    PhotosCompanion Function({
+      Value<int> id,
+      required String recipeUuid,
+      required String photoName,
+      required String detectedInfo,
+      required Uint8List pict,
+    });
+typedef $$PhotosTableUpdateCompanionBuilder =
+    PhotosCompanion Function({
+      Value<int> id,
+      Value<String> recipeUuid,
+      Value<String> photoName,
+      Value<String> detectedInfo,
+      Value<Uint8List> pict,
+    });
+
+final class $$PhotosTableReferences
+    extends BaseReferences<_$AppDatabase, $PhotosTable, Photo> {
+  $$PhotosTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $RecipesTable _recipeUuidTable(_$AppDatabase db) => db.recipes
+      .createAlias($_aliasNameGenerator(db.photos.recipeUuid, db.recipes.uuid));
+
+  $$RecipesTableProcessedTableManager get recipeUuid {
+    final $_column = $_itemColumn<String>('recipe_uuid')!;
+
+    final manager = $$RecipesTableTableManager(
+      $_db,
+      $_db.recipes,
+    ).filter((f) => f.uuid.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_recipeUuidTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PhotosTableFilterComposer
+    extends Composer<_$AppDatabase, $PhotosTable> {
+  $$PhotosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get photoName => $composableBuilder(
+    column: $table.photoName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get detectedInfo => $composableBuilder(
+    column: $table.detectedInfo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<Uint8List> get pict => $composableBuilder(
+    column: $table.pict,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$RecipesTableFilterComposer get recipeUuid {
+    final $$RecipesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recipeUuid,
+      referencedTable: $db.recipes,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecipesTableFilterComposer(
+            $db: $db,
+            $table: $db.recipes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PhotosTableOrderingComposer
+    extends Composer<_$AppDatabase, $PhotosTable> {
+  $$PhotosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get photoName => $composableBuilder(
+    column: $table.photoName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get detectedInfo => $composableBuilder(
+    column: $table.detectedInfo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<Uint8List> get pict => $composableBuilder(
+    column: $table.pict,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$RecipesTableOrderingComposer get recipeUuid {
+    final $$RecipesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recipeUuid,
+      referencedTable: $db.recipes,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecipesTableOrderingComposer(
+            $db: $db,
+            $table: $db.recipes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PhotosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PhotosTable> {
+  $$PhotosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get photoName =>
+      $composableBuilder(column: $table.photoName, builder: (column) => column);
+
+  GeneratedColumn<String> get detectedInfo => $composableBuilder(
+    column: $table.detectedInfo,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<Uint8List> get pict =>
+      $composableBuilder(column: $table.pict, builder: (column) => column);
+
+  $$RecipesTableAnnotationComposer get recipeUuid {
+    final $$RecipesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recipeUuid,
+      referencedTable: $db.recipes,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecipesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.recipes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PhotosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PhotosTable,
+          Photo,
+          $$PhotosTableFilterComposer,
+          $$PhotosTableOrderingComposer,
+          $$PhotosTableAnnotationComposer,
+          $$PhotosTableCreateCompanionBuilder,
+          $$PhotosTableUpdateCompanionBuilder,
+          (Photo, $$PhotosTableReferences),
+          Photo,
+          PrefetchHooks Function({bool recipeUuid})
+        > {
+  $$PhotosTableTableManager(_$AppDatabase db, $PhotosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$PhotosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$PhotosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$PhotosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> recipeUuid = const Value.absent(),
+                Value<String> photoName = const Value.absent(),
+                Value<String> detectedInfo = const Value.absent(),
+                Value<Uint8List> pict = const Value.absent(),
+              }) => PhotosCompanion(
+                id: id,
+                recipeUuid: recipeUuid,
+                photoName: photoName,
+                detectedInfo: detectedInfo,
+                pict: pict,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String recipeUuid,
+                required String photoName,
+                required String detectedInfo,
+                required Uint8List pict,
+              }) => PhotosCompanion.insert(
+                id: id,
+                recipeUuid: recipeUuid,
+                photoName: photoName,
+                detectedInfo: detectedInfo,
+                pict: pict,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$PhotosTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({recipeUuid = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (recipeUuid) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.recipeUuid,
+                            referencedTable: $$PhotosTableReferences
+                                ._recipeUuidTable(db),
+                            referencedColumn:
+                                $$PhotosTableReferences
+                                    ._recipeUuidTable(db)
+                                    .uuid,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PhotosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PhotosTable,
+      Photo,
+      $$PhotosTableFilterComposer,
+      $$PhotosTableOrderingComposer,
+      $$PhotosTableAnnotationComposer,
+      $$PhotosTableCreateCompanionBuilder,
+      $$PhotosTableUpdateCompanionBuilder,
+      (Photo, $$PhotosTableReferences),
+      Photo,
+      PrefetchHooks Function({bool recipeUuid})
     >;
 typedef $$RecipeTagsTableCreateCompanionBuilder =
     RecipeTagsCompanion Function({
@@ -3036,6 +3814,8 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$RecipesTableTableManager get recipes =>
       $$RecipesTableTableManager(_db, _db.recipes);
+  $$PhotosTableTableManager get photos =>
+      $$PhotosTableTableManager(_db, _db.photos);
   $$RecipeTagsTableTableManager get recipeTags =>
       $$RecipeTagsTableTableManager(_db, _db.recipeTags);
   $$IngredientsTableTableManager get ingredients =>

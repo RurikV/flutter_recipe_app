@@ -11,6 +11,8 @@ import '../widgets/ingredient/ingredients_table.dart';
 import '../widgets/step/recipe_steps_list.dart';
 import '../widgets/recipe/cooking_mode_button.dart';
 import '../widgets/comment/comments_section.dart';
+import '../screens/gallery_screen.dart';
+import '../utils/page_transitions.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   final Recipe recipe;
@@ -92,6 +94,20 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.photo_library),
+            tooltip: 'Photo Gallery',
+            onPressed: () {
+              Navigator.of(context).push(
+                SlideRightPageRoute(
+                  widget: GalleryScreen(
+                    recipeUuid: _recipe.uuid,
+                    recipeName: _recipe.name,
+                  ),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.share),
             onPressed: () {

@@ -9,7 +9,7 @@ import 'database_extensions.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Recipes, RecipeTags, Ingredients, RecipeSteps])
+@DriftDatabase(tables: [Recipes, Photos, RecipeTags, Ingredients, RecipeSteps])
 class AppDatabase extends _$AppDatabase {
   late final DatabaseExtensions _extensions;
 
@@ -52,6 +52,11 @@ class AppDatabase extends _$AppDatabase {
   Future<void> insertStepsForRecipe(String recipeUuid, List<RecipeStepsCompanion> steps) => _extensions.insertStepsForRecipe(recipeUuid, steps);
   Future<int> deleteStepsForRecipe(String recipeUuid) => _extensions.deleteStepsForRecipe(recipeUuid);
   Future<bool> updateStepStatus(int stepId, bool isCompleted) => _extensions.updateStepStatus(stepId, isCompleted);
+
+  // Photo operations
+  Future<List<Photo>> getPhotosForRecipe(String recipeUuid) => _extensions.getPhotosForRecipe(recipeUuid);
+  Future<int> insertPhoto(PhotosCompanion photo) => _extensions.insertPhoto(photo);
+  Future<int> deletePhoto(int photoId) => _extensions.deletePhoto(photoId);
 }
 
 LazyDatabase _openConnection() {
