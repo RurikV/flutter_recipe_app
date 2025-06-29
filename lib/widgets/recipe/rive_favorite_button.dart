@@ -31,8 +31,10 @@ class _RiveFavoriteButtonState extends State<RiveFavoriteButton> {
   void didUpdateWidget(RiveFavoriteButton oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Trigger the pulse animation when the favorite state changes
-    if (oldWidget.isFavorite != widget.isFavorite && widget.isFavorite) {
-      _pulseInput?.fire();
+    if (oldWidget.isFavorite != widget.isFavorite) {
+      if (widget.isFavorite) {
+        _pulseInput?.fire();
+      }
     }
     // Update the favorite state in the Rive animation
     if (_isFavoriteInput != null) {
@@ -74,7 +76,7 @@ class _RiveFavoriteButtonState extends State<RiveFavoriteButton> {
       // or the platform will be 'test'
       return const bool.fromEnvironment('FLUTTER_TEST');
     } catch (e) {
-      return true; // If there's an exception, assume we're in a test
+      return false; // If there's an exception, assume we're not in a test
     }
   }
 
@@ -82,9 +84,12 @@ class _RiveFavoriteButtonState extends State<RiveFavoriteButton> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        // Call the onPressed callback to toggle the favorite state
         widget.onPressed();
 
         // Trigger the pulse animation if the heart is becoming favorite
+        // Note: widget.isFavorite is the state before the toggle, so we trigger the animation
+        // when the current state is false (not favorite) and it's about to become true (favorite)
         if (!widget.isFavorite) {
           _pulseInput?.fire();
         }

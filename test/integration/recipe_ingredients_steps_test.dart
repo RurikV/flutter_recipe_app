@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/data/api_service.dart';
 import 'package:flutter_recipe_app/screens/recipe_detail_screen.dart';
+import 'package:flutter_recipe_app/redux/app_state.dart';
+import 'package:flutter_recipe_app/redux/store.dart';
 
 // Mock implementation of ApiService for testing
 class MockApiService extends ApiService {
@@ -61,10 +65,16 @@ void main() {
 
       print('[DEBUG_LOG] Recipe created successfully: ${createdRecipe.uuid}');
 
+      // Create a Redux store for testing
+      final Store<AppState> store = createStore();
+
       // Display the recipe in the RecipeDetailScreen
       await tester.pumpWidget(
-        MaterialApp(
-          home: RecipeDetailScreen(recipe: createdRecipe),
+        StoreProvider<AppState>(
+          store: store,
+          child: MaterialApp(
+            home: RecipeDetailScreen(recipe: createdRecipe),
+          ),
         ),
       );
 

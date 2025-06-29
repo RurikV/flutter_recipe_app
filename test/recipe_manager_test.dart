@@ -226,6 +226,15 @@ class MockDatabaseService implements DatabaseService {
     }
     return [];
   }
+
+  @override
+  Future<bool> isInFavorites(String recipeId) async {
+    // Mock implementation
+    if (_recipes.containsKey(recipeId)) {
+      return _recipes[recipeId]!.isFavorite;
+    }
+    return false;
+  }
 }
 
 // Mock implementation of ConnectivityService for testing
@@ -409,6 +418,64 @@ class MockRecipeRepository implements RecipeRepository {
   }
 }
 
+// Failing repository implementation for testing exception handling
+class _FailingRecipeRepository implements RecipeRepository {
+  @override
+  Future<List<Recipe>> getRecipes() async {
+    throw Exception('Failed to get recipes');
+  }
+
+  @override
+  Future<List<Recipe>> getFavoriteRecipes() async {
+    throw Exception('Failed to get favorite recipes');
+  }
+
+  @override
+  Future<Recipe?> getRecipeByUuid(String uuid) async {
+    throw Exception('Failed to get recipe by UUID');
+  }
+
+  @override
+  Future<void> saveRecipe(Recipe recipe) async {
+    throw Exception('Failed to save recipe');
+  }
+
+  @override
+  Future<void> updateRecipe(Recipe recipe) async {
+    throw Exception('Failed to update recipe');
+  }
+
+  @override
+  Future<void> deleteRecipe(String uuid) async {
+    throw Exception('Failed to delete recipe');
+  }
+
+  @override
+  Future<void> toggleFavorite(String uuid) async {
+    throw Exception('Failed to toggle favorite');
+  }
+
+  @override
+  Future<List<String>> getAvailableIngredients() async {
+    throw Exception('Failed to get available ingredients');
+  }
+
+  @override
+  Future<List<String>> getAvailableUnits() async {
+    throw Exception('Failed to get available units');
+  }
+
+  @override
+  Future<void> addComment(String recipeUuid, Comment comment) async {
+    throw Exception('Failed to add comment');
+  }
+
+  @override
+  Future<List<Comment>> getComments(String recipeUuid) async {
+    throw Exception('Failed to get comments');
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   group('Recipe Manager Tests', () {
@@ -519,6 +586,36 @@ void main() {
       expect(recipes.isNotEmpty, isTrue);
 
       print('[DEBUG_LOG] Retrieved ${recipes.length} recipes without internet connection');
+    });
+
+    test('Get recipes throws exception when repository fails', () async {
+      // Create a failing repository
+      final failingRepository = _FailingRecipeRepository();
+
+      // Create a recipe manager with failing repository
+      final failingRecipeManager = RecipeManager(
+        recipeRepository: failingRepository,
+      );
+
+      // Expect an exception when getting recipes
+      expect(() => failingRecipeManager.getRecipes(), throwsException);
+
+      print('[DEBUG_LOG] Successfully threw exception when repository failed to get recipes');
+    });
+
+    test('Get favorite recipes throws exception when repository fails', () async {
+      // Create a failing repository
+      final failingRepository = _FailingRecipeRepository();
+
+      // Create a recipe manager with failing repository
+      final failingRecipeManager = RecipeManager(
+        recipeRepository: failingRepository,
+      );
+
+      // Expect an exception when getting favorite recipes
+      expect(() => failingRecipeManager.getFavoriteRecipes(), throwsException);
+
+      print('[DEBUG_LOG] Successfully threw exception when repository failed to get favorite recipes');
     });
 
     test('Toggle favorite status with internet connection', () async {

@@ -18,8 +18,16 @@ class DatabaseService {
 
   // Get favorite recipes with their related data
   Future<List<app_model.Recipe>> getFavoriteRecipes() async {
+    // Get recipes from the Favorites table, ordered by the 'order' field
     final recipes = await _database.getFavoriteRecipes();
+
+    // Convert database recipes to app model recipes with all related data
     return Future.wait(recipes.map((recipe) => _getCompleteRecipe(recipe)).toList());
+  }
+
+  // Check if a recipe is in favorites
+  Future<bool> isInFavorites(String recipeId) async {
+    return _database.isInFavorites(recipeId);
   }
 
   // Get a recipe by UUID with all related data
@@ -36,6 +44,9 @@ class DatabaseService {
     final tags = await _database.getTagsForRecipe(recipe.uuid);
     final ingredients = await _database.getIngredientsForRecipe(recipe.uuid);
     final steps = await _database.getStepsForRecipe(recipe.uuid);
+
+    // Check if the recipe is in favorites
+    final isInFavorites = await _database.isInFavorites(recipe.uuid);
 
     // Convert the images string from the database to a List<RecipeImage>
     List<RecipeImage> recipeImages = [];
@@ -78,7 +89,7 @@ class DatabaseService {
         duration: int.tryParse(s.duration) ?? 0,
         isCompleted: s.isCompleted,
       )).toList(),
-      isFavorite: recipe.isFavorite,
+      isFavorite: isInFavorites, // Set isFavorite based on Favorites table
       comments: [], // Empty list since we removed the Comments table
     );
   }
@@ -89,6 +100,9 @@ class DatabaseService {
     await _database.transaction(() async {
       // Check if the recipe already exists
       final existingRecipe = await _database.getRecipeByUuid(recipe.uuid);
+
+      // Check if the recipe is currently in favorites
+      final wasInFavorites = await _database.isInFavorites(recipe.uuid);
 
       // Convert the List<RecipeImage> to a JSON string for storage
       String imagesJson = "";
@@ -120,7 +134,7 @@ class DatabaseService {
             difficulty: Value(recipe.difficulty),
             duration: Value(recipe.duration),
             rating: Value(recipe.rating),
-            isFavorite: Value(recipe.isFavorite),
+            isFavorite: Value(recipe.isFavorite), // Keep for backward compatibility
           ),
         );
       } else {
@@ -135,9 +149,18 @@ class DatabaseService {
             difficulty: recipe.difficulty,
             duration: recipe.duration,
             rating: recipe.rating,
-            isFavorite: Value(recipe.isFavorite),
+            isFavorite: Value(recipe.isFavorite), // Keep for backward compatibility
           ),
         );
+      }
+
+      // Handle favorites status
+      if (recipe.isFavorite && !wasInFavorites) {
+        // Add to favorites if it wasn't already there
+        await _database.addToFavorites(recipe.uuid);
+      } else if (!recipe.isFavorite && wasInFavorites) {
+        // Remove from favorites if it was there
+        await _database.removeFromFavorites(recipe.uuid);
       }
 
       // Delete existing tags, ingredients, and steps for this recipe
@@ -191,18 +214,41 @@ class DatabaseService {
 
   // Toggle favorite status
   Future<bool> toggleFavorite(String recipeId) async {
-    final recipe = await _database.getRecipeByUuid(recipeId);
-    if (recipe == null) {
+    try {
+      // Check if the recipe is already in favorites
+      final isInFavorites = await _database.isInFavorites(recipeId);
+
+      if (isInFavorites) {
+        // Remove from favorites
+        await _database.removeFromFavorites(recipeId);
+      } else {
+        // Add to favorites
+        await _database.addToFavorites(recipeId);
+      }
+
+      // For backward compatibility, also update the isFavorite flag in the recipe
+      final recipe = await _database.getRecipeByUuid(recipeId);
+      if (recipe != null) {
+        await _database.updateRecipe(
+          RecipesCompanion(
+            uuid: Value(recipeId),
+            name: Value(recipe.name),
+            images: Value(recipe.images),
+            description: Value(recipe.description),
+            instructions: Value(recipe.instructions),
+            difficulty: Value(recipe.difficulty),
+            duration: Value(recipe.duration),
+            rating: Value(recipe.rating),
+            isFavorite: Value(!isInFavorites), // Toggle the flag
+          ),
+        );
+      }
+
+      return true;
+    } catch (e) {
+      print('Error toggling favorite status: $e');
       return false;
     }
-
-    final newStatus = !recipe.isFavorite;
-    return _database.updateRecipe(
-      RecipesCompanion(
-        uuid: Value(recipeId),
-        isFavorite: Value(newStatus),
-      ),
-    );
   }
 
   // Update a recipe

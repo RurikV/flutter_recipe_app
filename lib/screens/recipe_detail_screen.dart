@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 import '../../models/recipe.dart';
 import '../../models/comment.dart';
 import '../../models/recipe_step.dart';
@@ -13,6 +14,8 @@ import '../widgets/recipe/cooking_mode_button.dart';
 import '../widgets/comment/comments_section.dart';
 import '../screens/gallery_screen.dart';
 import '../utils/page_transitions.dart';
+import '../redux/app_state.dart';
+import '../redux/actions.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   final Recipe recipe;
@@ -35,13 +38,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     _recipe = widget.recipe;
   }
 
-  void _toggleFavorite() async {
-    final success = await _recipeManager.toggleFavorite(_recipe.uuid);
-    if (success && mounted) {
-      setState(() {
-        _recipe = _recipe.copyWith(isFavorite: !_recipe.isFavorite);
-      });
-    }
+  void _toggleFavorite() {
+    // Get the store from the StoreProvider
+    final store = StoreProvider.of<AppState>(context);
+    // Dispatch the toggle favorite action to the Redux store
+    store.dispatch(ToggleFavoriteAction(_recipe.uuid));
   }
 
   void _addComment(String commentText) async {
@@ -128,10 +129,22 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Recipe header with name and favorite button
-                    RecipeHeader(
-                      recipeName: _recipe.name,
-                      isFavorite: _recipe.isFavorite,
-                      onFavoriteToggle: _toggleFavorite,
+                    StoreConnector<AppState, bool>(
+                      converter: (store) {
+                        // Find the recipe in the Redux store
+                        final storeRecipe = store.state.recipes.firstWhere(
+                          (r) => r.uuid == _recipe.uuid,
+                          orElse: () => _recipe,
+                        );
+                        return storeRecipe.isFavorite;
+                      },
+                      builder: (context, isFavorite) {
+                        return RecipeHeader(
+                          recipeName: _recipe.name,
+                          isFavorite: isFavorite,
+                          onFavoriteToggle: _toggleFavorite,
+                        );
+                      },
                     ),
 
                     // Duration display

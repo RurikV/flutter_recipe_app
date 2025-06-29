@@ -27,7 +27,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -39,6 +39,7 @@ class AppDatabase extends _$AppDatabase {
         // Add the Photos table if upgrading from version 1
         await m.createTable(photos);
       }
+      // Removed Favorites table migration as we're using the isFavorite field in Recipes table
     },
   );
 
@@ -71,6 +72,11 @@ class AppDatabase extends _$AppDatabase {
   Future<List<Photo>> getPhotosForRecipe(String recipeUuid) => _extensions.getPhotosForRecipe(recipeUuid);
   Future<int> insertPhoto(PhotosCompanion photo) => _extensions.insertPhoto(photo);
   Future<int> deletePhoto(int photoId) => _extensions.deletePhoto(photoId);
+
+  // Favorites operations (using isFavorite field in Recipes table)
+  Future<void> addToFavorites(String recipeUuid) => _extensions.addToFavorites(recipeUuid);
+  Future<void> removeFromFavorites(String recipeUuid) => _extensions.removeFromFavorites(recipeUuid);
+  Future<bool> isInFavorites(String recipeUuid) => _extensions.isInFavorites(recipeUuid);
 }
 
 LazyDatabase _openConnection() {
