@@ -77,9 +77,8 @@ class RecipeManager {
       return await _recipeRepository.getRecipes();
     } catch (e) {
       print('Error in getRecipes: $e');
-      // If all else fails, return the dummy recipes as a last resort
-      print('Returning dummy recipes as fallback');
-      return _dummyRecipes;
+      // Rethrow the error instead of falling back to dummy recipes
+      throw Exception('Failed to get recipes: $e');
     }
   }
 
@@ -90,9 +89,8 @@ class RecipeManager {
       return await _recipeRepository.getFavoriteRecipes();
     } catch (e) {
       print('Error in getFavoriteRecipes: $e');
-      // If all else fails, return the dummy favorite recipes as a last resort
-      print('Returning dummy favorite recipes as fallback');
-      return _dummyRecipes.where((recipe) => recipe.isFavorite).toList();
+      // Rethrow the error instead of falling back to dummy recipes
+      throw Exception('Failed to get favorite recipes: $e');
     }
   }
 

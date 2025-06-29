@@ -11,6 +11,9 @@ import 'redux/store.dart';
 import 'redux/actions.dart';
 
 void main() {
+  // Initialize Flutter binding before accessing platform services
+  WidgetsFlutterBinding.ensureInitialized();
+
   final Store<AppState> store = createStore();
 
   // Load initial data

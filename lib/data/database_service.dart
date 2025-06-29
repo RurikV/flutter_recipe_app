@@ -200,6 +200,13 @@ class DatabaseService {
     return _database.updateRecipe(
       RecipesCompanion(
         uuid: Value(recipeId),
+        name: Value(recipe.name),
+        images: Value(recipe.images),
+        description: Value(recipe.description),
+        instructions: Value(recipe.instructions),
+        difficulty: Value(recipe.difficulty),
+        duration: Value(recipe.duration),
+        rating: Value(recipe.rating),
         isFavorite: Value(newStatus),
       ),
     );
