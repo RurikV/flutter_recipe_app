@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/recipe_image.dart';
 import '../../services/image_service.dart';
-import '../../services/tensor_detection_service.dart';
+import '../../services/ssd_detection_service.dart';
 
 class RecipeImageGallery extends StatefulWidget {
   final List<RecipeImage> images;
@@ -22,7 +22,7 @@ class RecipeImageGallery extends StatefulWidget {
 
 class _RecipeImageGalleryState extends State<RecipeImageGallery> {
   final ImageService _imageService = ImageService();
-  final ObjectDetectionService _objectDetectionService = ObjectDetectionService();
+  final SSDObjectDetectionService _objectDetectionService = SSDObjectDetectionService();
   int _currentIndex = 0;
   bool _isProcessing = false;
 

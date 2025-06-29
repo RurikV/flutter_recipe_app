@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/recipe.dart';
 import '../domain/usecases/recipe_manager.dart';
+import '../utils/page_transition.dart';
 import '../widgets/recipe/recipe_list.dart';
 import 'add_recipe_screen.dart';
 
@@ -41,10 +42,11 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => AddRecipeScreen(
+            CustomPageRoute(
+              page: AddRecipeScreen(
                 onRecipeAdded: _loadRecipes,
               ),
+              transitionType: TransitionType.fadeAndScale,
             ),
           );
         },

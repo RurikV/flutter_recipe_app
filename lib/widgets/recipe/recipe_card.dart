@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../models/recipe.dart';
 import '../../screens/recipe_detail_screen.dart';
+import '../../utils/page_transition.dart';
 import 'bookmark_indicator.dart';
 
 class RecipeCard extends StatelessWidget {
@@ -14,8 +15,9 @@ class RecipeCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => RecipeDetailScreen(recipe: recipe),
+          CustomPageRoute(
+            page: RecipeDetailScreen(recipe: recipe),
+            transitionType: TransitionType.rightToLeft,
           ),
         );
       },

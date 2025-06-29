@@ -1,13 +1,13 @@
-import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
-import 'package:flutter/foundation.dart' as f;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_recipe_app/database/app_database.dart';
-import 'package:flutter_recipe_app/utils/gallery_utils.dart';
-import 'package:flutter_recipe_app/utils/tflite_isolate.dart';
+import 'package:flutter_recipe_app/services/ssd_detection_service.dart';
+import 'package:flutter_recipe_app/models/recipe_image.dart';
 
 class GalleryScreen extends StatefulWidget {
   final String recipeUuid;
@@ -25,6 +25,7 @@ class GalleryScreen extends StatefulWidget {
 
 class GalleryScreenState extends State<GalleryScreen> {
   final AppDatabase _db = AppDatabase();
+  final SSDObjectDetectionService _objectDetectionService = SSDObjectDetectionService();
   List<Photo> _photos = [];
   bool _isLoading = false;
 
@@ -32,6 +33,32 @@ class GalleryScreenState extends State<GalleryScreen> {
   void initState() {
     super.initState();
     _loadPhotos();
+    _objectDetectionService.initialize();
+  }
+
+  @override
+  void dispose() {
+    _objectDetectionService.dispose();
+    super.dispose();
+  }
+
+  // Format detected objects into a readable string
+  String _formatDetectedObjects(List<DetectedObject> objects) {
+    if (objects.isEmpty) {
+      return 'No objects detected';
+    }
+
+    // Sort by confidence (highest first)
+    final sortedObjects = List<DetectedObject>.from(objects)
+      ..sort((a, b) => b.confidence.compareTo(a.confidence));
+
+    // Take top 3 objects
+    final topObjects = sortedObjects.take(3).toList();
+
+    // Format as a string
+    return topObjects.map((obj) => 
+      '${obj.label} (${(obj.confidence * 100).toStringAsFixed(1)}%)'
+    ).join(', ');
   }
 
   Future<void> _loadPhotos() async {
@@ -72,36 +99,22 @@ class GalleryScreenState extends State<GalleryScreen> {
       // Read image as bytes
       final Uint8List imageBytes = await image.readAsBytes();
 
-      // Load labels file and model file on the main isolate
-      final labelsContent = await rootBundle.loadString('assets/models/labels.txt');
-      final modelData = await rootBundle.load('assets/models/model_unquant.tflite');
-      final modelBuffer = modelData.buffer.asUint8List();
+      // Save image to a temporary file
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/${path.basename(image.path)}');
+      await tempFile.writeAsBytes(imageBytes);
 
-      // Process image with TensorFlow Lite
-      final outputJson = await f.compute(
-        TfliteIsolate.runModelOnBinary,
-        [
-          imageBytes,
-          labelsContent,
-          modelBuffer, // Pass model buffer instead of path
-        ],
-      );
+      // Detect objects in the image
+      final detectedObjects = await _objectDetectionService.detectObjects(tempFile.path);
 
-      // Parse the result
-      final Map<String, dynamic> resultMap = json.decode(outputJson);
-
-      // Check if there's an error
-      if (resultMap.containsKey('error')) {
-        print(resultMap['error']);
-      }
-
-      final TfliteDto tfliteObject = TfliteDto.fromJson(resultMap);
+      // Convert detected objects to a string representation
+      final detectedInfo = _formatDetectedObjects(detectedObjects);
 
       // Save to database
       final photo = PhotosCompanion.insert(
         recipeUuid: widget.recipeUuid,
         photoName: image.name,
-        detectedInfo: tfliteObject.toString(),
+        detectedInfo: detectedInfo,
         pict: imageBytes,
       );
 
