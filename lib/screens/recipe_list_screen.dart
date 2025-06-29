@@ -16,13 +16,6 @@ class RecipeListScreen extends StatefulWidget {
 }
 
 class _RecipeListScreenState extends State<RecipeListScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Dispatch action to load recipes when the screen is initialized
-    StoreProvider.of<AppState>(context, listen: false)
-        .dispatch(LoadRecipesAction());
-  }
 
   void _loadRecipes() {
     // Dispatch action to load recipes

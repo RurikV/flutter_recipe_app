@@ -15,13 +15,6 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Dispatch action to load favorite recipes when the screen is initialized
-    StoreProvider.of<AppState>(context, listen: false)
-        .dispatch(LoadFavoriteRecipesAction());
-  }
 
   @override
   Widget build(BuildContext context) {
