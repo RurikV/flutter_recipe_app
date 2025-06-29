@@ -4,7 +4,6 @@ import 'package:flutter_recipe_app/models/recipe_step.dart' as app_model;
 import 'package:flutter_recipe_app/models/ingredient.dart' as app_model;
 import 'package:flutter_recipe_app/models/comment.dart' as app_model;
 import 'package:flutter_recipe_app/data/database_service.dart';
-import 'package:flutter_recipe_app/models/recipe_image.dart';
 
 // Mock implementation of DatabaseService for testing
 class MockDatabaseService implements DatabaseService {

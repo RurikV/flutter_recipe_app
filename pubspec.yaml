@@ -72,6 +72,10 @@ dependencies:
 
   # PageView is used for image gallery (built into Flutter)
 
+  # Redux for state management
+  redux: ^5.0.0
+  flutter_redux: ^0.10.0
+
   ffi: any
   quiver: any
 dev_dependencies:

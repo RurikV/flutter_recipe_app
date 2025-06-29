@@ -1,0 +1,147 @@
+import 'package:flutter_recipe_app/models/recipe.dart';
+import 'package:flutter_recipe_app/models/recipe_step.dart';
+import 'package:flutter_recipe_app/models/comment.dart';
+import 'package:flutter_recipe_app/redux/app_state.dart';
+import 'package:flutter_recipe_app/redux/actions.dart';
+
+// Main reducer that combines all reducers
+AppState appReducer(AppState state, dynamic action) {
+  return AppState(
+    recipes: recipesReducer(state.recipes, action),
+    favoriteRecipes: favoriteRecipesReducer(state.favoriteRecipes, action),
+    isLoading: loadingReducer(state.isLoading, action),
+    error: errorReducer(state.error, action),
+  );
+}
+
+// Recipes reducer
+List<Recipe> recipesReducer(List<Recipe> recipes, dynamic action) {
+  if (action is RecipesLoadedAction) {
+    return action.recipes.cast<Recipe>();
+  } else if (action is FavoriteToggledAction) {
+    return recipes.map((recipe) {
+      if (recipe.uuid == action.recipeId) {
+        return recipe.copyWith(isFavorite: action.isFavorite);
+      }
+      return recipe;
+    }).toList();
+  } else if (action is CommentAddedAction) {
+    return recipes.map((recipe) {
+      if (recipe.uuid == action.recipeId) {
+        // Create a new comment
+        final comment = action.comment as Comment;
+        // Create a new list with all existing comments
+        final List<Comment> updatedComments = List<Comment>.from(recipe.comments);
+        // Add the new comment
+        updatedComments.add(comment);
+        // Return a new recipe with updated comments
+        return Recipe(
+          uuid: recipe.uuid,
+          name: recipe.name,
+          images: recipe.images,
+          mainImage: recipe.mainImage,
+          description: recipe.description,
+          instructions: recipe.instructions,
+          difficulty: recipe.difficulty,
+          duration: recipe.duration,
+          rating: recipe.rating,
+          tags: recipe.tags,
+          ingredients: recipe.ingredients,
+          steps: recipe.steps,
+          isFavorite: recipe.isFavorite,
+          comments: updatedComments,
+        );
+      }
+      return recipe;
+    }).toList();
+  } else if (action is StepStatusUpdatedAction) {
+    return recipes.map((recipe) {
+      if (recipe.uuid == action.recipeId) {
+        // Create a new list with all existing steps
+        final List<RecipeStep> updatedSteps = List<RecipeStep>.from(recipe.steps);
+        // Update the step at the specified index
+        updatedSteps[action.stepIndex] = RecipeStep(
+          id: recipe.steps[action.stepIndex].id,
+          name: recipe.steps[action.stepIndex].name,
+          duration: recipe.steps[action.stepIndex].duration,
+          isCompleted: action.isCompleted,
+        );
+        // Return a new recipe with updated steps
+        return Recipe(
+          uuid: recipe.uuid,
+          name: recipe.name,
+          images: recipe.images,
+          mainImage: recipe.mainImage,
+          description: recipe.description,
+          instructions: recipe.instructions,
+          difficulty: recipe.difficulty,
+          duration: recipe.duration,
+          rating: recipe.rating,
+          tags: recipe.tags,
+          ingredients: recipe.ingredients,
+          steps: updatedSteps,
+          isFavorite: recipe.isFavorite,
+          comments: recipe.comments,
+        );
+      }
+      return recipe;
+    }).toList();
+  }
+  return recipes;
+}
+
+// Favorite recipes reducer
+List<Recipe> favoriteRecipesReducer(List<Recipe> favoriteRecipes, dynamic action) {
+  if (action is FavoriteRecipesLoadedAction) {
+    return action.favoriteRecipes.cast<Recipe>();
+  } else if (action is FavoriteToggledAction) {
+    if (action.isFavorite) {
+      // Add to favorites if not already there
+      final recipe = favoriteRecipes.firstWhere(
+        (r) => r.uuid == action.recipeId,
+        orElse: () => Recipe(
+          uuid: action.recipeId,
+          name: '',
+          images: null,
+          description: '',
+          instructions: '',
+          difficulty: 0,
+          duration: '',
+          rating: 0,
+          tags: [],
+          isFavorite: true,
+        ),
+      );
+      if (!favoriteRecipes.any((r) => r.uuid == action.recipeId)) {
+        return [...favoriteRecipes, recipe.copyWith(isFavorite: true)];
+      }
+    } else {
+      // Remove from favorites
+      return favoriteRecipes.where((recipe) => recipe.uuid != action.recipeId).toList();
+    }
+  }
+  return favoriteRecipes;
+}
+
+// Loading reducer
+bool loadingReducer(bool isLoading, dynamic action) {
+  if (action is LoadRecipesAction || action is LoadFavoriteRecipesAction) {
+    return true;
+  } else if (action is RecipesLoadedAction || 
+             action is RecipesLoadErrorAction || 
+             action is FavoriteRecipesLoadedAction) {
+    return false;
+  }
+  return isLoading;
+}
+
+// Error reducer
+String errorReducer(String error, dynamic action) {
+  if (action is RecipesLoadErrorAction) {
+    return action.error;
+  } else if (action is RecipesLoadedAction || 
+             action is FavoriteRecipesLoadedAction) {
+    return '';
+  }
+  return error;
+}
