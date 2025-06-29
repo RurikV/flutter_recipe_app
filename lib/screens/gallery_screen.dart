@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' as f;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_recipe_app/database/app_database.dart';
 import 'package:flutter_recipe_app/utils/gallery_utils.dart';
@@ -44,6 +45,7 @@ class GalleryScreenState extends State<GalleryScreen> {
         _photos = photos;
       });
     } catch (e) {
+      print('Error loading photos: $e');
       _showSnackBar('Error loading photos: $e');
     } finally {
       setState(() {
@@ -70,18 +72,28 @@ class GalleryScreenState extends State<GalleryScreen> {
       // Read image as bytes
       final Uint8List imageBytes = await image.readAsBytes();
 
+      // Load labels file on the main isolate
+      final labelsContent = await rootBundle.loadString('assets/models/labels.txt');
+
       // Process image with TensorFlow Lite
       final outputJson = await f.compute(
         TfliteIsolate.runModelOnBinary,
         [
           imageBytes,
-          'assets/models/labels.txt',
+          labelsContent,
           'assets/models/model_unquant.tflite',
         ],
       );
 
       // Parse the result
-      final TfliteDto tfliteObject = TfliteDto.fromJson(json.decode(outputJson));
+      final Map<String, dynamic> resultMap = json.decode(outputJson);
+
+      // Check if there's an error
+      if (resultMap.containsKey('error')) {
+        print(resultMap['error']);
+      }
+
+      final TfliteDto tfliteObject = TfliteDto.fromJson(resultMap);
 
       // Save to database
       final photo = PhotosCompanion.insert(
@@ -94,6 +106,7 @@ class GalleryScreenState extends State<GalleryScreen> {
       await _db.insertPhoto(photo);
       await _loadPhotos();
     } catch (e) {
+      print('Error processing image: $e');
       _showSnackBar('Error processing image: $e');
     } finally {
       setState(() {
@@ -107,6 +120,7 @@ class GalleryScreenState extends State<GalleryScreen> {
       await _db.deletePhoto(photoId);
       await _loadPhotos();
     } catch (e) {
+      print('Error deleting photo: $e');
       _showSnackBar('Error deleting photo: $e');
     }
   }

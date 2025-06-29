@@ -10,7 +10,7 @@ class TfliteIsolate {
   static Future<dynamic> runModelOnBinary(List<dynamic> args) async {
     try {
       final binary = args[0] as Uint8List;
-      final labelsPath = args[1] as String;
+      final labelsContent = args[1] as String;
       final modelPath = args[2] as String;
 
       // Process image
@@ -35,9 +35,8 @@ class TfliteIsolate {
       // Run inference
       interpreter.run(inputBuffer, outputBuffer);
 
-      // Load labels
-      final labelsData = await rootBundle.loadString(labelsPath);
-      final labels = labelsData.split('\n');
+      // Parse labels from the content
+      final labels = labelsContent.split('\n');
 
       // Process results
       var results = <Map<String, dynamic>>[];
@@ -68,8 +67,15 @@ class TfliteIsolate {
 
       return json.encode(results[0]);
     } catch (e) {
-      print('TfliteIsolate error: $e');
-      return "Не распознал фото";
+      final errorMessage = 'TfliteIsolate error: $e';
+      print(errorMessage);
+      // Return a valid JSON object with error information
+      return json.encode({
+        'index': -1,
+        'label': 'Не распознал фото: $e',
+        'confidence': 0.0,
+        'error': errorMessage,
+      });
     }
   }
 

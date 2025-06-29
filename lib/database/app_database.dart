@@ -27,7 +27,20 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (Migrator m) {
+      return m.createAll();
+    },
+    onUpgrade: (Migrator m, int from, int to) async {
+      if (from < 2) {
+        // Add the Photos table if upgrading from version 1
+        await m.createTable(photos);
+      }
+    },
+  );
 
   // Recipe operations
   Future<List<Recipe>> getAllRecipes() => _extensions.getAllRecipes();

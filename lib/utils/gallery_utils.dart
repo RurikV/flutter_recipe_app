@@ -22,7 +22,7 @@ class Utility {
   static Future<String?> pickImageFromGallery() async {
     final XFile? imgFile = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (imgFile == null) return null;
-    
+
     final Uint8List bytes = await imgFile.readAsBytes();
     return base64Encode(bytes);
   }
@@ -36,9 +36,16 @@ class TfliteDto {
   TfliteDto({this.confidence, this.index, this.label});
 
   TfliteDto.fromJson(Map<String, dynamic> json) {
-    confidence = json['confidence'];
-    index = json['index'];
-    label = json['label'];
+    try {
+      confidence = json['confidence'] as double?;
+      index = json['index'] as int?;
+      label = json['label'] as String?;
+    } catch (e) {
+      print('Error parsing TfliteDto from JSON: $e');
+      confidence = 0.0;
+      index = -1;
+      label = 'Error: $e';
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -51,6 +58,14 @@ class TfliteDto {
 
   @override
   String toString() {
-    return '$label (${(confidence! * 100.0).toStringAsFixed(2)}%)';
+    try {
+      if (confidence == null || label == null) {
+        return 'Unknown object';
+      }
+      return '$label (${(confidence! * 100.0).toStringAsFixed(2)}%)';
+    } catch (e) {
+      print('Error in TfliteDto.toString(): $e');
+      return 'Error: $e';
+    }
   }
 }
