@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_colors.dart';
 
 /// A stateful widget that animates between checked and unchecked states
 class AnimatedStepCheckbox extends StatefulWidget {
   final bool isCompleted;
   final bool isCookingMode;
-  final Function(bool) onChanged;
+  final ValueChanged<bool> onChanged;
 
   const AnimatedStepCheckbox({
     super.key,
@@ -19,9 +20,9 @@ class AnimatedStepCheckbox extends StatefulWidget {
 
 class _AnimatedStepCheckboxState extends State<AnimatedStepCheckbox> with SingleTickerProviderStateMixin {
   // Animation controller for explicit animation
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
+  late final AnimationController _controller;
+  late final Animation<double> _scaleAnimation;
+  late final Animation<double> _opacityAnimation;
 
   @override
   void initState() {
@@ -75,19 +76,14 @@ class _AnimatedStepCheckboxState extends State<AnimatedStepCheckbox> with Single
               value: widget.isCompleted,
               onChanged: widget.isCookingMode ? (value) {
                 final newValue = value ?? false;
-                // Animate the checkbox before calling the parent's callback
-                if (newValue) {
-                  _controller.forward();
-                } else {
-                  _controller.reverse();
-                }
+                // Don't manually trigger animation here as it will be handled by didUpdateWidget
                 widget.onChanged(newValue);
               } : null,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(5),
               ),
               side: BorderSide(
-                color: widget.isCookingMode ? const Color(0xFF165932) : const Color(0xFF797676),
+                color: widget.isCookingMode ? AppColors.checkboxActiveCooking : AppColors.checkboxInactive,
                 width: 4,
               ),
             ),

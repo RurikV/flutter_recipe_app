@@ -4,13 +4,13 @@ class BookmarkIndicator extends StatelessWidget {
   final int count;
 
   const BookmarkIndicator({
-    Key? key,
+    super.key,
     this.count = 1,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 66,
       height: 23,
       child: CustomPaint(

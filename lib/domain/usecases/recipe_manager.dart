@@ -80,65 +80,102 @@ class RecipeManager {
   // Method to get recipes
   Future<List<Recipe>> getRecipes() async {
     try {
-      // Check if the device is connected to the internet
+      // Always try to get recipes from the API first
       final isConnected = await _connectivityService.isConnected();
 
       if (isConnected) {
-        // Get recipes from the API
-        final recipes = await _apiService.getRecipes();
+        try {
+          // Get recipes from the API
+          print('Fetching recipes from API: ${_apiService.baseUrl}');
+          final recipes = await _apiService.getRecipes();
+          print('Successfully fetched ${recipes.length} recipes from API');
 
-        // Save recipes to the local database
-        for (var recipe in recipes) {
-          await _databaseService.saveRecipe(recipe);
+          // Save recipes to the local database
+          for (var recipe in recipes) {
+            await _databaseService.saveRecipe(recipe);
+          }
+
+          return recipes;
+        } catch (apiError) {
+          print('Error fetching recipes from API: $apiError');
+          // If API call fails, try to get recipes from the local database
+          final dbRecipes = await _databaseService.getAllRecipes();
+          if (dbRecipes.isNotEmpty) {
+            print('Returning ${dbRecipes.length} recipes from local database');
+            return dbRecipes;
+          }
+          // If database is empty, rethrow the API error to be caught by the outer catch block
+          throw apiError;
         }
-
-        return recipes;
       } else {
+        print('No internet connection, fetching recipes from local database');
         // Get recipes from the local database
-        return await _databaseService.getAllRecipes();
+        final dbRecipes = await _databaseService.getAllRecipes();
+        if (dbRecipes.isNotEmpty) {
+          print('Returning ${dbRecipes.length} recipes from local database');
+          return dbRecipes;
+        }
+        // If database is empty, throw an error to be caught by the outer catch block
+        throw Exception('No internet connection and no recipes in local database');
       }
     } catch (e) {
-      // If there's an error, try to get recipes from the local database
-      try {
-        return await _databaseService.getAllRecipes();
-      } catch (e) {
-        // If that also fails, return the dummy recipes as a last resort
-        return _dummyRecipes;
-      }
+      print('Error in getRecipes: $e');
+      // If all else fails, return the dummy recipes as a last resort
+      print('Returning dummy recipes as fallback');
+      return _dummyRecipes;
     }
   }
 
   // Method to get favorite recipes
   Future<List<Recipe>> getFavoriteRecipes() async {
     try {
-      // Check if the device is connected to the internet
+      // Always try to get recipes from the API first
       final isConnected = await _connectivityService.isConnected();
 
       if (isConnected) {
-        // Get all recipes from the API
-        final recipes = await _apiService.getRecipes();
+        try {
+          // Get all recipes from the API
+          print('Fetching recipes from API for favorites: ${_apiService.baseUrl}');
+          final recipes = await _apiService.getRecipes();
+          print('Successfully fetched ${recipes.length} recipes from API');
 
-        // Filter to get only favorites
-        final favoriteRecipes = recipes.where((recipe) => recipe.isFavorite).toList();
+          // Filter to get only favorites
+          final favoriteRecipes = recipes.where((recipe) => recipe.isFavorite).toList();
+          print('Found ${favoriteRecipes.length} favorite recipes');
 
-        // Save recipes to the local database
-        for (var recipe in recipes) {
-          await _databaseService.saveRecipe(recipe);
+          // Save recipes to the local database
+          for (var recipe in recipes) {
+            await _databaseService.saveRecipe(recipe);
+          }
+
+          return favoriteRecipes;
+        } catch (apiError) {
+          print('Error fetching recipes from API for favorites: $apiError');
+          // If API call fails, try to get favorite recipes from the local database
+          final dbFavorites = await _databaseService.getFavoriteRecipes();
+          if (dbFavorites.isNotEmpty) {
+            print('Returning ${dbFavorites.length} favorite recipes from local database');
+            return dbFavorites;
+          }
+          // If database is empty, rethrow the API error to be caught by the outer catch block
+          throw apiError;
         }
-
-        return favoriteRecipes;
       } else {
+        print('No internet connection, fetching favorite recipes from local database');
         // Get favorite recipes from the local database
-        return await _databaseService.getFavoriteRecipes();
+        final dbFavorites = await _databaseService.getFavoriteRecipes();
+        if (dbFavorites.isNotEmpty) {
+          print('Returning ${dbFavorites.length} favorite recipes from local database');
+          return dbFavorites;
+        }
+        // If database is empty, throw an error to be caught by the outer catch block
+        throw Exception('No internet connection and no favorite recipes in local database');
       }
     } catch (e) {
-      // If there's an error, try to get favorite recipes from the local database
-      try {
-        return await _databaseService.getFavoriteRecipes();
-      } catch (e) {
-        // If that also fails, return the dummy favorite recipes as a last resort
-        return _dummyRecipes.where((recipe) => recipe.isFavorite).toList();
-      }
+      print('Error in getFavoriteRecipes: $e');
+      // If all else fails, return the dummy favorite recipes as a last resort
+      print('Returning dummy favorite recipes as fallback');
+      return _dummyRecipes.where((recipe) => recipe.isFavorite).toList();
     }
   }
 

@@ -6,11 +6,13 @@ import '../domain/usecases/recipe_manager.dart';
 import '../utils/entity_converters.dart';
 import '../widgets/recipe/recipe_header.dart';
 import '../widgets/recipe/duration_display.dart';
-import '../widgets/recipe/recipe_image.dart';
+import '../widgets/recipe/recipe_image_gallery.dart';
 import '../widgets/ingredient/ingredients_table.dart';
 import '../widgets/step/recipe_steps_list.dart';
 import '../widgets/recipe/cooking_mode_button.dart';
 import '../widgets/comment/comments_section.dart';
+import '../screens/gallery_screen.dart';
+import '../utils/page_transitions.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   final Recipe recipe;
@@ -25,6 +27,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   final RecipeManager _recipeManager = RecipeManager();
   late Recipe _recipe;
   bool _isCookingMode = false;
+
 
   @override
   void initState() {
@@ -92,6 +95,20 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.photo_library),
+            tooltip: 'Photo Gallery',
+            onPressed: () {
+              Navigator.of(context).push(
+                SlideRightPageRoute(
+                  widget: GalleryScreen(
+                    recipeUuid: _recipe.uuid,
+                    recipeName: _recipe.name,
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.share),
             onPressed: () {
               // Share functionality would go here
@@ -102,7 +119,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       body: OrientationBuilder(
         builder: (context, orientation) {
           return Center(
-            child: Container(
+            child: SizedBox(
               width: orientation == Orientation.landscape
                   ? MediaQuery.of(context).size.width * 0.5
                   : MediaQuery.of(context).size.width,
@@ -120,8 +137,16 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                     // Duration display
                     DurationDisplay(duration: _recipe.duration),
 
-                    // Recipe image
-                    RecipeImage(imageUrl: _recipe.images),
+                    // Recipe image gallery
+                    RecipeImageGallery(
+                      images: _recipe.images,
+                      onImagesChanged: (updatedImages) {
+                        setState(() {
+                          // Update the recipe with the new images
+                          _recipe = _recipe.copyWith(images: updatedImages);
+                        });
+                      },
+                    ),
 
                     // Ingredients table
                     IngredientsTable(

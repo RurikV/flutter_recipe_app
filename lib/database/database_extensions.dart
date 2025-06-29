@@ -87,4 +87,17 @@ class DatabaseExtensions {
       .write(RecipeStepsCompanion(isCompleted: Value(isCompleted)));
     return rowsAffected > 0;
   }
+
+  // Photo operations
+  Future<List<Photo>> getPhotosForRecipe(String recipeUuid) {
+    return (db.select(db.photos)..where((p) => p.recipeUuid.equals(recipeUuid))).get();
+  }
+
+  Future<int> insertPhoto(PhotosCompanion photo) {
+    return db.into(db.photos).insert(photo);
+  }
+
+  Future<int> deletePhoto(int photoId) {
+    return (db.delete(db.photos)..where((p) => p.id.equals(photoId))).go();
+  }
 }

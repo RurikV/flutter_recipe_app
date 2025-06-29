@@ -227,7 +227,7 @@ class _IngredientDialogState extends State<IngredientDialog> {
                       left: 33,
                       top: 149 - 127,
                       child: Text(
-                        '${_quantityController.text} ${_selectedUnit}',
+                        '${_quantityController.text} $_selectedUnit',
                         style: const TextStyle(
                           fontFamily: 'Roboto',
                           fontWeight: FontWeight.w500,

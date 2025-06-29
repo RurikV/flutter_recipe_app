@@ -41,11 +41,15 @@ class ApiService {
     int retries = 0,
   }) async {
     try {
-      return await request();
+      print('Making API request (attempt ${retries + 1}/$_maxRetries)');
+      final result = await request();
+      print('API request successful');
+      return result;
     } catch (e) {
       if (retries < _maxRetries) {
         // Exponential backoff: wait 2^retries seconds before retrying
         final waitTime = Duration(seconds: 1 << retries);
+        print('API request failed: $e');
         print('Retrying request after $waitTime (attempt ${retries + 1}/$_maxRetries)');
         await Future.delayed(waitTime);
         return _requestWithRetry(
@@ -54,6 +58,7 @@ class ApiService {
           retries: retries + 1,
         );
       }
+      print('API request failed after $_maxRetries attempts: $e');
       print('$errorMessage: $e');
       throw Exception('$errorMessage: $e');
     }
@@ -61,15 +66,20 @@ class ApiService {
 
   // Get all recipes
   Future<List<Recipe>> getRecipes() async {
+    print('ApiService.getRecipes() called with baseUrl: $baseUrl');
     return _requestWithRetry(
       request: () async {
         // First, get all recipes
+        print('Making GET request to $baseUrl/recipe');
         final recipesResponse = await _dio.get('/recipe');
         if (recipesResponse.statusCode != 200) {
+          print('Failed to load recipes: ${recipesResponse.statusCode}');
           throw Exception('Failed to load recipes: ${recipesResponse.statusCode}');
         }
 
+        print('Successfully received response from $baseUrl/recipe');
         final List<dynamic> recipesData = recipesResponse.data;
+        print('Received ${recipesData.length} recipes from API');
 
         // Now, get all recipe ingredients
         final ingredientsResponse = await _dio.get('/recipe_ingredient');
@@ -215,14 +225,18 @@ class ApiService {
 
   // Get a recipe by ID
   Future<Recipe> getRecipe(String id) async {
+    print('ApiService.getRecipe() called for id: $id with baseUrl: $baseUrl');
     return _requestWithRetry(
       request: () async {
         // First, get the basic recipe data
+        print('Making GET request to $baseUrl/recipe/$id');
         final recipeResponse = await _dio.get('/recipe/$id');
         if (recipeResponse.statusCode != 200) {
+          print('Failed to load recipe: ${recipeResponse.statusCode}');
           throw Exception('Failed to load recipe: ${recipeResponse.statusCode}');
         }
 
+        print('Successfully received response from $baseUrl/recipe/$id');
         // Parse the basic recipe data
         final recipeData = recipeResponse.data;
 
