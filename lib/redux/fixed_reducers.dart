@@ -94,27 +94,14 @@ List<Recipe> recipesReducer(List<Recipe> recipes, dynamic action) {
 List<Recipe> favoriteRecipesReducer(List<Recipe> favoriteRecipes, dynamic action) {
   if (action is FavoriteRecipesLoadedAction) {
     return action.favoriteRecipes.cast<Recipe>();
+  } else if (action is ToggleFavoriteAction) {
+    // This is just the initial action, don't modify the state yet
+    return favoriteRecipes;
   } else if (action is FavoriteToggledAction) {
     if (action.isFavorite) {
-      // Add to favorites if not already there
-      final recipe = favoriteRecipes.firstWhere(
-        (r) => r.uuid == action.recipeId,
-        orElse: () => Recipe(
-          uuid: action.recipeId,
-          name: '',
-          images: null,
-          description: '',
-          instructions: '',
-          difficulty: 0,
-          duration: '',
-          rating: 0,
-          tags: [],
-          isFavorite: true,
-        ),
-      );
-      if (!favoriteRecipes.any((r) => r.uuid == action.recipeId)) {
-        return [...favoriteRecipes, recipe.copyWith(isFavorite: true)];
-      }
+      // We don't need to add the recipe here since the LoadFavoriteRecipesAction
+      // will be dispatched after this and will load the complete recipe from the database
+      return favoriteRecipes;
     } else {
       // Remove from favorites
       return favoriteRecipes.where((recipe) => recipe.uuid != action.recipeId).toList();

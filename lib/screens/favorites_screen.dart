@@ -16,6 +16,19 @@ class FavoritesScreen extends StatefulWidget {
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
 
+  void _loadFavorites() {
+    // Dispatch action to load favorite recipes
+    StoreProvider.of<AppState>(context, listen: false)
+        .dispatch(LoadFavoriteRecipesAction());
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Load favorites when the screen is first displayed
+    Future.microtask(() => _loadFavorites());
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;

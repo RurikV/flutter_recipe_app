@@ -23,6 +23,22 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
         .dispatch(LoadRecipesAction());
   }
 
+  void _loadFavorites() {
+    // Dispatch action to load favorite recipes
+    StoreProvider.of<AppState>(context, listen: false)
+        .dispatch(LoadFavoriteRecipesAction());
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Load both recipes and favorites when the screen is first displayed
+    Future.microtask(() {
+      _loadRecipes();
+      _loadFavorites();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;

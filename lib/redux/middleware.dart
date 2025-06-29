@@ -81,6 +81,8 @@ Middleware<AppState> _createLoadFavoriteRecipesMiddleware() {
 Middleware<AppState> _createToggleFavoriteMiddleware() {
   return (Store<AppState> store, dynamic action, NextDispatcher next) async {
     if (action is ToggleFavoriteAction) {
+      next(action); // Let the reducer know about the action
+
       // Find the recipe in the state
       final recipe = store.state.recipes.firstWhere(
         (r) => r.uuid == action.recipeId,
@@ -96,6 +98,9 @@ Middleware<AppState> _createToggleFavoriteMiddleware() {
           action.recipeId,
           !recipe.isFavorite,
         ));
+
+        // Also load favorite recipes to ensure the favorites list is updated
+        store.dispatch(LoadFavoriteRecipesAction());
       }
     } else {
       next(action);
