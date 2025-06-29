@@ -1,0 +1,35 @@
+{
+  "@@locale": "en",
+  "appTitle": "Recipes",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "recipes": "Recipes",
+  "@recipes": {
+    "description": "Label for recipes tab and screen title"
+  },
+  "favorites": "Favorites",
+  "@favorites": {
+    "description": "Label for favorites tab and screen title"
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "Label for profile tab and screen title"
+  },
+  "errorLoadingRecipes": "Error loading recipes",
+  "@errorLoadingRecipes": {
+    "description": "Error message when recipes cannot be loaded"
+  },
+  "noRecipesAvailable": "No recipes available",
+  "@noRecipesAvailable": {
+    "description": "Message when no recipes are available"
+  },
+  "errorLoadingFavorites": "Error loading favorite recipes",
+  "@errorLoadingFavorites": {
+    "description": "Error message when favorite recipes cannot be loaded"
+  },
+  "noFavoritesAvailable": "No favorite recipes",
+  "@noFavoritesAvailable": {
+    "description": "Message when no favorite recipes are available"
+  }
+}

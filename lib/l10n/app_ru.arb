@@ -1,0 +1,35 @@
+{
+  "@@locale": "ru",
+  "appTitle": "Рецепты",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "recipes": "Рецепты",
+  "@recipes": {
+    "description": "Label for recipes tab and screen title"
+  },
+  "favorites": "Избранное",
+  "@favorites": {
+    "description": "Label for favorites tab and screen title"
+  },
+  "profile": "Профиль",
+  "@profile": {
+    "description": "Label for profile tab and screen title"
+  },
+  "errorLoadingRecipes": "Ошибка загрузки рецептов",
+  "@errorLoadingRecipes": {
+    "description": "Error message when recipes cannot be loaded"
+  },
+  "noRecipesAvailable": "Нет доступных рецептов",
+  "@noRecipesAvailable": {
+    "description": "Message when no recipes are available"
+  },
+  "errorLoadingFavorites": "Ошибка загрузки избранных рецептов",
+  "@errorLoadingFavorites": {
+    "description": "Error message when favorite recipes cannot be loaded"
+  },
+  "noFavoritesAvailable": "Нет избранных рецептов",
+  "@noFavoritesAvailable": {
+    "description": "Message when no favorite recipes are available"
+  }
+}

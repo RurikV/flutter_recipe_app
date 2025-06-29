@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import 'navigation_bar_container.dart';
 import 'nav_item.dart';
 
@@ -15,6 +16,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return NavigationBarContainer(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -23,7 +26,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
           NavItem(
             index: 0,
             icon: Icons.local_pizza,
-            label: 'Рецепты',
+            label: l10n.recipes,
             isSelected: selectedIndex == 0,
             onTap: onItemTapped,
           ),
@@ -32,7 +35,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
           NavItem(
             index: 1,
             icon: Icons.favorite,
-            label: 'Избранное',
+            label: l10n.favorites,
             isSelected: selectedIndex == 1,
             onTap: onItemTapped,
           ),
@@ -41,7 +44,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
           NavItem(
             index: 2,
             icon: Icons.person,
-            label: 'Профиль',
+            label: l10n.profile,
             isSelected: selectedIndex == 2,
             onTap: onItemTapped,
           ),
