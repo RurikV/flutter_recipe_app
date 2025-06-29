@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/recipe.dart';
-import '../services/recipe_manager.dart';
-import '../widgets/recipe_list.dart';
+import '../../models/recipe.dart';
+import '../domain/usecases/recipe_manager.dart';
+import '../widgets/recipe/recipe_list.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});

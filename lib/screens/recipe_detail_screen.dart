@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import '../models/recipe.dart';
-import '../models/comment.dart';
-import '../services/recipe_manager.dart';
-import '../widgets/recipe_header.dart';
-import '../widgets/duration_display.dart';
-import '../widgets/recipe_image.dart';
-import '../widgets/ingredients_table.dart';
-import '../widgets/recipe_steps_list.dart';
-import '../widgets/cooking_mode_button.dart';
-import '../widgets/comments_section.dart';
+import '../../models/recipe.dart';
+import '../../models/comment.dart';
+import '../../models/recipe_step.dart';
+import '../domain/usecases/recipe_manager.dart';
+import '../utils/entity_converters.dart';
+import '../widgets/recipe/recipe_header.dart';
+import '../widgets/recipe/duration_display.dart';
+import '../widgets/recipe/recipe_image.dart';
+import '../widgets/ingredient/ingredients_table.dart';
+import '../widgets/step/recipe_steps_list.dart';
+import '../widgets/recipe/cooking_mode_button.dart';
+import '../widgets/comment/comments_section.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   final Recipe recipe;
@@ -34,7 +36,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     final success = await _recipeManager.toggleFavorite(_recipe.uuid);
     if (success && mounted) {
       setState(() {
-        _recipe.isFavorite = !_recipe.isFavorite;
+        _recipe = _recipe.copyWith(isFavorite: !_recipe.isFavorite);
       });
     }
   }
@@ -54,21 +56,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       setState(() {
         // Update the local recipe object with the new comment
         final updatedComments = List<Comment>.from(_recipe.comments)..add(comment);
-        _recipe = Recipe(
-          uuid: _recipe.uuid,
-          name: _recipe.name,
-          images: _recipe.images,
-          description: _recipe.description,
-          instructions: _recipe.instructions,
-          difficulty: _recipe.difficulty,
-          duration: _recipe.duration,
-          rating: _recipe.rating,
-          tags: _recipe.tags,
-          ingredients: _recipe.ingredients,
-          steps: _recipe.steps,
-          isFavorite: _recipe.isFavorite,
-          comments: updatedComments,
-        );
+        _recipe = _recipe.copyWith(comments: updatedComments);
       });
     }
   }
@@ -81,7 +69,12 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     );
     if (success && mounted) {
       setState(() {
-        _recipe.steps[index].isCompleted = isCompleted;
+        // Create a copy of the steps list and cast it to the correct type
+        final updatedSteps = List.from(_recipe.steps).cast<RecipeStep>();
+        // Update the step at the specified index
+        updatedSteps[index] = updatedSteps[index].copyWith(isCompleted: isCompleted);
+        // Update the recipe with the new steps list
+        _recipe = _recipe.copyWith(steps: updatedSteps);
       });
     }
   }
@@ -131,11 +124,13 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                     RecipeImage(imageUrl: _recipe.images),
 
                     // Ingredients table
-                    IngredientsTable(ingredients: _recipe.ingredients),
+                    IngredientsTable(
+                      ingredients: EntityConverters.modelToEntityIngredients(_recipe.ingredients),
+                    ),
 
                     // Recipe steps list
                     RecipeStepsList(
-                      steps: _recipe.steps,
+                      steps: EntityConverters.modelToEntityRecipeSteps(_recipe.steps),
                       isCookingMode: _isCookingMode,
                       recipeId: _recipe.uuid,
                       onStepStatusChanged: _updateStepStatus,

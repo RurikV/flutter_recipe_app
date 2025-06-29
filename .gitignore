@@ -43,4 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-/lib/show_py_content.py
+/.output.txt
+/show_py_content.py
+/FoodApiTest/

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
-import '../models/recipe.dart';
-import '../models/ingredient.dart';
-import '../models/recipe_step.dart';
-import '../services/recipe_manager.dart';
-import '../widgets/recipe_name_input.dart';
-import '../widgets/photo_upload_section.dart';
-import '../widgets/ingredients_section.dart';
-import '../widgets/steps_section.dart';
-import '../widgets/save_recipe_button.dart';
-import '../widgets/ingredient_dialog.dart';
-import '../widgets/step_dialog.dart';
+import '../../models/recipe.dart';
+import '../../models/ingredient.dart' as models;
+import '../../models/recipe_step.dart' as models;
+import '../../domain/entities/ingredient.dart';
+import '../../domain/entities/recipe_step.dart';
+import '../utils/entity_converters.dart';
+import '../domain/usecases/recipe_manager.dart';
+import '../widgets/recipe/recipe_name_input.dart';
+import '../widgets/recipe/photo_upload_section.dart';
+import '../widgets/ingredient/ingredients_section.dart';
+import '../widgets/step/steps_section.dart';
+import '../widgets/recipe/save_recipe_button.dart';
+import '../widgets/ingredient/ingredient_dialog.dart';
+import '../widgets/step/step_dialog.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   final Function onRecipeAdded;
@@ -27,6 +30,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _durationController = TextEditingController();
   final _imageUrlController = TextEditingController();
 
+  // Using typed lists to ensure proper type handling
   final List<Ingredient> _ingredients = [];
   final List<RecipeStep> _steps = [];
 
@@ -106,9 +110,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     showDialog(
       context: context,
       builder: (context) => StepDialog(
-        onSave: (step) {
+        onSave: (entityStep) {
           setState(() {
-            _steps.add(step);
+            _steps.add(entityStep);
           });
         },
       ),
@@ -120,9 +124,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       context: context,
       builder: (context) => StepDialog(
         step: _steps[index],
-        onSave: (step) {
+        onSave: (updatedEntityStep) {
           setState(() {
-            _steps[index] = step;
+            _steps[index] = updatedEntityStep;
           });
         },
       ),
@@ -162,11 +166,18 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       });
 
       try {
+        // Convert domain entity Ingredient objects to model Ingredient objects
+        final List<models.Ingredient> typedIngredients = EntityConverters.entityToModelIngredients(List<Ingredient>.from(_ingredients));
+
+        // Convert domain entity RecipeStep objects to model RecipeStep objects
+        final List<models.RecipeStep> typedSteps = EntityConverters.entityToModelRecipeSteps(List<RecipeStep>.from(_steps));
+
+        // Create a new recipe with the current data
         final recipe = Recipe(
           uuid: DateTime.now().millisecondsSinceEpoch.toString(), // Generate a unique ID
           name: _nameController.text,
           images: _imageUrlController.text.isEmpty 
-              ? 'https://via.placeholder.com/400x300?text=No+Image' 
+              ? 'https://placehold.co/400x300/png?text=No+Image' 
               : _imageUrlController.text,
           description: _descriptionController.text,
           instructions: '', // This field is not used in the new model
@@ -174,8 +185,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
           duration: _durationController.text,
           rating: 0, // Default rating
           tags: [], // Default empty tags
-          ingredients: _ingredients,
-          steps: _steps,
+          ingredients: typedIngredients,
+          steps: typedSteps,
         );
 
         final success = await _recipeManager.saveRecipe(recipe);
@@ -255,7 +266,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
 
                             // Ingredients section
                             IngredientsSection(
-                              ingredients: _ingredients,
+                              ingredients: List<Ingredient>.from(_ingredients),
                               onAddIngredient: _addIngredient,
                               onEditIngredient: _editIngredient,
                               onRemoveIngredient: _removeIngredient,

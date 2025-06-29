@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../widgets/home_screen_content.dart';
-import '../widgets/custom_bottom_navigation_bar.dart';
+import '../widgets/recipe/home_screen_content.dart';
+import '../widgets/navigation/custom_bottom_navigation_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
