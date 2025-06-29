@@ -72,8 +72,10 @@ class GalleryScreenState extends State<GalleryScreen> {
       // Read image as bytes
       final Uint8List imageBytes = await image.readAsBytes();
 
-      // Load labels file on the main isolate
+      // Load labels file and model file on the main isolate
       final labelsContent = await rootBundle.loadString('assets/models/labels.txt');
+      final modelData = await rootBundle.load('assets/models/model_unquant.tflite');
+      final modelBuffer = modelData.buffer.asUint8List();
 
       // Process image with TensorFlow Lite
       final outputJson = await f.compute(
@@ -81,7 +83,7 @@ class GalleryScreenState extends State<GalleryScreen> {
         [
           imageBytes,
           labelsContent,
-          'assets/models/model_unquant.tflite',
+          modelBuffer, // Pass model buffer instead of path
         ],
       );
 

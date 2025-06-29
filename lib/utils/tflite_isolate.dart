@@ -11,7 +11,7 @@ class TfliteIsolate {
     try {
       final binary = args[0] as Uint8List;
       final labelsContent = args[1] as String;
-      final modelPath = args[2] as String;
+      final modelBuffer = args[2] as Uint8List;
 
       // Process image
       img.Image? oriImage = img.decodeImage(binary.buffer.asUint8List());
@@ -21,8 +21,8 @@ class TfliteIsolate {
       // Prepare input data
       final inputData = imageToByteListFloat32(resizedImage, 224, 127.5, 127.5);
 
-      // Load model
-      final interpreter = await Interpreter.fromAsset(modelPath);
+      // Load model from buffer instead of asset
+      final interpreter = await Interpreter.fromBuffer(modelBuffer);
 
       // Allocate tensors
       final inputTensor = interpreter.getInputTensors().first;
