@@ -12,8 +12,62 @@ class DatabaseExtensions {
     return db.select(db.recipes).get();
   }
 
-  Future<List<Recipe>> getFavoriteRecipes() {
+  Future<List<Recipe>> getFavoriteRecipes() async {
+    // Get recipes that are marked as favorites in the Recipes table
+    // This is a temporary solution until the Favorites table is properly generated
     return (db.select(db.recipes)..where((r) => r.isFavorite.equals(true))).get();
+  }
+
+  // Add a recipe to favorites
+  Future<void> addToFavorites(String recipeUuid) async {
+    // Get the recipe
+    final recipe = await getRecipeByUuid(recipeUuid);
+    if (recipe != null) {
+      // Update the recipe to mark it as a favorite
+      await db.update(db.recipes).replace(
+        RecipesCompanion(
+          uuid: Value(recipeUuid),
+          name: Value(recipe.name),
+          images: Value(recipe.images),
+          description: Value(recipe.description),
+          instructions: Value(recipe.instructions),
+          difficulty: Value(recipe.difficulty),
+          duration: Value(recipe.duration),
+          rating: Value(recipe.rating),
+          isFavorite: const Value(true),
+        ),
+      );
+    }
+  }
+
+  // Remove a recipe from favorites
+  Future<void> removeFromFavorites(String recipeUuid) async {
+    // Get the recipe
+    final recipe = await getRecipeByUuid(recipeUuid);
+    if (recipe != null) {
+      // Update the recipe to mark it as not a favorite
+      await db.update(db.recipes).replace(
+        RecipesCompanion(
+          uuid: Value(recipeUuid),
+          name: Value(recipe.name),
+          images: Value(recipe.images),
+          description: Value(recipe.description),
+          instructions: Value(recipe.instructions),
+          difficulty: Value(recipe.difficulty),
+          duration: Value(recipe.duration),
+          rating: Value(recipe.rating),
+          isFavorite: const Value(false),
+        ),
+      );
+    }
+  }
+
+  // Check if a recipe is in favorites
+  Future<bool> isInFavorites(String recipeUuid) async {
+    // Get the recipe
+    final recipe = await getRecipeByUuid(recipeUuid);
+    // Return true if the recipe exists and is marked as a favorite
+    return recipe != null && recipe.isFavorite;
   }
 
   Future<Recipe?> getRecipeByUuid(String uuid) {

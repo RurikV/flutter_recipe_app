@@ -226,6 +226,15 @@ class MockDatabaseService implements DatabaseService {
     }
     return [];
   }
+
+  @override
+  Future<bool> isInFavorites(String recipeId) async {
+    // Mock implementation
+    if (_recipes.containsKey(recipeId)) {
+      return _recipes[recipeId]!.isFavorite;
+    }
+    return false;
+  }
 }
 
 // Mock implementation of ConnectivityService for testing
