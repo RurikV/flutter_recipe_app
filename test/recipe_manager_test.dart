@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
 import 'package:flutter_recipe_app/models/ingredient.dart';
+import 'package:flutter_recipe_app/models/comment.dart';
 import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
+import 'package:flutter_recipe_app/domain/repositories/recipe_repository.dart';
 import 'package:flutter_recipe_app/data/api_service.dart';
 import 'package:flutter_recipe_app/data/database_service.dart';
 import 'package:flutter_recipe_app/services/connectivity_service.dart';
@@ -172,6 +174,58 @@ class MockDatabaseService implements DatabaseService {
   Future<void> close() async {
     // No need to do anything in the mock
   }
+
+  @override
+  Future<void> updateRecipe(Recipe recipe) async {
+    // Mock implementation - reuse saveRecipe
+    await saveRecipe(recipe);
+  }
+
+  @override
+  Future<List<String>> getAvailableIngredients() async {
+    // Mock implementation
+    return ['Ingredient 1', 'Ingredient 2', 'Ingredient 3'];
+  }
+
+  @override
+  Future<List<String>> getAvailableUnits() async {
+    // Mock implementation
+    return ['g', 'kg', 'ml', 'l', 'pcs'];
+  }
+
+  @override
+  Future<void> addComment(String recipeUuid, Comment comment) async {
+    // Mock implementation
+    if (_recipes.containsKey(recipeUuid)) {
+      final recipe = _recipes[recipeUuid]!;
+      final updatedComments = List<Comment>.from(recipe.comments)..add(comment);
+      final updatedRecipe = Recipe(
+        uuid: recipe.uuid,
+        name: recipe.name,
+        images: recipe.images,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        difficulty: recipe.difficulty,
+        duration: recipe.duration,
+        rating: recipe.rating,
+        tags: recipe.tags,
+        ingredients: recipe.ingredients,
+        steps: recipe.steps,
+        isFavorite: recipe.isFavorite,
+        comments: updatedComments,
+      );
+      _recipes[recipeUuid] = updatedRecipe;
+    }
+  }
+
+  @override
+  Future<List<Comment>> getComments(String recipeUuid) async {
+    // Mock implementation
+    if (_recipes.containsKey(recipeUuid)) {
+      return _recipes[recipeUuid]!.comments;
+    }
+    return [];
+  }
 }
 
 // Mock implementation of ConnectivityService for testing
@@ -190,25 +244,184 @@ class MockConnectivityService extends ConnectivityService {
       Stream.value(_isConnected ? ConnectivityResult.wifi : ConnectivityResult.none);
 }
 
+// Mock implementation of RecipeRepository for testing
+class MockRecipeRepository implements RecipeRepository {
+  final List<Recipe> _recipes = [];
+
+  @override
+  Future<List<Recipe>> getRecipes() async {
+    // Return a list with one mock recipe
+    return [
+      Recipe(
+        uuid: 'mock-uuid-1',
+        name: 'Mock Recipe 1',
+        images: 'https://via.placeholder.com/400x300?text=Mock+Recipe',
+        description: 'Mock description',
+        instructions: 'Mock instructions',
+        difficulty: 2,
+        duration: '30 min',
+        rating: 0,
+        tags: ['mock', 'test'],
+        ingredients: [],
+        steps: [
+          RecipeStep(
+            id: 1,
+            name: 'Mock step 1',
+            duration: 10,
+          ),
+        ],
+        isFavorite: false,
+        comments: [],
+      ),
+    ];
+  }
+
+  @override
+  Future<List<Recipe>> getFavoriteRecipes() async {
+    // Return a list with one mock favorite recipe
+    return [
+      Recipe(
+        uuid: 'mock-uuid-2',
+        name: 'Mock Favorite Recipe',
+        images: 'https://via.placeholder.com/400x300?text=Mock+Recipe',
+        description: 'Mock description',
+        instructions: 'Mock instructions',
+        difficulty: 2,
+        duration: '30 min',
+        rating: 0,
+        tags: ['mock', 'test', 'favorite'],
+        ingredients: [],
+        steps: [
+          RecipeStep(
+            id: 1,
+            name: 'Mock step 1',
+            duration: 10,
+          ),
+        ],
+        isFavorite: true,
+        comments: [],
+      ),
+    ];
+  }
+
+  @override
+  Future<Recipe?> getRecipeByUuid(String uuid) async {
+    final recipes = await getRecipes();
+    try {
+      return recipes.firstWhere((recipe) => recipe.uuid == uuid);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> saveRecipe(Recipe recipe) async {
+    // Simulate successful save
+    _recipes.add(recipe);
+  }
+
+  @override
+  Future<void> updateRecipe(Recipe recipe) async {
+    // Simulate successful update
+    final index = _recipes.indexWhere((r) => r.uuid == recipe.uuid);
+    if (index != -1) {
+      _recipes[index] = recipe;
+    } else {
+      _recipes.add(recipe);
+    }
+  }
+
+  @override
+  Future<void> deleteRecipe(String uuid) async {
+    // Simulate successful delete
+    _recipes.removeWhere((recipe) => recipe.uuid == uuid);
+  }
+
+  @override
+  Future<void> toggleFavorite(String uuid) async {
+    // Simulate successful toggle
+    final index = _recipes.indexWhere((r) => r.uuid == uuid);
+    if (index != -1) {
+      final recipe = _recipes[index];
+      _recipes[index] = Recipe(
+        uuid: recipe.uuid,
+        name: recipe.name,
+        images: recipe.images,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        difficulty: recipe.difficulty,
+        duration: recipe.duration,
+        rating: recipe.rating,
+        tags: recipe.tags,
+        ingredients: recipe.ingredients,
+        steps: recipe.steps,
+        isFavorite: !recipe.isFavorite,
+        comments: recipe.comments,
+      );
+    }
+  }
+
+  @override
+  Future<List<String>> getAvailableIngredients() async {
+    // Mock implementation
+    return ['Ingredient 1', 'Ingredient 2', 'Ingredient 3'];
+  }
+
+  @override
+  Future<List<String>> getAvailableUnits() async {
+    // Mock implementation
+    return ['g', 'kg', 'ml', 'l', 'pcs'];
+  }
+
+  @override
+  Future<void> addComment(String recipeUuid, Comment comment) async {
+    // Simulate successful comment addition
+    final index = _recipes.indexWhere((r) => r.uuid == recipeUuid);
+    if (index != -1) {
+      final recipe = _recipes[index];
+      final updatedComments = List<Comment>.from(recipe.comments)..add(comment);
+      _recipes[index] = Recipe(
+        uuid: recipe.uuid,
+        name: recipe.name,
+        images: recipe.images,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        difficulty: recipe.difficulty,
+        duration: recipe.duration,
+        rating: recipe.rating,
+        tags: recipe.tags,
+        ingredients: recipe.ingredients,
+        steps: recipe.steps,
+        isFavorite: recipe.isFavorite,
+        comments: updatedComments,
+      );
+    }
+  }
+
+  @override
+  Future<List<Comment>> getComments(String recipeUuid) async {
+    // Simulate successful comment retrieval
+    final index = _recipes.indexWhere((r) => r.uuid == recipeUuid);
+    if (index != -1) {
+      return _recipes[index].comments;
+    }
+    return [];
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   group('Recipe Manager Tests', () {
     late RecipeManager recipeManager;
-    late MockApiService mockApiService;
-    late MockDatabaseService mockDatabaseService;
-    late MockConnectivityService mockConnectivityService;
+    late MockRecipeRepository mockRecipeRepository;
 
     setUp(() {
-      // Create mock services
-      mockApiService = MockApiService();
-      mockDatabaseService = MockDatabaseService();
-      mockConnectivityService = MockConnectivityService();
+      // Create mock repository
+      mockRecipeRepository = MockRecipeRepository();
 
-      // Create a recipe manager with mock services
+      // Create a recipe manager with mock repository
       recipeManager = RecipeManager(
-        apiService: mockApiService,
-        databaseService: mockDatabaseService,
-        connectivityService: mockConnectivityService,
+        recipeRepository: mockRecipeRepository,
       );
     });
 

@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_recipe_app/models/recipe.dart' as app_model;
 import 'package:flutter_recipe_app/models/recipe_step.dart' as app_model;
 import 'package:flutter_recipe_app/models/ingredient.dart' as app_model;
+import 'package:flutter_recipe_app/models/comment.dart' as app_model;
 import 'package:flutter_recipe_app/data/database_service.dart';
+import 'package:flutter_recipe_app/models/recipe_image.dart';
 
 // Mock implementation of DatabaseService for testing
 class MockDatabaseService implements DatabaseService {
@@ -77,6 +79,58 @@ class MockDatabaseService implements DatabaseService {
   Future<bool> updateStepStatus(int stepId, bool isCompleted) async {
     // Mock implementation
     return false;
+  }
+
+  @override
+  Future<void> updateRecipe(app_model.Recipe recipe) async {
+    // Mock implementation - reuse saveRecipe
+    await saveRecipe(recipe);
+  }
+
+  @override
+  Future<List<String>> getAvailableIngredients() async {
+    // Mock implementation
+    return ['Ingredient 1', 'Ingredient 2', 'Ingredient 3'];
+  }
+
+  @override
+  Future<List<String>> getAvailableUnits() async {
+    // Mock implementation
+    return ['g', 'kg', 'ml', 'l', 'pcs'];
+  }
+
+  @override
+  Future<void> addComment(String recipeUuid, app_model.Comment comment) async {
+    // Mock implementation
+    if (_recipes.containsKey(recipeUuid)) {
+      final recipe = _recipes[recipeUuid]!;
+      final updatedComments = List<app_model.Comment>.from(recipe.comments)..add(comment);
+      final updatedRecipe = app_model.Recipe(
+        uuid: recipe.uuid,
+        name: recipe.name,
+        images: recipe.images,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        difficulty: recipe.difficulty,
+        duration: recipe.duration,
+        rating: recipe.rating,
+        tags: recipe.tags,
+        ingredients: recipe.ingredients,
+        steps: recipe.steps,
+        isFavorite: recipe.isFavorite,
+        comments: updatedComments,
+      );
+      _recipes[recipeUuid] = updatedRecipe;
+    }
+  }
+
+  @override
+  Future<List<app_model.Comment>> getComments(String recipeUuid) async {
+    // Mock implementation
+    if (_recipes.containsKey(recipeUuid)) {
+      return _recipes[recipeUuid]!.comments;
+    }
+    return [];
   }
 }
 
