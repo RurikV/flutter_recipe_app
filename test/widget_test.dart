@@ -7,10 +7,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
 import 'package:flutter_recipe_app/data/api_service.dart';
 import 'package:flutter_recipe_app/main.dart';
+import 'package:flutter_recipe_app/presentation/providers/language_provider.dart';
 
 // Mock implementation of ApiService for testing
 class MockApiService extends ApiService {
@@ -39,7 +41,12 @@ void main() {
   // Basic app rendering test
   testWidgets('App renders without errors', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(
+      ChangeNotifierProvider(
+        create: (context) => LanguageProvider(),
+        child: const MyApp(),
+      ),
+    );
 
     // Verify that the app renders without errors
     expect(find.byType(MaterialApp), findsOneWidget);
