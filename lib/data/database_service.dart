@@ -3,6 +3,7 @@ import '../database/app_database.dart';
 import '../../models/recipe.dart' as app_model;
 import '../../models/ingredient.dart' as app_model;
 import '../../models/recipe_step.dart' as app_model;
+import '../../models/comment.dart' as app_model;
 import '../../models/recipe_image.dart';
 import 'package:drift/drift.dart';
 
@@ -202,6 +203,37 @@ class DatabaseService {
         isFavorite: Value(newStatus),
       ),
     );
+  }
+
+  // Update a recipe
+  Future<void> updateRecipe(app_model.Recipe recipe) async {
+    await saveRecipe(recipe);
+  }
+
+  // Get available ingredients
+  Future<List<String>> getAvailableIngredients() async {
+    final ingredients = await _database.getAllIngredients();
+    return ingredients.map((i) => i.name).toList();
+  }
+
+  // Get available units of measurement
+  Future<List<String>> getAvailableUnits() async {
+    // Return a hardcoded list of common units since we don't have a dedicated table for units
+    return [
+      'г', 'кг', 'мл', 'л', 'шт', 'ст. ложка', 'ч. ложка', 'стакан', 'щепотка', 'по вкусу'
+    ];
+  }
+
+  // Add a comment to a recipe
+  Future<void> addComment(String recipeUuid, app_model.Comment comment) async {
+    // Since comments are no longer supported in the database, we'll just log this
+    print('Comment added to recipe $recipeUuid: ${comment.text}');
+  }
+
+  // Get comments for a recipe
+  Future<List<app_model.Comment>> getComments(String recipeUuid) async {
+    // Since comments are no longer supported in the database, return an empty list
+    return [];
   }
 
   // Delete a recipe

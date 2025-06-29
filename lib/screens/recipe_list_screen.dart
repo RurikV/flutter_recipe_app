@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../../models/recipe.dart';
 import '../domain/usecases/recipe_manager.dart';
 import '../utils/page_transition.dart';
@@ -30,10 +31,12 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: const Color(0xFFECECEC), // Background color as per design
       appBar: AppBar(
-        title: const Text('Рецепты'),
+        title: Text(l10n.recipes),
         centerTitle: true,
         backgroundColor: const Color(0xFFECECEC), // Match background color
         elevation: 0, // No shadow
@@ -79,7 +82,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Ошибка загрузки рецептов',
+                    l10n.errorLoadingRecipes,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
@@ -103,7 +106,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Нет доступных рецептов',
+                    l10n.noRecipesAvailable,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ],

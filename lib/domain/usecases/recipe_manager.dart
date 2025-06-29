@@ -2,23 +2,16 @@ import '../../models/recipe.dart';
 import '../../models/ingredient.dart';
 import '../../models/recipe_step.dart';
 import '../../models/comment.dart';
-import '../../data/api_service.dart';
-import '../../data/database_service.dart';
-import '../../services/connectivity_service.dart';
+import '../repositories/recipe_repository.dart';
+import '../../data/repositories/recipe_repository_impl.dart';
 
 class RecipeManager {
-  final ApiService _apiService;
-  final DatabaseService _databaseService;
-  final ConnectivityService _connectivityService;
+  final RecipeRepository _recipeRepository;
 
   // Regular class constructor
   RecipeManager({
-    ApiService? apiService,
-    DatabaseService? databaseService,
-    ConnectivityService? connectivityService,
-  })  : _apiService = apiService ?? ApiService(),
-        _databaseService = databaseService ?? DatabaseService(),
-        _connectivityService = connectivityService ?? ConnectivityService();
+    RecipeRepository? recipeRepository,
+  }) : _recipeRepository = recipeRepository ?? RecipeRepositoryImpl();
 
   // Hardcoded list of ingredients (fallback)
   final List<String> _dummyIngredients = [
@@ -80,44 +73,8 @@ class RecipeManager {
   // Method to get recipes
   Future<List<Recipe>> getRecipes() async {
     try {
-      // Always try to get recipes from the API first
-      final isConnected = await _connectivityService.isConnected();
-
-      if (isConnected) {
-        try {
-          // Get recipes from the API
-          print('Fetching recipes from API: ${_apiService.baseUrl}');
-          final recipes = await _apiService.getRecipes();
-          print('Successfully fetched ${recipes.length} recipes from API');
-
-          // Save recipes to the local database
-          for (var recipe in recipes) {
-            await _databaseService.saveRecipe(recipe);
-          }
-
-          return recipes;
-        } catch (apiError) {
-          print('Error fetching recipes from API: $apiError');
-          // If API call fails, try to get recipes from the local database
-          final dbRecipes = await _databaseService.getAllRecipes();
-          if (dbRecipes.isNotEmpty) {
-            print('Returning ${dbRecipes.length} recipes from local database');
-            return dbRecipes;
-          }
-          // If database is empty, rethrow the API error to be caught by the outer catch block
-          throw apiError;
-        }
-      } else {
-        print('No internet connection, fetching recipes from local database');
-        // Get recipes from the local database
-        final dbRecipes = await _databaseService.getAllRecipes();
-        if (dbRecipes.isNotEmpty) {
-          print('Returning ${dbRecipes.length} recipes from local database');
-          return dbRecipes;
-        }
-        // If database is empty, throw an error to be caught by the outer catch block
-        throw Exception('No internet connection and no recipes in local database');
-      }
+      // Use the repository to get recipes
+      return await _recipeRepository.getRecipes();
     } catch (e) {
       print('Error in getRecipes: $e');
       // If all else fails, return the dummy recipes as a last resort
@@ -129,48 +86,8 @@ class RecipeManager {
   // Method to get favorite recipes
   Future<List<Recipe>> getFavoriteRecipes() async {
     try {
-      // Always try to get recipes from the API first
-      final isConnected = await _connectivityService.isConnected();
-
-      if (isConnected) {
-        try {
-          // Get all recipes from the API
-          print('Fetching recipes from API for favorites: ${_apiService.baseUrl}');
-          final recipes = await _apiService.getRecipes();
-          print('Successfully fetched ${recipes.length} recipes from API');
-
-          // Filter to get only favorites
-          final favoriteRecipes = recipes.where((recipe) => recipe.isFavorite).toList();
-          print('Found ${favoriteRecipes.length} favorite recipes');
-
-          // Save recipes to the local database
-          for (var recipe in recipes) {
-            await _databaseService.saveRecipe(recipe);
-          }
-
-          return favoriteRecipes;
-        } catch (apiError) {
-          print('Error fetching recipes from API for favorites: $apiError');
-          // If API call fails, try to get favorite recipes from the local database
-          final dbFavorites = await _databaseService.getFavoriteRecipes();
-          if (dbFavorites.isNotEmpty) {
-            print('Returning ${dbFavorites.length} favorite recipes from local database');
-            return dbFavorites;
-          }
-          // If database is empty, rethrow the API error to be caught by the outer catch block
-          throw apiError;
-        }
-      } else {
-        print('No internet connection, fetching favorite recipes from local database');
-        // Get favorite recipes from the local database
-        final dbFavorites = await _databaseService.getFavoriteRecipes();
-        if (dbFavorites.isNotEmpty) {
-          print('Returning ${dbFavorites.length} favorite recipes from local database');
-          return dbFavorites;
-        }
-        // If database is empty, throw an error to be caught by the outer catch block
-        throw Exception('No internet connection and no favorite recipes in local database');
-      }
+      // Use the repository to get favorite recipes
+      return await _recipeRepository.getFavoriteRecipes();
     } catch (e) {
       print('Error in getFavoriteRecipes: $e');
       // If all else fails, return the dummy favorite recipes as a last resort
@@ -181,37 +98,36 @@ class RecipeManager {
 
   // Method to get ingredients
   Future<List<String>> getIngredients() async {
-    // For now, we'll just return the hardcoded list
-    // In a real app, this would come from the API or database
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _dummyIngredients;
+    try {
+      // Use the repository to get available ingredients
+      return await _recipeRepository.getAvailableIngredients();
+    } catch (e) {
+      print('Error in getIngredients: $e');
+      // If all else fails, return the dummy ingredients as a last resort
+      return _dummyIngredients;
+    }
   }
 
   // Method to get units of measurement
   Future<List<String>> getUnits() async {
-    // For now, we'll just return the hardcoded list
-    // In a real app, this would come from the API or database
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _dummyUnits;
+    try {
+      // Use the repository to get available units
+      return await _recipeRepository.getAvailableUnits();
+    } catch (e) {
+      print('Error in getUnits: $e');
+      // If all else fails, return the dummy units as a last resort
+      return _dummyUnits;
+    }
   }
 
   // Method to save a new recipe
   Future<bool> saveRecipe(Recipe recipe) async {
     try {
-      // Check if the device is connected to the internet
-      final isConnected = await _connectivityService.isConnected();
-
-      // Always save to the local database
-      await _databaseService.saveRecipe(recipe);
-
-      if (isConnected) {
-        // If connected, also save to the API
-        await _apiService.createRecipe(recipe);
-      }
-
+      // Use the repository to save the recipe
+      await _recipeRepository.saveRecipe(recipe);
       return true;
     } catch (e) {
-      // If there's an error saving to the API, at least we saved locally
+      print('Error in saveRecipe: $e');
       return false;
     }
   }
@@ -219,25 +135,11 @@ class RecipeManager {
   // Method to toggle favorite status
   Future<bool> toggleFavorite(String recipeId) async {
     try {
-      // Get the recipe from the local database
-      final recipe = await _databaseService.getRecipeByUuid(recipeId);
-      if (recipe == null) {
-        return false;
-      }
-
-      // Toggle the favorite status locally
-      final success = await _databaseService.toggleFavorite(recipeId);
-
-      // Check if the device is connected to the internet
-      final isConnected = await _connectivityService.isConnected();
-
-      if (isConnected) {
-        // If connected, also update on the API
-        await _apiService.toggleFavorite(recipeId, !recipe.isFavorite);
-      }
-
-      return success;
+      // Use the repository to toggle favorite status
+      await _recipeRepository.toggleFavorite(recipeId);
+      return true;
     } catch (e) {
+      print('Error in toggleFavorite: $e');
       return false;
     }
   }
@@ -245,45 +147,11 @@ class RecipeManager {
   // Method to add a comment to a recipe
   Future<bool> addComment(String recipeId, Comment comment) async {
     try {
-      // Get the recipe from the local database
-      final recipe = await _databaseService.getRecipeByUuid(recipeId);
-      if (recipe == null) {
-        return false;
-      }
-
-      // Add the comment to the recipe
-      final updatedComments = List<Comment>.from(recipe.comments)..add(comment);
-
-      // Create a new recipe with the updated comments
-      final updatedRecipe = Recipe(
-        uuid: recipe.uuid,
-        name: recipe.name,
-        images: recipe.images,
-        description: recipe.description,
-        instructions: recipe.instructions,
-        difficulty: recipe.difficulty,
-        duration: recipe.duration,
-        rating: recipe.rating,
-        tags: recipe.tags,
-        ingredients: recipe.ingredients,
-        steps: recipe.steps,
-        isFavorite: recipe.isFavorite,
-        comments: updatedComments,
-      );
-
-      // Save the updated recipe to the local database
-      await _databaseService.saveRecipe(updatedRecipe);
-
-      // Check if the device is connected to the internet
-      final isConnected = await _connectivityService.isConnected();
-
-      if (isConnected) {
-        // If connected, also update on the API
-        await _apiService.addComment(recipeId, comment);
-      }
-
+      // Use the repository to add a comment
+      await _recipeRepository.addComment(recipeId, comment);
       return true;
     } catch (e) {
+      print('Error in addComment: $e');
       return false;
     }
   }
@@ -291,20 +159,17 @@ class RecipeManager {
   // Method to update step completion status
   Future<bool> updateStepStatus(String recipeId, int stepIndex, bool isCompleted) async {
     try {
-      // Get the recipe from the local database
-      final recipe = await _databaseService.getRecipeByUuid(recipeId);
+      // Get the recipe from the repository
+      final recipe = await _recipeRepository.getRecipeByUuid(recipeId);
       if (recipe == null || stepIndex < 0 || stepIndex >= recipe.steps.length) {
         print('Invalid recipe or step index: recipeId=$recipeId, stepIndex=$stepIndex');
         return false;
       }
 
-      // Get the actual step ID from the model
-      final stepId = recipe.steps[stepIndex].id;
-
-      // Update the step in the local database immediately (optimistic update)
+      // Update the step in the recipe
       final updatedSteps = List<RecipeStep>.from(recipe.steps);
       updatedSteps[stepIndex] = RecipeStep(
-        id: stepId,
+        id: recipe.steps[stepIndex].id,
         name: recipe.steps[stepIndex].name,
         duration: recipe.steps[stepIndex].duration,
         isCompleted: isCompleted,
@@ -327,27 +192,8 @@ class RecipeManager {
         comments: recipe.comments,
       );
 
-      // Save the updated recipe to the local database
-      await _databaseService.saveRecipe(updatedRecipe);
-
-      // Return true immediately to allow the UI to update without waiting for the API
-      // This ensures the animation is smooth and not blocked by API calls
-
-      // Check if the device is connected to the internet and update the API in the background
-      _connectivityService.isConnected().then((isConnected) {
-        if (isConnected) {
-          // If connected, update on the API using the actual step ID
-          // This is done asynchronously without blocking the UI
-          _apiService.updateStep(recipeId, stepId, isCompleted).then((_) {
-            print('Successfully updated step $stepId for recipe $recipeId on API');
-          }).catchError((e) {
-            // If there's an error updating on the API, log it but don't fail the operation
-            // since we've already updated the local database
-            print('Error updating step on API: $e');
-          });
-        }
-      });
-
+      // Update the recipe in the repository
+      await _recipeRepository.updateRecipe(updatedRecipe);
       return true;
     } catch (e) {
       print('Error updating step status: $e');

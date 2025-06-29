@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../../models/recipe.dart';
 import '../domain/usecases/recipe_manager.dart';
 import '../widgets/recipe/recipe_list.dart';
@@ -28,10 +29,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: const Color(0xFFECECEC), // Background color as per design
       appBar: AppBar(
-        title: const Text('Избранное'),
+        title: Text(l10n.favorites),
         centerTitle: true,
         backgroundColor: const Color(0xFFECECEC), // Match background color
         elevation: 0, // No shadow
@@ -62,7 +65,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'Ошибка загрузки избранных рецептов',
+                            l10n.errorLoadingFavorites,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: 8),
@@ -86,7 +89,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'Нет избранных рецептов',
+                            l10n.noFavoritesAvailable,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                         ],

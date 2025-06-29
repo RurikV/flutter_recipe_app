@@ -580,6 +580,11 @@ class ApiService {
     );
   }
 
+  // Save a recipe (alias for createRecipe)
+  Future<Recipe> saveRecipe(Recipe recipe) async {
+    return createRecipe(recipe);
+  }
+
   // Update a recipe
   Future<Recipe> updateRecipe(Recipe recipe) async {
     return _requestWithRetry(
@@ -668,6 +673,60 @@ class ApiService {
         return response.statusCode == 200;
       },
       errorMessage: 'Failed to update step $stepId for recipe $recipeId',
+    );
+  }
+
+  // Get available ingredients
+  Future<List<String>> getAvailableIngredients() async {
+    return _requestWithRetry(
+      request: () async {
+        final response = await _dio.get('/ingredient');
+        if (response.statusCode == 200) {
+          final List<dynamic> ingredients = response.data;
+          return ingredients
+              .map((ingredient) => ingredient['name'] as String)
+              .toList();
+        } else {
+          throw Exception('Failed to load ingredients: ${response.statusCode}');
+        }
+      },
+      errorMessage: 'Failed to load available ingredients',
+    );
+  }
+
+  // Get available units of measurement
+  Future<List<String>> getAvailableUnits() async {
+    return _requestWithRetry(
+      request: () async {
+        final response = await _dio.get('/measure_unit');
+        if (response.statusCode == 200) {
+          final List<dynamic> units = response.data;
+          return units
+              .map((unit) => unit['name'] as String)
+              .toList();
+        } else {
+          throw Exception('Failed to load units: ${response.statusCode}');
+        }
+      },
+      errorMessage: 'Failed to load available units',
+    );
+  }
+
+  // Get comments for a recipe
+  Future<List<Comment>> getComments(String recipeId) async {
+    return _requestWithRetry(
+      request: () async {
+        final response = await _dio.get('/recipe/$recipeId/comments');
+        if (response.statusCode == 200) {
+          final List<dynamic> comments = response.data;
+          return comments
+              .map((comment) => Comment.fromJson(comment))
+              .toList();
+        } else {
+          throw Exception('Failed to load comments: ${response.statusCode}');
+        }
+      },
+      errorMessage: 'Failed to load comments for recipe $recipeId',
     );
   }
 }

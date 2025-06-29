@@ -66,6 +66,13 @@ class DatabaseExtensions {
     return (db.delete(db.ingredients)..where((i) => i.recipeUuid.equals(recipeUuid))).go();
   }
 
+  // Get all unique ingredients from the database
+  Future<List<Ingredient>> getAllIngredients() async {
+    final query = db.select(db.ingredients)
+      ..orderBy([(i) => OrderingTerm.asc(i.name)]);
+    return query.get();
+  }
+
   // Recipe step operations
   Future<List<RecipeStep>> getStepsForRecipe(String recipeUuid) {
     return (db.select(db.recipeSteps)..where((s) => s.recipeUuid.equals(recipeUuid))).get();
