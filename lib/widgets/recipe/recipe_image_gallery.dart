@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import '../../models/recipe_image.dart';
 import '../../services/image_service.dart';
-import '../../services/ssd_detection_service.dart';
+import '../../services/object_detection_service.dart';
 
 class RecipeImageGallery extends StatefulWidget {
   final List<RecipeImage> images;
@@ -22,12 +23,20 @@ class RecipeImageGallery extends StatefulWidget {
 
 class _RecipeImageGalleryState extends State<RecipeImageGallery> {
   final ImageService _imageService = ImageService();
-  final SSDObjectDetectionService _objectDetectionService = SSDObjectDetectionService();
+  late final ObjectDetectionService _objectDetectionService;
   int _currentIndex = 0;
   bool _isProcessing = false;
 
   // Controller for the PageView
   final PageController _pageController = PageController();
+
+  @override
+  void initState() {
+    super.initState();
+    _objectDetectionService = GetIt.instance<ObjectDetectionService>();
+    // Initialize the object detection service if needed
+    _objectDetectionService.initialize();
+  }
 
   Future<void> _takePhoto() async {
     setState(() {
@@ -100,15 +109,9 @@ class _RecipeImageGalleryState extends State<RecipeImageGallery> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _objectDetectionService.initialize();
-  }
-
-  @override
   void dispose() {
     _pageController.dispose();
-    _objectDetectionService.dispose();
+    // No need to call dispose() on _objectDetectionService as it's a singleton
     super.dispose();
   }
 

@@ -6,9 +6,10 @@ import '../../models/recipe_step.dart' as app_model;
 import '../../models/comment.dart' as app_model;
 import '../../models/recipe_image.dart';
 import 'package:drift/drift.dart';
+import '../services/service_locator.dart' as serviceLocator;
 
 class DatabaseService {
-  final AppDatabase _database = AppDatabase();
+  final AppDatabase _database = serviceLocator.get<AppDatabase>();
 
   // Get all recipes with their related data
   Future<List<app_model.Recipe>> getAllRecipes() async {

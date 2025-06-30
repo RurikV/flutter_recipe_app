@@ -1,8 +1,9 @@
-import 'dart:io';
+// Use standard imports to handle platform-specific code
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
+
+// Import platform-specific connection functions conditionally
+import 'app_database_connection_native.dart'
+    if (dart.library.html) 'app_database_connection_web.dart';
 
 import 'tables.dart';
 import 'database_extensions.dart';
@@ -21,8 +22,18 @@ class AppDatabase extends _$AppDatabase {
     return _instance ??= AppDatabase._internal();
   }
 
+  // Constructor that accepts a QueryExecutor for platform-specific implementations
+  factory AppDatabase.withConnection(QueryExecutor connection) {
+    return AppDatabase._(connection);
+  }
+
   // Private constructor for singleton
   AppDatabase._internal() : super(_openConnection()) {
+    _extensions = DatabaseExtensions(this);
+  }
+
+  // Private constructor with connection
+  AppDatabase._(QueryExecutor connection) : super(connection) {
     _extensions = DatabaseExtensions(this);
   }
 
@@ -77,12 +88,10 @@ class AppDatabase extends _$AppDatabase {
   Future<void> addToFavorites(String recipeUuid) => _extensions.addToFavorites(recipeUuid);
   Future<void> removeFromFavorites(String recipeUuid) => _extensions.removeFromFavorites(recipeUuid);
   Future<bool> isInFavorites(String recipeUuid) => _extensions.isInFavorites(recipeUuid);
-}
 
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'recipes.sqlite'));
-    return NativeDatabase(file);
-  });
+  // Platform-specific database connection
+  static QueryExecutor _openConnection() {
+    // Use the platform-specific connection function
+    return createConnection();
+  }
 }
