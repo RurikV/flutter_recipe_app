@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
-// Conditionally import dart:io only for non-web platforms
-import 'dart:io' if (dart.library.html) 'dart:html' as io;
+// Import dart:io directly for non-web platforms
+import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 

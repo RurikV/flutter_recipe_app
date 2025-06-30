@@ -1,10 +1,10 @@
-// Conditionally import dart:io only for non-web platforms
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart' as p;
 
 // Import platform-specific dependencies
 import 'database_connection.dart';
+import '../service_locator.dart' as serviceLocator;
 
 import 'tables.dart';
 import 'database_extensions.dart';
@@ -15,17 +15,19 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   late final DatabaseExtensions _extensions;
 
-  // Singleton instance
-  static AppDatabase? _instance;
-
-  // Factory constructor to return the singleton instance
-  factory AppDatabase() {
-    return _instance ??= AppDatabase._internal();
+  // Constructor that uses the connection provided by the service locator
+  AppDatabase() : super(openConnection()) {
+    _extensions = DatabaseExtensions(this);
   }
 
-  // Private constructor for singleton
-  AppDatabase._internal() : super(openConnection()) {
-    _extensions = DatabaseExtensions(this);
+  // Static method to initialize the database through the service locator
+  static Future<void> initialize() async {
+    await serviceLocator.initLocator();
+  }
+
+  // Static method to get the database instance from the service locator
+  static AppDatabase getInstance() {
+    return serviceLocator.get<AppDatabase>();
   }
 
   @override
@@ -80,4 +82,3 @@ class AppDatabase extends _$AppDatabase {
   Future<void> removeFromFavorites(String recipeUuid) => _extensions.removeFromFavorites(recipeUuid);
   Future<bool> isInFavorites(String recipeUuid) => _extensions.isInFavorites(recipeUuid);
 }
-

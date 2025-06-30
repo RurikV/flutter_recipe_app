@@ -1,14 +1,11 @@
-library;
+library tflite_flutter;
 
-// Import platform-specific TensorFlow Lite implementation
-// This will use the stub implementation on web platforms
-// and the actual implementation on non-web platforms
-import 'platform_tflite.dart';
+// This file is a facade for TensorFlow Lite functionality
+// It provides a unified API for both web and non-web platforms
 
-// Re-export the platform-specific implementation
+// For web platforms, we use stub implementations
+// For non-web platforms, we use the actual TensorFlow Lite implementation
+
+// Only export the platform-specific implementation
+// This ensures that only one implementation is used
 export 'platform_tflite.dart';
-
-// Export our custom implementations
-// These are now conditionally imported based on the platform
-export 'interpreter.dart' if (dart.library.html) 'platform_tflite_stub.dart';
-export 'tensor.dart' if (dart.library.html) 'platform_tflite_stub.dart';

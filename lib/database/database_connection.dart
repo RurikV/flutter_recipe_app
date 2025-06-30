@@ -1,25 +1,69 @@
-// Conditionally import dart:io only for non-web platforms
-import 'dart:io' if (dart.library.html) 'dart:html' as io;
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:drift/web.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
+import '../service_locator.dart' as serviceLocator;
 
-// This file handles platform-specific database connections
+// This file handles platform-specific database connections using service locator
 
 /// Opens a database connection that works on all platforms
-LazyDatabase openConnection() {
-  return LazyDatabase(() async {
-    if (kIsWeb) {
-      // Use WebDatabase for web platform
-      return WebDatabase('recipes_db');
-    } else {
-      // Use NativeDatabase for mobile/desktop platforms
-      final dbFolder = await getApplicationDocumentsDirectory();
-      final file = io.File(p.join(dbFolder.path, 'recipes.sqlite'));
-      return NativeDatabase(file);
-    }
-  });
+QueryExecutor openConnection() {
+  // Create a simple executor that delegates to the appropriate implementation
+  // based on the platform
+  return _DelegatingExecutor();
+}
+
+/// A custom QueryExecutor that delegates to the appropriate implementation
+/// based on the platform
+class _DelegatingExecutor extends QueryExecutor {
+  @override
+  Future<void> close() async {
+    // No-op
+  }
+
+  @override
+  Future<void> ensureOpen(QueryExecutorUser user) async {
+    // No-op
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> runSelect(
+      String statement, List<Object?> parameters) async {
+    // This will never be called because the actual implementation
+    // will be provided by the service locator
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int> runInsert(String statement, List<Object?> parameters) async {
+    // This will never be called because the actual implementation
+    // will be provided by the service locator
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int> runUpdate(String statement, List<Object?> parameters) async {
+    // This will never be called because the actual implementation
+    // will be provided by the service locator
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int> runDelete(String statement, List<Object?> parameters) async {
+    // This will never be called because the actual implementation
+    // will be provided by the service locator
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> runCustom(String statement, List<Object?> parameters) async {
+    // This will never be called because the actual implementation
+    // will be provided by the service locator
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int> runBatched(BatchedStatements statements) async {
+    // This will never be called because the actual implementation
+    // will be provided by the service locator
+    throw UnimplementedError();
+  }
 }

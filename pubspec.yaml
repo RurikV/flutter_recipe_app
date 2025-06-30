@@ -44,7 +44,7 @@ dependencies:
   auto_route: ^7.8.4
 
   # Database
-  drift: ^2.15.0
+  drift: 2.13.0
   sqlite3_flutter_libs: ^0.5.20
   path_provider: ^2.1.2
   path: ^1.8.3
@@ -82,6 +82,9 @@ dependencies:
   redux: ^5.0.0
   flutter_redux: ^0.10.0
 
+  # Dependency injection
+  get_it: ^7.6.7
+
   ffi: any
   quiver: any
 dev_dependencies:
@@ -97,7 +100,7 @@ dev_dependencies:
 
   # Code generation
   build_runner: ^2.4.8
-  drift_dev: ^2.15.0
+  drift_dev: 2.13.0
   json_serializable: ^6.7.1
   auto_route_generator: ^7.3.2
 
