@@ -1,5 +1,7 @@
 import 'dart:typed_data';
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// Conditionally import dart:io only for non-web platforms
+import 'dart:io' if (dart.library.html) 'dart:html' as io;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
@@ -99,7 +101,23 @@ class GalleryScreenState extends State<GalleryScreen> {
       // Read image as bytes
       final Uint8List imageBytes = await image.readAsBytes();
 
-      // Save image to a temporary file
+      // Skip file operations on web platform
+      if (kIsWeb) {
+        // On web, we can't use File operations, so we'll skip object detection
+        // and just save the image with a placeholder for detected objects
+        final photo = PhotosCompanion.insert(
+          recipeUuid: widget.recipeUuid,
+          photoName: image.name,
+          detectedInfo: 'Object detection not available on web',
+          pict: imageBytes,
+        );
+
+        await _db.insertPhoto(photo);
+        await _loadPhotos();
+        return;
+      }
+
+      // Save image to a temporary file (non-web platforms only)
       final tempDir = await getTemporaryDirectory();
       final tempFile = File('${tempDir.path}/${path.basename(image.path)}');
       await tempFile.writeAsBytes(imageBytes);

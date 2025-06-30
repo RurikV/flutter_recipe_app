@@ -1,8 +1,11 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../../models/recipe_image.dart';
 import '../../services/image_service.dart';
 import '../../services/ssd_detection_service.dart';
+
+// Import dart:io only for non-web platforms
+import 'dart:io' if (dart.library.html) 'dart:html' as io;
 
 class RecipeImageGallery extends StatefulWidget {
   final List<RecipeImage> images;
@@ -172,22 +175,41 @@ class _RecipeImageGalleryState extends State<RecipeImageGallery> {
                                     );
                                   },
                                 )
-                              : Image.file(
-                                  File(image.path),
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      color: Colors.grey[300],
-                                      child: const Center(
-                                        child: Icon(
-                                          Icons.image_not_supported,
-                                          size: 40,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
+                              : kIsWeb
+                                  // On web, we can't use File operations, so we'll use Image.network instead
+                                  ? Image.network(
+                                      image.path,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          color: Colors.grey[300],
+                                          child: const Center(
+                                            child: Icon(
+                                              Icons.image_not_supported,
+                                              size: 40,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  // On non-web platforms, we can use File operations
+                                  : Image.file(
+                                      io.File(image.path),
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          color: Colors.grey[300],
+                                          child: const Center(
+                                            child: Icon(
+                                              Icons.image_not_supported,
+                                              size: 40,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
 
                           // Detected objects overlay
                           if (image.detectedObjects.isNotEmpty)

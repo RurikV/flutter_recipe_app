@@ -1,5 +1,7 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// Conditionally import dart:io only for non-web platforms
+import 'dart:io' if (dart.library.html) 'dart:html' as io;
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import '../../models/recipe.dart';
@@ -26,12 +28,14 @@ class ApiService {
       logPrint: (object) => print('DIO: $object'),
     ));
 
-    // Configure Dio to accept self-signed certificates
-    (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
-      final client = HttpClient();
-      client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-      return client;
-    };
+    // Configure Dio to accept self-signed certificates only on non-web platforms
+    if (!kIsWeb) {
+      (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+        final client = io.HttpClient();
+        client.badCertificateCallback = (io.X509Certificate cert, String host, int port) => true;
+        return client;
+      };
+    }
   }
 
   // Generic method to handle API requests with retry logic

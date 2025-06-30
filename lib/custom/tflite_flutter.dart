@@ -1,15 +1,14 @@
 library;
 
-export 'package:tflite_flutter/src/bindings/bindings.dart';
-export 'package:tflite_flutter/src/bindings/tensorflow_lite_bindings_generated.dart';
-export 'package:tflite_flutter/src/delegate.dart';
-// GPU delegate is not available in this version of tflite_flutter
-// export 'package:tflite_flutter/src/gpu_delegate.dart';
-export 'package:tflite_flutter/src/interpreter_options.dart';
-export 'package:tflite_flutter/src/isolate_interpreter.dart';
-export 'package:tflite_flutter/src/model.dart';
-export 'package:tflite_flutter/src/quanitzation_params.dart';
+// Import platform-specific TensorFlow Lite implementation
+// This will use the stub implementation on web platforms
+// and the actual implementation on non-web platforms
+import 'platform_tflite.dart';
+
+// Re-export the platform-specific implementation
+export 'platform_tflite.dart';
 
 // Export our custom implementations
-export 'interpreter.dart';
-export 'tensor.dart';
+// These are now conditionally imported based on the platform
+export 'interpreter.dart' if (dart.library.html) 'platform_tflite_stub.dart';
+export 'tensor.dart' if (dart.library.html) 'platform_tflite_stub.dart';

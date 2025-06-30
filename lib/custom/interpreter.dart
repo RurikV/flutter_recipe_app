@@ -1,15 +1,20 @@
-import 'dart:ffi';
-import 'dart:io';
-
-import 'package:ffi/ffi.dart';
+// Conditionally import dart:ffi and dart:io only on non-web platforms
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:quiver/check.dart';
-import 'package:tflite_flutter/src/bindings/bindings.dart';
-import 'package:tflite_flutter/src/bindings/tensorflow_lite_bindings_generated.dart';
 
-import 'package:tflite_flutter/src/ffi/helper.dart';
-import 'package:tflite_flutter/src/interpreter_options.dart';
-import 'package:tflite_flutter/src/model.dart';
+// Import our platform-specific implementation
+import 'platform_tflite.dart';
+
+// Conditionally import dart:ffi and related packages only on non-web platforms
+// ignore: uri_does_not_exist
+import 'dart:ffi' if (dart.library.html) 'platform_tflite_stub.dart' as ffi;
+// ignore: uri_does_not_exist
+import 'dart:io' if (dart.library.html) 'platform_tflite_stub.dart' as io;
+// ignore: uri_does_not_exist
+import 'package:ffi/ffi.dart' if (dart.library.html) 'platform_tflite_stub.dart' as ffi_pkg;
+
 import 'tensor.dart'; // Import our custom Tensor class
 
 /// TensorFlowLite interpreter for running inference on a model.

@@ -1,6 +1,8 @@
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
-import 'package:tflite_flutter/src/bindings/tensorflow_lite_bindings_generated.dart';
+// Import our platform-specific implementation
+import 'platform_tflite.dart';
 import '../custom/list_shape_extension.dart';
 
 // Define TensorType enum to match the one in tensor.dart

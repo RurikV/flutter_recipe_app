@@ -1,14 +1,17 @@
-import 'dart:ffi';
+// Conditionally import dart:ffi only on non-web platforms
 import 'dart:typed_data';
-
-import 'package:ffi/ffi.dart';
+import 'package:flutter/foundation.dart' show kIsWeb, listEquals;
 import 'package:quiver/check.dart';
-import 'package:tflite_flutter/src/bindings/bindings.dart';
-import 'package:tflite_flutter/src/bindings/tensorflow_lite_bindings_generated.dart';
-import 'package:flutter/foundation.dart';
 
-import 'package:tflite_flutter/src/ffi/helper.dart';
-import 'package:tflite_flutter/src/quanitzation_params.dart';
+// Import our platform-specific implementation
+import 'platform_tflite.dart';
+
+// Conditionally import dart:ffi and related packages only on non-web platforms
+// ignore: uri_does_not_exist
+import 'dart:ffi' if (dart.library.html) 'platform_tflite_stub.dart' as ffi;
+// ignore: uri_does_not_exist
+import 'package:ffi/ffi.dart' if (dart.library.html) 'platform_tflite_stub.dart' as ffi_pkg;
+
 import 'list_shape_extension.dart';
 import 'custom_byte_conversion_utils.dart';
 

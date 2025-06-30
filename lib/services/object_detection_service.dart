@@ -1,6 +1,8 @@
-import 'dart:io';
+// Conditionally import dart:io only for non-web platforms
+import 'dart:io' if (dart.library.html) 'dart:html' as io;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import '../custom/tflite_flutter.dart';
 import 'package:image/image.dart' as img;
@@ -32,10 +34,15 @@ class ObjectDetectionService {
 
   // Initialize the TensorFlow Lite interpreter
   Future<void> initialize() async {
-    // Skip initialization if it has already failed or if we're in a test environment
-    if (_initializationFailed || _isInTestEnvironment()) {
+    // Skip initialization if it has already failed, if we're in a test environment,
+    // or if we're running on web platform
+    if (_initializationFailed || _isInTestEnvironment() || kIsWeb) {
       _initializationFailed = true;
-      debugPrint('Skipping TensorFlow Lite initialization in test environment');
+      if (kIsWeb) {
+        debugPrint('TensorFlow Lite is not supported on web platforms');
+      } else {
+        debugPrint('Skipping TensorFlow Lite initialization in test environment');
+      }
       return;
     }
 
@@ -122,9 +129,14 @@ class ObjectDetectionService {
 
   // Load and process the image for the model
   Future<List<double>?> _loadAndProcessImage(String imagePath) async {
+    // Skip processing on web platform
+    if (kIsWeb) {
+      return null;
+    }
+
     try {
-      // Read the image file
-      final imageFile = File(imagePath);
+      // Read the image file (non-web platforms only)
+      final imageFile = io.File(imagePath);
       final imageBytes = await imageFile.readAsBytes();
 
       // Decode the image

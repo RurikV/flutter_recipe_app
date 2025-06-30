@@ -1,8 +1,10 @@
-import 'dart:io';
+// Conditionally import dart:io only for non-web platforms
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart' as p;
+
+// Import platform-specific dependencies
+import 'database_connection.dart';
 
 import 'tables.dart';
 import 'database_extensions.dart';
@@ -22,7 +24,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // Private constructor for singleton
-  AppDatabase._internal() : super(_openConnection()) {
+  AppDatabase._internal() : super(openConnection()) {
     _extensions = DatabaseExtensions(this);
   }
 
@@ -79,10 +81,3 @@ class AppDatabase extends _$AppDatabase {
   Future<bool> isInFavorites(String recipeUuid) => _extensions.isInFavorites(recipeUuid);
 }
 
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'recipes.sqlite'));
-    return NativeDatabase(file);
-  });
-}

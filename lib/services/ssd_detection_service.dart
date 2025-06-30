@@ -1,6 +1,8 @@
-import 'dart:io';
+// Conditionally import dart:io only for non-web platforms
+import 'dart:io' if (dart.library.html) 'dart:html' as io;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import '../custom/tflite_flutter.dart';
 import '../custom/list_shape_extension.dart';
@@ -26,10 +28,15 @@ class SSDObjectDetectionService {
 
   // Initialize the TensorFlow Lite interpreter
   Future<void> initialize() async {
-    // Skip initialization if it has already failed or if we're in a test environment
-    if (_initializationFailed || _isInTestEnvironment()) {
+    // Skip initialization if it has already failed, if we're in a test environment,
+    // or if we're running on web platform
+    if (_initializationFailed || _isInTestEnvironment() || kIsWeb) {
       _initializationFailed = true;
-      debugPrint('Skipping TensorFlow Lite initialization in test environment');
+      if (kIsWeb) {
+        debugPrint('TensorFlow Lite is not supported on web platforms');
+      } else {
+        debugPrint('Skipping TensorFlow Lite initialization in test environment');
+      }
       return;
     }
 
@@ -54,8 +61,8 @@ class SSDObjectDetectionService {
 
   // Detect objects in an image
   Future<List<DetectedObject>> detectObjects(String imagePath, {int maxResults = 5}) async {
-    // Return empty results if initialization has failed
-    if (_initializationFailed) {
+    // Return empty results if initialization has failed or if we're on web platform
+    if (_initializationFailed || kIsWeb) {
       return [];
     }
 
@@ -68,8 +75,8 @@ class SSDObjectDetectionService {
     }
 
     try {
-      // Load and preprocess the image
-      final imageFile = File(imagePath);
+      // Load and preprocess the image (non-web platforms only)
+      final imageFile = io.File(imagePath);
       final imageBytes = await imageFile.readAsBytes();
       final image = img.decodeImage(Uint8List.fromList(imageBytes));
       if (image == null) return [];
