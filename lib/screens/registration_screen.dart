@@ -6,6 +6,7 @@ import '../redux/app_state.dart';
 import '../redux/actions.dart';
 import '../services/auth_service.dart';
 import '../widgets/navigation/auth_bottom_navigation_bar.dart';
+import 'home_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -58,8 +59,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       StoreProvider.of<AppState>(context, listen: false)
           .dispatch(RegisterSuccessAction(user));
 
-      // Navigate back to login screen or home screen
-      Navigator.of(context).pop();
+      // Navigate to home screen
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
