@@ -1,16 +1,21 @@
 import 'package:flutter_recipe_app/models/recipe.dart';
+import 'package:flutter_recipe_app/models/user.dart';
 
 class AppState {
   final List<Recipe> recipes;
   final List<Recipe> favoriteRecipes;
   final bool isLoading;
   final String error;
+  final User? user;
+  final bool isAuthenticated;
 
   AppState({
     required this.recipes,
     required this.favoriteRecipes,
     required this.isLoading,
     required this.error,
+    this.user,
+    required this.isAuthenticated,
   });
 
   // Initial state
@@ -20,6 +25,8 @@ class AppState {
       favoriteRecipes: [],
       isLoading: false,
       error: '',
+      user: null,
+      isAuthenticated: false,
     );
   }
 
@@ -29,12 +36,16 @@ class AppState {
     List<Recipe>? favoriteRecipes,
     bool? isLoading,
     String? error,
+    User? user,
+    bool? isAuthenticated,
   }) {
     return AppState(
       recipes: recipes ?? this.recipes,
       favoriteRecipes: favoriteRecipes ?? this.favoriteRecipes,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
+      user: user ?? this.user,
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
     );
   }
 }

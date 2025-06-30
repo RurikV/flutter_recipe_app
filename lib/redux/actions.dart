@@ -1,3 +1,47 @@
+// Authentication actions
+class LoginAction {
+  final String username;
+  final String password;
+
+  LoginAction(this.username, this.password);
+}
+
+class LoginSuccessAction {
+  final dynamic user;
+
+  LoginSuccessAction(this.user);
+}
+
+class LoginErrorAction {
+  final String error;
+
+  LoginErrorAction(this.error);
+}
+
+class RegisterAction {
+  final String username;
+  final String email;
+  final String password;
+
+  RegisterAction(this.username, this.email, this.password);
+}
+
+class RegisterSuccessAction {
+  final dynamic user;
+
+  RegisterSuccessAction(this.user);
+}
+
+class RegisterErrorAction {
+  final String error;
+
+  RegisterErrorAction(this.error);
+}
+
+class LogoutAction {}
+
+class CheckAuthStatusAction {}
+
 // Recipe actions
 class LoadRecipesAction {}
 
