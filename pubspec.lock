@@ -63,7 +63,7 @@ packages:
     source: hosted
     version: "7.9.2"
   auto_route_generator:
-    dependency: "direct dev"
+    dependency: "direct overridden"
     description:
       name: auto_route_generator
       sha256: "11067a3bcd643812518fe26c0c9ec073990286cabfd9d74b6da9ef9b913c4d22"
@@ -111,7 +111,7 @@ packages:
     source: hosted
     version: "2.4.4"
   build_runner:
-    dependency: "direct dev"
+    dependency: "direct overridden"
     description:
       name: build_runner
       sha256: "74691599a5bc750dc96a6b4bfd48f7d9d66453eab04c7f4063134800d6a5c573"
@@ -287,7 +287,7 @@ packages:
     source: hosted
     version: "2.15.0"
   drift_dev:
-    dependency: "direct dev"
+    dependency: "direct overridden"
     description:
       name: drift_dev
       sha256: c037d9431b6f8dc633652b1469e5f53aaec6e4eb405ed29dd232fa888ef10d88
@@ -364,7 +364,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_lints:
-    dependency: "direct dev"
+    dependency: "direct overridden"
     description:
       name: flutter_lints
       sha256: "5398f14efa795ffb7a33e9b6a08798b26a180edac4ad7db3f231e40f82ce11e1"
@@ -563,7 +563,7 @@ packages:
     source: hosted
     version: "4.9.0"
   json_serializable:
-    dependency: "direct dev"
+    dependency: "direct overridden"
     description:
       name: json_serializable
       sha256: c2fcb3920cf2b6ae6845954186420fca40bc0a8abcc84903b7801f17d7050d7c
@@ -651,7 +651,7 @@ packages:
     source: hosted
     version: "1.0.6"
   mockito:
-    dependency: "direct dev"
+    dependency: "direct overridden"
     description:
       name: mockito
       sha256: f99d8d072e249f719a5531735d146d8cf04c580d93920b04de75bef6dfb2daf6
@@ -1064,13 +1064,13 @@ packages:
     source: hosted
     version: "1.1.2"
   web:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: web
-      sha256: afe077240a270dcfd2aafe77602b4113645af95d0ad31128cc02bce5ac5d5152
+      sha256: "4188706108906f002b3a293509234588823c8c979dc83304e229ff400c996b05"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.0"
+    version: "0.4.2"
   web_socket_channel:
     dependency: transitive
     description:
