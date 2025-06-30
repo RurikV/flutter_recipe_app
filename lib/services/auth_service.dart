@@ -46,7 +46,10 @@ class AuthService {
         final userJson = Map<String, dynamic>.from(
           Uri.dataFromString(userData).data! as Map
         );
-        _currentUser = User.fromJson(userJson).copyWith(token: token);
+
+        // Create a user object with the token
+        final user = User.fromJson(userJson);
+        _currentUser = user;
         _authStateController.add(_currentUser);
 
         // Set the token in the API service headers
@@ -61,30 +64,26 @@ class AuthService {
   }
 
   // Register a new user
-  Future<User> register(String username, String email, String password) async {
+  Future<User> register(String login, String password) async {
     try {
       final response = await _dio.post(
-        '/auth/register',
+        '/user',
         data: {
-          'username': username,
-          'email': email,
+          'login': login,
           'password': password,
         },
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final user = User.fromJson(response.data['user']);
-        final token = response.data['token'];
-
-        // Save token and user data
-        await _saveUserData(user, token);
-
-        return user;
+        // If registration is successful, login the user
+        return await this.login(login, password);
       } else {
         throw Exception('Registration failed: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      if (e.response != null) {
+      if (e.response != null && e.response?.statusCode == 409) {
+        throw Exception('User already exists');
+      } else if (e.response != null) {
         throw Exception('Registration failed: ${e.response?.data['message'] ?? e.message}');
       } else {
         throw Exception('Registration failed: ${e.message}');
@@ -93,19 +92,21 @@ class AuthService {
   }
 
   // Login an existing user
-  Future<User> login(String username, String password) async {
+  Future<User> login(String login, String password) async {
     try {
-      final response = await _dio.post(
-        '/auth/login',
+      final response = await _dio.put(
+        '/user',
         data: {
-          'username': username,
+          'login': login,
           'password': password,
         },
       );
 
       if (response.statusCode == 200) {
-        final user = User.fromJson(response.data['user']);
-        final token = response.data['token'];
+        final token = response.data['token'] as String;
+
+        // Get user details using the token
+        final user = await getUserProfile(login);
 
         // Save token and user data
         await _saveUserData(user, token);
@@ -115,10 +116,31 @@ class AuthService {
         throw Exception('Login failed: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      if (e.response != null) {
+      if (e.response != null && e.response?.statusCode == 403) {
+        throw Exception('Invalid credentials');
+      } else if (e.response != null) {
         throw Exception('Login failed: ${e.response?.data['message'] ?? e.message}');
       } else {
         throw Exception('Login failed: ${e.message}');
+      }
+    }
+  }
+
+  // Get user profile information
+  Future<User> getUserProfile(String userId) async {
+    try {
+      final response = await _dio.get('/user/$userId');
+
+      if (response.statusCode == 200) {
+        return User.fromJson(response.data);
+      } else {
+        throw Exception('Failed to get user profile: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      if (e.response != null) {
+        throw Exception('Failed to get user profile: ${e.response?.data['message'] ?? e.message}');
+      } else {
+        throw Exception('Failed to get user profile: ${e.message}');
       }
     }
   }

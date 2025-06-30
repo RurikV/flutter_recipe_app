@@ -3,18 +3,24 @@ import 'package:provider/provider.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
 import 'theme/app_theme.dart';
 import 'presentation/providers/language_provider.dart';
 import 'l10n/app_localizations.dart';
 import 'redux/app_state.dart';
 import 'redux/store.dart';
 import 'redux/actions.dart';
+import 'services/auth_service.dart';
 
-void main() {
+void main() async {
   // Initialize Flutter binding before accessing platform services
   WidgetsFlutterBinding.ensureInitialized();
 
   final Store<AppState> store = createStore();
+  final authService = AuthService();
+
+  // Check authentication status
+  store.dispatch(CheckAuthStatusAction());
 
   // Load initial data
   store.dispatch(LoadRecipesAction());
@@ -25,6 +31,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (context) => LanguageProvider()),
         Provider<Store<AppState>>(create: (context) => store),
+        Provider<AuthService>(create: (context) => authService),
       ],
       child: StoreProvider<AppState>(
         store: store,
@@ -66,7 +73,12 @@ class MyApp extends StatelessWidget {
           },
         ),
       ),
-      home: const HomeScreen(),
+      home: StoreConnector<AppState, bool>(
+        converter: (store) => store.state.isAuthenticated,
+        builder: (context, isAuthenticated) {
+          return isAuthenticated ? const HomeScreen() : const LoginScreen();
+        },
+      ),
     );
   }
 }

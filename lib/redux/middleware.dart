@@ -63,6 +63,13 @@ Middleware<AppState> _createLoadFavoriteRecipesMiddleware() {
     if (action is LoadFavoriteRecipesAction) {
       next(action); // Let the reducer know we're loading
 
+      // Check if user is authenticated
+      if (!store.state.isAuthenticated) {
+        // If not authenticated, return empty list
+        store.dispatch(FavoriteRecipesLoadedAction([]));
+        return;
+      }
+
       try {
         final RecipeManager recipeManager = RecipeManager();
         final favoriteRecipes = await recipeManager.getFavoriteRecipes();
@@ -82,6 +89,13 @@ Middleware<AppState> _createToggleFavoriteMiddleware() {
   return (Store<AppState> store, dynamic action, NextDispatcher next) async {
     if (action is ToggleFavoriteAction) {
       next(action); // Let the reducer know about the action
+
+      // Check if user is authenticated
+      if (!store.state.isAuthenticated) {
+        // If not authenticated, show error or redirect to login
+        // For now, we'll just return without doing anything
+        return;
+      }
 
       // Find the recipe in the state
       final recipe = store.state.recipes.firstWhere(

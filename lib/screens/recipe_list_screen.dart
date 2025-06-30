@@ -16,7 +16,6 @@ class RecipeListScreen extends StatefulWidget {
 }
 
 class _RecipeListScreenState extends State<RecipeListScreen> {
-
   void _loadRecipes() {
     // Dispatch action to load recipes
     StoreProvider.of<AppState>(context, listen: false)
@@ -38,6 +37,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
       _loadFavorites();
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
