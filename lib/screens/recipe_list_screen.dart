@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../../models/recipe.dart';
 import '../utils/page_transition.dart';
 import '../widgets/recipe/recipe_list.dart';
+import '../widgets/navigation/auth_bottom_navigation_bar.dart';
 import 'add_recipe_screen.dart';
 import '../redux/app_state.dart';
 import '../redux/actions.dart';
@@ -43,94 +44,101 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFECECEC), // Background color as per design
-      appBar: AppBar(
-        title: Text(l10n.recipes),
-        centerTitle: true,
-        backgroundColor: const Color(0xFFECECEC), // Match background color
-        elevation: 0, // No shadow
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            CustomPageRoute(
-              page: AddRecipeScreen(
-                onRecipeAdded: _loadRecipes,
-              ),
-              transitionType: TransitionType.fadeAndScale,
-            ),
-          );
-        },
-        backgroundColor: const Color(0xFF2ECC71),
-        child: const Icon(Icons.add),
-      ),
-      body: OrientationBuilder(
-        builder: (context, orientation) {
-          return Center(
-            child: SizedBox(
-              width: orientation == Orientation.landscape
-                  ? MediaQuery.of(context).size.width * 0.5
-                  : MediaQuery.of(context).size.width,
-              child: StoreConnector<AppState, _RecipeListViewModel>(
-                converter: (store) => _RecipeListViewModel.fromStore(store),
-                builder: (context, viewModel) {
-                  if (viewModel.isLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  } else if (viewModel.error.isNotEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.error_outline,
-                            color: Colors.red,
-                            size: 60,
+    return StoreConnector<AppState, bool>(
+      converter: (store) => store.state.isAuthenticated,
+      builder: (context, isAuthenticated) {
+        return Scaffold(
+          backgroundColor: const Color(0xFFECECEC), // Background color as per design
+          appBar: AppBar(
+            title: Text(l10n.recipes),
+            centerTitle: true,
+            backgroundColor: const Color(0xFFECECEC), // Match background color
+            elevation: 0, // No shadow
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                CustomPageRoute(
+                  page: AddRecipeScreen(
+                    onRecipeAdded: _loadRecipes,
+                  ),
+                  transitionType: TransitionType.fadeAndScale,
+                ),
+              );
+            },
+            backgroundColor: const Color(0xFF2ECC71),
+            child: const Icon(Icons.add),
+          ),
+          // Show AuthBottomNavigationBar only for non-authenticated users
+          bottomNavigationBar: !isAuthenticated ? const AuthBottomNavigationBar(isLoginActive: false) : null,
+          body: OrientationBuilder(
+            builder: (context, orientation) {
+              return Center(
+                child: SizedBox(
+                  width: orientation == Orientation.landscape
+                      ? MediaQuery.of(context).size.width * 0.5
+                      : MediaQuery.of(context).size.width,
+                  child: StoreConnector<AppState, _RecipeListViewModel>(
+                    converter: (store) => _RecipeListViewModel.fromStore(store),
+                    builder: (context, viewModel) {
+                      if (viewModel.isLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else if (viewModel.error.isNotEmpty) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.error_outline,
+                                color: Colors.red,
+                                size: 60,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                l10n.errorLoadingRecipes,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                viewModel.error,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 16),
-                          Text(
-                            l10n.errorLoadingRecipes,
-                            style: Theme.of(context).textTheme.titleMedium,
+                        );
+                      } else if (viewModel.recipes.isEmpty) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.no_food,
+                                color: Colors.grey,
+                                size: 60,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                l10n.noRecipesAvailable,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            viewModel.error,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    );
-                  } else if (viewModel.recipes.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.no_food,
-                            color: Colors.grey,
-                            size: 60,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            l10n.noRecipesAvailable,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                        ],
-                      ),
-                    );
-                  } else {
-                    return RecipeList(recipes: viewModel.recipes);
-                  }
-                },
-              ),
-            ),
-          );
-        },
-      ),
+                        );
+                      } else {
+                        return RecipeList(recipes: viewModel.recipes);
+                      }
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
