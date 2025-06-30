@@ -3,5 +3,5 @@ import 'package:drift/web.dart';
 
 // Web-specific database connection
 QueryExecutor createConnection() {
-  return WebStorage('recipes_db');
+  return WebDatabase('recipes_db');
 }
