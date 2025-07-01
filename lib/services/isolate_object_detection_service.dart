@@ -117,7 +117,9 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
     } catch (e) {
       debugPrint('Error initializing isolate: $e');
       _initializationFailed = true;
-      _initCompleter?.completeError(e);
+      if (_initCompleter != null && !_initCompleter!.isCompleted) {
+        _initCompleter!.completeError(e);
+      }
     }
   }
 
@@ -172,10 +174,14 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
 
         case IsolateMessageType.initialize:
           if (isolateMessage.data['success'] == true) {
-            _initCompleter?.complete();
+            if (_initCompleter != null && !_initCompleter!.isCompleted) {
+              _initCompleter!.complete();
+            }
           } else {
             _initializationFailed = true;
-            _initCompleter?.completeError(Exception(isolateMessage.data['error']));
+            if (_initCompleter != null && !_initCompleter!.isCompleted) {
+              _initCompleter!.completeError(Exception(isolateMessage.data['error']));
+            }
           }
           break;
 
