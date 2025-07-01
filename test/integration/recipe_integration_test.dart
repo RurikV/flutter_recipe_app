@@ -9,8 +9,13 @@ import 'package:flutter_recipe_app/models/measure_unit.dart';
 import 'package:flutter_recipe_app/screens/recipe_detail_screen.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/store.dart';
+import '../service_locator_test.dart';
 
 void main() {
+  // Initialize the service locator for tests
+  setUpAll(() {
+    initializeTestServiceLocator();
+  });
   group('Recipe Integration Tests', () {
     testWidgets('Display a recipe with ingredients and steps', (WidgetTester tester) async {
       // Create measure units
