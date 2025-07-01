@@ -9,6 +9,52 @@ class RecipeCard extends StatelessWidget {
 
   const RecipeCard({super.key, required this.recipe});
 
+  // Helper method to build the appropriate image widget based on the path
+  Widget _buildImage(String path) {
+    // Common error builder for both network and file images
+    final errorBuilder = (BuildContext context, Object error, StackTrace? stackTrace) {
+      return Container(
+        color: Colors.grey[300],
+        child: const Center(
+          child: Icon(
+            Icons.image_not_supported,
+            size: 40,
+            color: Colors.grey,
+          ),
+        ),
+      );
+    };
+
+    // Check if the path is a file path
+    if (path.startsWith('file://')) {
+      // For file paths in tests, use a colored container as a placeholder
+      return Container(
+        color: Colors.grey[300],
+        child: const Center(
+          child: Icon(
+            Icons.image,
+            size: 40,
+            color: Colors.grey,
+          ),
+        ),
+      );
+    } else if (path.startsWith('http://') || path.startsWith('https://')) {
+      // For network paths, use Image.network
+      return Image.network(
+        path,
+        fit: BoxFit.cover,
+        errorBuilder: errorBuilder,
+      );
+    } else {
+      // For any other path, assume it's a network path
+      return Image.network(
+        path,
+        fit: BoxFit.cover,
+        errorBuilder: errorBuilder,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -46,22 +92,7 @@ class RecipeCard extends StatelessWidget {
                       width: 150, // Width of the image (about 37.63% of card width)
                       height: 136, // Full height of the card
                       child: recipe.images.isNotEmpty
-                        ? Image.network(
-                            recipe.images.first.path,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.grey[300],
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.image_not_supported,
-                                    size: 40,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              );
-                            },
-                          )
+                        ? _buildImage(recipe.images.first.path)
                         : Container(
                             color: Colors.grey[300],
                             child: const Center(

@@ -42,7 +42,13 @@ class Recipe {
     if (images == null) {
       return [];
     } else if (images is String) {
-      // If it's a string, try to parse it as JSON first
+      // Check if the string is a URL (starts with http:// or https://)
+      if (images.startsWith('http://') || images.startsWith('https://')) {
+        // If it's a URL, treat it as a single image URL
+        return [RecipeImage(path: images)];
+      }
+
+      // If it's not a URL, try to parse it as JSON
       try {
         final List<dynamic> decodedList = jsonDecode(images);
         return decodedList
