@@ -7,6 +7,7 @@ import 'package:flutter_recipe_app/data/api_service.dart';
 import 'package:flutter_recipe_app/screens/recipe_detail_screen.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/store.dart';
+import '../service_locator_test.dart';
 
 // Mock implementation of ApiService for testing
 class MockApiService extends ApiService {
@@ -33,6 +34,11 @@ class MockApiService extends ApiService {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the service locator for tests
+  setUpAll(() {
+    initializeTestServiceLocator();
+  });
 
   group('Recipe Ingredients and Steps Integration Tests', () {
     late ApiService apiService;
