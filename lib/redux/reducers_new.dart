@@ -1,6 +1,4 @@
 import 'package:flutter_recipe_app/models/recipe.dart';
-import 'package:flutter_recipe_app/models/recipe_step.dart';
-import 'package:flutter_recipe_app/models/comment.dart';
 import 'package:flutter_recipe_app/models/user.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/actions.dart';
@@ -31,29 +29,10 @@ List<Recipe> recipesReducer(List<Recipe> recipes, dynamic action) {
   } else if (action is CommentAddedAction) {
     return recipes.map((recipe) {
       if (recipe.uuid == action.recipeId) {
-        // Create a new comment
-        final comment = action.comment as Comment;
-        // Create a new list with all existing comments
-        final List<Comment> updatedComments = List<Comment>.from(recipe.comments);
-        // Add the new comment
-        updatedComments.add(comment);
-        // Return a new recipe with updated comments
-        return Recipe(
-          uuid: recipe.uuid,
-          name: recipe.name,
-          images: recipe.images,
-          mainImage: recipe.mainImage,
-          description: recipe.description,
-          instructions: recipe.instructions,
-          difficulty: recipe.difficulty,
-          duration: recipe.duration,
-          rating: recipe.rating,
-          tags: recipe.tags,
-          ingredients: recipe.ingredients,
-          steps: recipe.steps,
-          isFavorite: recipe.isFavorite,
-          comments: updatedComments,
-        );
+        // Create a new list with all existing comments plus the new one
+        final updatedComments = [...recipe.comments, action.comment];
+        // Use dynamic to avoid type casting issues
+        return recipe.copyWith(comments: updatedComments as dynamic);
       }
       return recipe;
     }).toList();
@@ -61,31 +40,13 @@ List<Recipe> recipesReducer(List<Recipe> recipes, dynamic action) {
     return recipes.map((recipe) {
       if (recipe.uuid == action.recipeId) {
         // Create a new list with all existing steps
-        final List<RecipeStep> updatedSteps = List<RecipeStep>.from(recipe.steps);
-        // Update the step at the specified index
-        updatedSteps[action.stepIndex] = RecipeStep(
-          id: recipe.steps[action.stepIndex].id,
-          name: recipe.steps[action.stepIndex].name,
-          duration: recipe.steps[action.stepIndex].duration,
-          isCompleted: action.isCompleted,
-        );
-        // Return a new recipe with updated steps
-        return Recipe(
-          uuid: recipe.uuid,
-          name: recipe.name,
-          images: recipe.images,
-          mainImage: recipe.mainImage,
-          description: recipe.description,
-          instructions: recipe.instructions,
-          difficulty: recipe.difficulty,
-          duration: recipe.duration,
-          rating: recipe.rating,
-          tags: recipe.tags,
-          ingredients: recipe.ingredients,
-          steps: updatedSteps,
-          isFavorite: recipe.isFavorite,
-          comments: recipe.comments,
-        );
+        final updatedSteps = recipe.steps.map((step) {
+          if (recipe.steps.indexOf(step) == action.stepIndex) {
+            return step.copyWith(isCompleted: action.isCompleted);
+          }
+          return step;
+        }).toList();
+        return recipe.copyWith(steps: updatedSteps);
       }
       return recipe;
     }).toList();
@@ -97,14 +58,26 @@ List<Recipe> recipesReducer(List<Recipe> recipes, dynamic action) {
 List<Recipe> favoriteRecipesReducer(List<Recipe> favoriteRecipes, dynamic action) {
   if (action is FavoriteRecipesLoadedAction) {
     return action.favoriteRecipes.cast<Recipe>();
-  } else if (action is ToggleFavoriteAction) {
-    // This is just the initial action, don't modify the state yet
-    return favoriteRecipes;
   } else if (action is FavoriteToggledAction) {
     if (action.isFavorite) {
-      // We don't need to add the recipe here since the LoadFavoriteRecipesAction
-      // will be dispatched after this and will load the complete recipe from the database
-      return favoriteRecipes;
+      // Add to favorites if not already there
+      final recipe = favoriteRecipes.firstWhere(
+        (r) => r.uuid == action.recipeId,
+        orElse: () => Recipe(
+          uuid: action.recipeId,
+          name: '',
+          description: '',
+          instructions: '',
+          difficulty: 0,
+          duration: '',
+          rating: 0,
+          tags: [],
+          isFavorite: true,
+        ),
+      );
+      if (!favoriteRecipes.any((r) => r.uuid == action.recipeId)) {
+        return [...favoriteRecipes, recipe.copyWith(isFavorite: true)];
+      }
     } else {
       // Remove from favorites
       return favoriteRecipes.where((recipe) => recipe.uuid != action.recipeId).toList();

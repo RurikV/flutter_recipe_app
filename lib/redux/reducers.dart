@@ -1,4 +1,5 @@
 import 'package:flutter_recipe_app/models/recipe.dart';
+import 'package:flutter_recipe_app/models/user.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/actions.dart';
 
@@ -9,6 +10,8 @@ AppState appReducer(AppState state, dynamic action) {
     favoriteRecipes: favoriteRecipesReducer(state.favoriteRecipes, action),
     isLoading: loadingReducer(state.isLoading, action),
     error: errorReducer(state.error, action),
+    user: authUserReducer(state.user, action),
+    isAuthenticated: authStatusReducer(state.isAuthenticated, action),
   );
 }
 
@@ -99,9 +102,37 @@ bool loadingReducer(bool isLoading, dynamic action) {
 String errorReducer(String error, dynamic action) {
   if (action is RecipesLoadErrorAction) {
     return action.error;
+  } else if (action is LoginErrorAction) {
+    return action.error;
+  } else if (action is RegisterErrorAction) {
+    return action.error;
   } else if (action is RecipesLoadedAction || 
-             action is FavoriteRecipesLoadedAction) {
+             action is FavoriteRecipesLoadedAction ||
+             action is LoginSuccessAction ||
+             action is RegisterSuccessAction) {
     return '';
   }
   return error;
+}
+
+// Authentication user reducer
+User? authUserReducer(User? user, dynamic action) {
+  if (action is LoginSuccessAction) {
+    return action.user;
+  } else if (action is RegisterSuccessAction) {
+    return action.user;
+  } else if (action is LogoutAction) {
+    return null;
+  }
+  return user;
+}
+
+// Authentication status reducer
+bool authStatusReducer(bool isAuthenticated, dynamic action) {
+  if (action is LoginSuccessAction || action is RegisterSuccessAction) {
+    return true;
+  } else if (action is LogoutAction) {
+    return false;
+  }
+  return isAuthenticated;
 }

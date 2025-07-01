@@ -22,16 +22,18 @@ Map<String, dynamic> _$RecipeStepLinkToJson(RecipeStepLink instance) =>
       'step': instance.step.toJson(),
     };
 
-RecipeRef _$RecipeRefFromJson(Map<String, dynamic> json) =>
-    RecipeRef(id: (json['id'] as num).toInt());
+RecipeRef _$RecipeRefFromJson(Map<String, dynamic> json) => RecipeRef(
+      id: (json['id'] as num).toInt(),
+    );
 
 Map<String, dynamic> _$RecipeRefToJson(RecipeRef instance) => <String, dynamic>{
-  'id': instance.id,
-};
+      'id': instance.id,
+    };
 
-StepRef _$StepRefFromJson(Map<String, dynamic> json) =>
-    StepRef(id: (json['id'] as num).toInt());
+StepRef _$StepRefFromJson(Map<String, dynamic> json) => StepRef(
+      id: (json['id'] as num).toInt(),
+    );
 
 Map<String, dynamic> _$StepRefToJson(StepRef instance) => <String, dynamic>{
-  'id': instance.id,
-};
+      'id': instance.id,
+    };

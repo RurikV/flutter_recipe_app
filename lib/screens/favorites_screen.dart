@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import '../l10n/app_localizations.dart';
 import '../../models/recipe.dart';
-import '../domain/usecases/recipe_manager.dart';
 import '../widgets/recipe/recipe_list.dart';
 import '../redux/app_state.dart';
 import '../redux/actions.dart';

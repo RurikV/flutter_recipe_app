@@ -7,15 +7,14 @@ part of 'measure_unit.dart';
 // **************************************************************************
 
 MeasureUnit _$MeasureUnitFromJson(Map<String, dynamic> json) => MeasureUnit(
-  id: (json['id'] as num).toInt(),
-  one: json['one'] as String,
-  few: json['few'] as String,
-  many: json['many'] as String,
-  ingredients:
-      (json['ingredients'] as List<dynamic>?)
+      id: (json['id'] as num).toInt(),
+      one: json['one'] as String,
+      few: json['few'] as String,
+      many: json['many'] as String,
+      ingredients: (json['ingredients'] as List<dynamic>?)
           ?.map((e) => Ingredient.fromJson(e as Map<String, dynamic>))
           .toList(),
-);
+    );
 
 Map<String, dynamic> _$MeasureUnitToJson(MeasureUnit instance) =>
     <String, dynamic>{
@@ -27,7 +26,11 @@ Map<String, dynamic> _$MeasureUnitToJson(MeasureUnit instance) =>
     };
 
 MeasureUnitRef _$MeasureUnitRefFromJson(Map<String, dynamic> json) =>
-    MeasureUnitRef(id: (json['id'] as num).toInt());
+    MeasureUnitRef(
+      id: (json['id'] as num).toInt(),
+    );
 
 Map<String, dynamic> _$MeasureUnitRefToJson(MeasureUnitRef instance) =>
-    <String, dynamic>{'id': instance.id};
+    <String, dynamic>{
+      'id': instance.id,
+    };

@@ -5,8 +5,9 @@ import 'package:path/path.dart' as path;
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:get_it/get_it.dart';
 import 'package:flutter_recipe_app/database/app_database.dart';
-import 'package:flutter_recipe_app/services/ssd_detection_service.dart';
+import 'package:flutter_recipe_app/services/object_detection_service.dart';
 import 'package:flutter_recipe_app/models/recipe_image.dart';
 
 class GalleryScreen extends StatefulWidget {
@@ -24,21 +25,24 @@ class GalleryScreen extends StatefulWidget {
 }
 
 class GalleryScreenState extends State<GalleryScreen> {
-  final AppDatabase _db = AppDatabase();
-  final SSDObjectDetectionService _objectDetectionService = SSDObjectDetectionService();
+  final GetIt _getIt = GetIt.instance;
+  late final AppDatabase _db;
+  late final ObjectDetectionService _objectDetectionService;
   List<Photo> _photos = [];
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _db = _getIt<AppDatabase>();
+    _objectDetectionService = _getIt<ObjectDetectionService>();
+    // No need to call initialize() as it's already initialized in main.dart
     _loadPhotos();
-    _objectDetectionService.initialize();
   }
 
   @override
   void dispose() {
-    _objectDetectionService.dispose();
+    // No need to call dispose() on _objectDetectionService as it's a singleton
     super.dispose();
   }
 

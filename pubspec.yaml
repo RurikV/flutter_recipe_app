@@ -40,11 +40,17 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  # Navigation
+  auto_route: ^7.8.4
+
   # Database
-  drift: ^2.15.0
+  drift: ^2.14.1
   sqlite3_flutter_libs: ^0.5.20
   path_provider: ^2.1.2
   path: ^1.8.3
+
+  # Dependency injection
+  get_it: ^7.6.7
 
   # HTTP client
   dio: ^5.4.0
@@ -76,11 +82,15 @@ dependencies:
   redux: ^5.0.0
   flutter_redux: ^0.10.0
 
-  ffi: any
+  ffi: ^2.1.4
   quiver: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+# Override dependencies to exclude problematic packages
+dependency_overrides:
+  # Remove web package override since we're providing our own implementation in lib/packages/web
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -91,8 +101,9 @@ dev_dependencies:
 
   # Code generation
   build_runner: ^2.4.8
-  drift_dev: ^2.15.0
+  drift_dev: ^2.14.1
   json_serializable: ^6.7.1
+  auto_route_generator: ^7.3.2
 
   # Testing
   mockito: ^5.4.4

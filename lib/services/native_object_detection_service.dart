@@ -6,8 +6,10 @@ import '../custom/tflite_flutter_locator.dart';
 import '../custom/list_shape_extension.dart';
 import 'package:image/image.dart' as img;
 import '../models/recipe_image.dart';
+import 'object_detection_service.dart';
 
-class SSDObjectDetectionService {
+/// Native implementation of the object detection service using TensorFlow Lite
+class NativeObjectDetectionService implements ObjectDetectionService {
   static const String _modelPath = 'assets/models/ssd_mobilenet.tflite';
   static const String _labelsPath = 'assets/models/ssd_mobilenet_labels.txt';
 
@@ -24,7 +26,7 @@ class SSDObjectDetectionService {
     }
   }
 
-  // Initialize the TensorFlow Lite interpreter
+  @override
   Future<void> initialize() async {
     // Skip initialization if it has already failed or if we're in a test environment
     if (_initializationFailed || _isInTestEnvironment()) {
@@ -52,7 +54,7 @@ class SSDObjectDetectionService {
     }
   }
 
-  // Detect objects in an image
+  @override
   Future<List<DetectedObject>> detectObjects(String imagePath, {int maxResults = 5}) async {
     // Return empty results if initialization has failed
     if (_initializationFailed) {
@@ -174,7 +176,7 @@ class SSDObjectDetectionService {
     return result;
   }
 
-  // Dispose of resources
+  @override
   void dispose() {
     _interpreter?.close();
   }

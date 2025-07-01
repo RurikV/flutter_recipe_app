@@ -1,9 +1,15 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' if (dart.library.html) 'dart:html';
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
+import 'package:dio/io.dart' if (dart.library.html) 'package:dio/browser.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../models/recipe.dart';
 import '../../models/comment.dart';
+
+// Import HttpClient, X509Certificate, and IOHttpClientAdapter only for non-web platforms
+import 'dart:io' if (dart.library.html) 'web_http_client.dart';
+// Import IOHttpClientAdapter explicitly for non-web platforms
+import 'package:dio/io.dart' if (dart.library.html) 'web_http_client.dart' show IOHttpClientAdapter;
 
 class ApiService {
   final Dio _dio;
@@ -26,12 +32,17 @@ class ApiService {
       logPrint: (object) => print('DIO: $object'),
     ));
 
-    // Configure Dio to accept self-signed certificates
-    (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
-      final client = HttpClient();
-      client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-      return client;
-    };
+    // Configure HTTP client adapter based on platform
+    if (!kIsWeb) {
+      // Native platforms: Configure to accept self-signed certificates
+      final adapter = _dio.httpClientAdapter as IOHttpClientAdapter;
+      adapter.createHttpClient = () {
+        final client = HttpClient();
+        client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+        return client;
+      };
+    }
+    // For web, use the default BrowserHttpClientAdapter which is already set
   }
 
   // Generic method to handle API requests with retry logic

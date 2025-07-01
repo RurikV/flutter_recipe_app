@@ -3,7 +3,7 @@ import 'package:redux/redux.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/actions.dart';
-import 'package:flutter_recipe_app/redux/fixed_reducers.dart';
+import 'package:flutter_recipe_app/redux/reducers_fixed.dart';
 
 // Mock recipe data for testing
 final List<Recipe> mockRecipes = [
@@ -44,6 +44,7 @@ void main() {
           favoriteRecipes: mockRecipes.where((r) => r.isFavorite).toList(),
           isLoading: false,
           error: '',
+          isAuthenticated: false,
         ),
         // We're not testing middleware in this test
       );
@@ -80,6 +81,7 @@ void main() {
           recipes: store.state.recipes.map((r) => 
             r.uuid == '1' ? r.copyWith(isFavorite: true) : r
           ).toList(),
+          isAuthenticated: store.state.isAuthenticated,
         ),
       );
 
