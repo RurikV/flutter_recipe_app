@@ -315,11 +315,17 @@ class MockRecipeRepository implements RecipeRepository {
 
   @override
   Future<Recipe?> getRecipeByUuid(String uuid) async {
-    final recipes = await getRecipes();
+    // First check in the _recipes list for recipes added during the test
     try {
-      return recipes.firstWhere((recipe) => recipe.uuid == uuid);
+      return _recipes.firstWhere((recipe) => recipe.uuid == uuid);
     } catch (e) {
-      return null;
+      // If not found in _recipes, check in the hardcoded list from getRecipes()
+      final recipes = await getRecipes();
+      try {
+        return recipes.firstWhere((recipe) => recipe.uuid == uuid);
+      } catch (e) {
+        return null;
+      }
     }
   }
 
