@@ -72,6 +72,28 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
     }
   }
 
+  // Load the labels from the assets
+  Future<List<String>> _loadLabels() async {
+    try {
+      final labelsData = await rootBundle.loadString(_labelsPath);
+      return labelsData.split('\n');
+    } catch (e) {
+      debugPrint('Error loading labels: $e');
+      return [];
+    }
+  }
+
+  // Load the model file from assets
+  Future<Uint8List> _loadModelFile() async {
+    try {
+      final modelData = await rootBundle.load(_modelPath);
+      return modelData.buffer.asUint8List();
+    } catch (e) {
+      debugPrint('Error loading model file: $e');
+      return Uint8List(0);
+    }
+  }
+
   @override
   Future<void> initialize() async {
     // Skip initialization if it has already been initialized or failed
@@ -89,6 +111,10 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
     _initCompleter = Completer<void>();
 
     try {
+      // Load the labels and model file in the main isolate
+      final labels = await _loadLabels();
+      final modelBytes = await _loadModelFile();
+
       // Create a receive port for communication with the isolate
       _receivePort = ReceivePort();
 
@@ -107,8 +133,14 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
       // Wait for the isolate to send its SendPort
       await _waitForSendPort();
 
-      // Send initialization message to the isolate
-      final message = IsolateMessage(IsolateMessageType.initialize, null);
+      // Send initialization message to the isolate with the labels and model bytes
+      final message = IsolateMessage(
+        IsolateMessageType.initialize, 
+        {
+          'labels': labels,
+          'modelBytes': modelBytes,
+        }
+      );
       _sendPort!.send(message.serialize());
 
       // Wait for initialization to complete
@@ -264,6 +296,9 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
 
   // Entry point for the isolate
   static void _isolateEntryPoint(SendPort mainSendPort) async {
+    // Do not initialize WidgetsFlutterBinding in the isolate as it causes UI-related errors
+    // We'll pass the necessary data from the main isolate instead
+
     // Create a receive port for receiving messages from the main isolate
     final receivePort = ReceivePort();
 
@@ -282,16 +317,19 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
         switch (isolateMessage.type) {
           case IsolateMessageType.initialize:
             try {
-              // Load the model
+              // Get the labels and model bytes passed from the main isolate
+              labels = List<String>.from(isolateMessage.data['labels'] ?? []);
+
+              // Convert List<dynamic> to Uint8List
+              final modelBytesList = isolateMessage.data['modelBytes'] as List<dynamic>;
+              final modelBytes = Uint8List.fromList(modelBytesList.cast<int>());
+
+              // Create the interpreter from the model bytes
               final interpreterOptions = InterpreterOptions();
-              interpreter = await Interpreter.fromAsset(
-                _modelPath,
+              interpreter = Interpreter.fromBuffer(
+                modelBytes,
                 options: interpreterOptions,
               );
-
-              // Load the labels
-              final labelsData = await rootBundle.loadString(_labelsPath);
-              labels = labelsData.split('\n');
 
               isInitialized = true;
 
@@ -314,7 +352,9 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
           case IsolateMessageType.detect:
             final requestId = isolateMessage.data['requestId'];
             final imagePath = isolateMessage.data['imagePath'];
-            final Uint8List imageBytes = isolateMessage.data['imageBytes'];
+            // Convert List<dynamic> to Uint8List
+            final imageBytesList = isolateMessage.data['imageBytes'] as List<dynamic>;
+            final Uint8List imageBytes = Uint8List.fromList(imageBytesList.cast<int>());
             final int maxResults = isolateMessage.data['maxResults'];
 
             try {
@@ -428,22 +468,23 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
   }
 
   // Convert image to input format for SSD MobileNet
-  static Float32List _imageToByteList(img.Image image) {
+  static List _imageToByteList(img.Image image) {
     final inputSize = 300;
-    final result = Float32List(1 * inputSize * inputSize * 3);
+    final result = Uint8List(1 * inputSize * inputSize * 3);
     var index = 0;
 
     for (var y = 0; y < inputSize; y++) {
       for (var x = 0; x < inputSize; x++) {
         final pixel = image.getPixel(x, y);
 
-        // Normalize pixel values to [-1, 1]
-        result[index++] = (pixel.r / 127.5) - 1.0;
-        result[index++] = (pixel.g / 127.5) - 1.0;
-        result[index++] = (pixel.b / 127.5) - 1.0;
+        // Use uint8 values (0-255) directly, converting num to int
+        result[index++] = pixel.r.toInt();
+        result[index++] = pixel.g.toInt();
+        result[index++] = pixel.b.toInt();
       }
     }
 
-    return result;
+    // Reshape the flat array to 4D tensor with shape [1, height, width, channels]
+    return result.reshape<int>([1, inputSize, inputSize, 3]);
   }
 }
