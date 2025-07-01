@@ -19,6 +19,13 @@ AppState appReducer(AppState state, dynamic action) {
 List<Recipe> recipesReducer(List<Recipe> recipes, dynamic action) {
   if (action is RecipesLoadedAction) {
     return action.recipes.cast<Recipe>();
+  } else if (action is ToggleFavoriteAction) {
+    return recipes.map((recipe) {
+      if (recipe.uuid == action.recipeId) {
+        return recipe.copyWith(isFavorite: !recipe.isFavorite);
+      }
+      return recipe;
+    }).toList();
   } else if (action is FavoriteToggledAction) {
     return recipes.map((recipe) {
       if (recipe.uuid == action.recipeId) {
@@ -58,6 +65,30 @@ List<Recipe> recipesReducer(List<Recipe> recipes, dynamic action) {
 List<Recipe> favoriteRecipesReducer(List<Recipe> favoriteRecipes, dynamic action) {
   if (action is FavoriteRecipesLoadedAction) {
     return action.favoriteRecipes.cast<Recipe>();
+  } else if (action is ToggleFavoriteAction) {
+    // Find the recipe in the recipes list
+    final recipe = favoriteRecipes.firstWhere(
+      (r) => r.uuid == action.recipeId,
+      orElse: () => Recipe(
+        uuid: action.recipeId,
+        name: '',
+        description: '',
+        instructions: '',
+        difficulty: 0,
+        duration: '',
+        rating: 0,
+        tags: [],
+        isFavorite: false,
+      ),
+    );
+
+    // If the recipe is already in favorites, remove it
+    if (favoriteRecipes.any((r) => r.uuid == action.recipeId)) {
+      return favoriteRecipes.where((r) => r.uuid != action.recipeId).toList();
+    } else {
+      // Otherwise, add it to favorites
+      return [...favoriteRecipes, recipe.copyWith(isFavorite: true)];
+    }
   } else if (action is FavoriteToggledAction) {
     if (action.isFavorite) {
       // Add to favorites if not already there

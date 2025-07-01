@@ -315,11 +315,17 @@ class MockRecipeRepository implements RecipeRepository {
 
   @override
   Future<Recipe?> getRecipeByUuid(String uuid) async {
-    final recipes = await getRecipes();
+    // First check in the _recipes list for recipes added during the test
     try {
-      return recipes.firstWhere((recipe) => recipe.uuid == uuid);
+      return _recipes.firstWhere((recipe) => recipe.uuid == uuid);
     } catch (e) {
-      return null;
+      // If not found in _recipes, check in the hardcoded list from getRecipes()
+      final recipes = await getRecipes();
+      try {
+        return recipes.firstWhere((recipe) => recipe.uuid == uuid);
+      } catch (e) {
+        return null;
+      }
     }
   }
 
@@ -692,6 +698,71 @@ void main() {
       expect(success, isTrue);
 
       print('[DEBUG_LOG] Updated step status successfully without internet connection: $recipeId, step $stepIndex');
+    });
+
+    test('Add new recipe and verify it can be retrieved', () async {
+      // Create a unique test recipe
+      final uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
+      final testRecipe = Recipe(
+        uuid: 'test-uuid-$uniqueId',
+        name: 'Test Recipe $uniqueId',
+        images: 'https://via.placeholder.com/400x300?text=Test+Recipe',
+        description: 'Test description for add/get test',
+        instructions: 'Test instructions for add/get test',
+        difficulty: 3,
+        duration: '45 min',
+        rating: 4,
+        tags: ['test', 'add-get-test'],
+        ingredients: [
+          Ingredient.simple(
+            name: 'Test ingredient 1',
+            quantity: '200',
+            unit: 'g',
+          ),
+          Ingredient.simple(
+            name: 'Test ingredient 2',
+            quantity: '100',
+            unit: 'ml',
+          ),
+        ],
+        steps: [
+          RecipeStep(
+            id: 1,
+            name: 'Test step 1 for add/get test',
+            duration: 15,
+          ),
+          RecipeStep(
+            id: 2,
+            name: 'Test step 2 for add/get test',
+            duration: 10,
+          ),
+        ],
+        isFavorite: false,
+        comments: [],
+      );
+
+      // Save the recipe
+      final saveSuccess = await recipeManager.saveRecipe(testRecipe);
+      expect(saveSuccess, isTrue);
+      print('[DEBUG_LOG] Recipe saved successfully: ${testRecipe.uuid}');
+
+      // Get the recipe by UUID
+      final retrievedRecipe = await mockRecipeRepository.getRecipeByUuid(testRecipe.uuid);
+
+      // Verify the recipe was retrieved successfully
+      expect(retrievedRecipe, isNotNull);
+      expect(retrievedRecipe?.uuid, equals(testRecipe.uuid));
+      expect(retrievedRecipe?.name, equals(testRecipe.name));
+      expect(retrievedRecipe?.description, equals(testRecipe.description));
+      expect(retrievedRecipe?.difficulty, equals(testRecipe.difficulty));
+      expect(retrievedRecipe?.duration, equals(testRecipe.duration));
+      expect(retrievedRecipe?.ingredients.length, equals(testRecipe.ingredients.length));
+      expect(retrievedRecipe?.steps.length, equals(testRecipe.steps.length));
+
+      print('[DEBUG_LOG] Recipe retrieved successfully: ${retrievedRecipe?.uuid}');
+      print('[DEBUG_LOG] Recipe name: ${retrievedRecipe?.name}');
+      print('[DEBUG_LOG] Recipe ingredients count: ${retrievedRecipe?.ingredients.length}');
+      print('[DEBUG_LOG] Recipe steps count: ${retrievedRecipe?.steps.length}');
     });
   });
 }

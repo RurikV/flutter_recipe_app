@@ -10,7 +10,12 @@ import '../redux/app_state.dart';
 import '../redux/actions.dart';
 
 class RecipeListScreen extends StatefulWidget {
-  const RecipeListScreen({super.key});
+  final bool loadRecipesOnInit;
+
+  const RecipeListScreen({
+    super.key,
+    this.loadRecipesOnInit = true,
+  });
 
   @override
   State<RecipeListScreen> createState() => _RecipeListScreenState();
@@ -33,16 +38,19 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
   void initState() {
     super.initState();
     // Load both recipes and favorites when the screen is first displayed
-    Future.microtask(() {
-      _loadRecipes();
-      _loadFavorites();
-    });
+    // Only if loadRecipesOnInit is true (default)
+    if (widget.loadRecipesOnInit) {
+      Future.microtask(() {
+        _loadRecipes();
+        _loadFavorites();
+      });
+    }
   }
 
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context) ?? lookupAppLocalizations(const Locale('en'));
 
     return StoreConnector<AppState, bool>(
       converter: (store) => store.state.isAuthenticated,

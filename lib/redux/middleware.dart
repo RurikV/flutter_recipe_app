@@ -88,7 +88,8 @@ Middleware<AppState> _createLoadFavoriteRecipesMiddleware() {
 Middleware<AppState> _createToggleFavoriteMiddleware() {
   return (Store<AppState> store, dynamic action, NextDispatcher next) async {
     if (action is ToggleFavoriteAction) {
-      next(action); // Let the reducer know about the action
+      // Pass the action to the next dispatcher so the reducer can handle it immediately
+      next(action);
 
       // Check if user is authenticated
       if (!store.state.isAuthenticated) {
