@@ -14,6 +14,7 @@ import 'redux/actions.dart';
 import 'services/auth_service.dart';
 import 'database/app_database.dart';
 import 'services/object_detection_service.dart';
+import 'services/bluetooth_service.dart';
 // Use conditional imports for platform-specific implementations
 import 'services/object_detection_service_locator.dart' as object_detection_locator;
 
@@ -33,6 +34,11 @@ void main() async {
   // The service is registered in the platform-specific implementation
   await object_detection_locator.initObjectDetectionService();
 
+  // Initialize and register Bluetooth service
+  final bluetoothService = BluetoothService();
+  await bluetoothService.initialize();
+  getIt.registerSingleton<BluetoothService>(bluetoothService);
+
   final Store<AppState> store = createStore();
   final authService = AuthService();
 
@@ -51,6 +57,7 @@ void main() async {
         Provider<AuthService>(create: (context) => authService),
         Provider<AppDatabase>(create: (context) => getIt<AppDatabase>()),
         Provider<ObjectDetectionService>(create: (context) => getIt<ObjectDetectionService>()),
+        Provider<BluetoothService>(create: (context) => getIt<BluetoothService>()),
       ],
       child: StoreProvider<AppState>(
         store: store,
