@@ -21,6 +21,8 @@ class RiveFavoriteButtonState extends State<RiveFavoriteButton> {
   StateMachineController? _controller;
   SMIBool? _isFavoriteInput;
   SMITrigger? _pulseInput;
+  // Fallback animation controller when inputs are not found
+  SimpleAnimation? _fallbackAnimation;
 
   // Expose a method to trigger the animation
   void triggerAnimation() {
@@ -28,8 +30,13 @@ class RiveFavoriteButtonState extends State<RiveFavoriteButton> {
     if (_pulseInput != null) {
       print('Firing pulse animation from triggerAnimation');
       _pulseInput!.fire();
+    } else if (_fallbackAnimation != null) {
+      print('Using fallback animation since _pulseInput is null');
+      // Reset the animation to the beginning and play it
+      _fallbackAnimation!.reset();
+      _fallbackAnimation!.isActive = true;
     } else {
-      print('Cannot trigger animation: _pulseInput is null');
+      print('Cannot trigger animation: both _pulseInput and _fallbackAnimation are null');
     }
   }
 
@@ -64,8 +71,13 @@ class RiveFavoriteButtonState extends State<RiveFavoriteButton> {
           if (_pulseInput != null) {
             _pulseInput!.fire();
             print('Pulse animation fired');
+          } else if (_fallbackAnimation != null) {
+            print('Using fallback animation in didUpdateWidget');
+            _fallbackAnimation!.reset();
+            _fallbackAnimation!.isActive = true;
+            print('Fallback animation triggered');
           } else {
-            print('_pulseInput is null, cannot fire animation');
+            print('Both _pulseInput and _fallbackAnimation are null, cannot fire animation');
           }
         });
       }
@@ -167,6 +179,37 @@ class RiveFavoriteButtonState extends State<RiveFavoriteButton> {
           }
         }
 
+        // If we couldn't find the inputs, create a simple animation controller
+        // that will handle the animation without relying on the Rive inputs
+        if (_isFavoriteInput == null || _pulseInput == null) {
+          print('Creating fallback animation controller since inputs were not found');
+
+          // Try to find any animation in the artboard
+          final animationNames = artboard.animations.map((a) => a.name).toList();
+          print('Available animations: $animationNames');
+
+          String? animationName;
+          if (animationNames.isNotEmpty) {
+            animationName = animationNames.first;
+            print('Using animation: $animationName');
+          } else {
+            print('No animations found in the artboard');
+          }
+
+          // Create a simple animation controller for the artboard if an animation was found
+          if (animationName != null) {
+            final SimpleAnimation fallbackAnimation = SimpleAnimation(animationName, autoplay: false);
+            artboard.addController(fallbackAnimation);
+
+            // Store a reference to the animation for later use
+            _fallbackAnimation = fallbackAnimation;
+
+            print('Fallback animation controller created for animation: $animationName');
+          } else {
+            print('Could not create fallback animation controller');
+          }
+        }
+
         // Set the initial state
         if (_isFavoriteInput != null) {
           print('Setting initial favorite state to ${widget.isFavorite}');
@@ -176,13 +219,19 @@ class RiveFavoriteButtonState extends State<RiveFavoriteButton> {
         }
 
         // Trigger the pulse animation if the heart is already favorite
-        if (widget.isFavorite && _pulseInput != null) {
-          print('Initial state is favorite, firing pulse animation');
-          _pulseInput!.fire();
-        } else if (_pulseInput == null) {
-          print('Warning: trigger input not found in Rive animation');
+        if (widget.isFavorite) {
+          if (_pulseInput != null) {
+            print('Initial state is favorite, firing pulse animation');
+            _pulseInput!.fire();
+          } else if (_fallbackAnimation != null) {
+            print('Initial state is favorite, using fallback animation');
+            _fallbackAnimation!.reset();
+            _fallbackAnimation!.isActive = true;
+          } else {
+            print('Warning: both trigger input and fallback animation are null');
+          }
         } else {
-          print('Initial state is not favorite or pulse input is null');
+          print('Initial state is not favorite');
         }
       } else {
         print('Warning: No state machine found in Rive animation');
@@ -235,9 +284,15 @@ class RiveFavoriteButtonState extends State<RiveFavoriteButton> {
         print('Heart icon tapped!');
 
         // Try to trigger the animation directly
-        if (!widget.isFavorite && _pulseInput != null) {
-          print('Directly triggering animation on tap (before state change)');
-          _pulseInput!.fire();
+        if (!widget.isFavorite) {
+          if (_pulseInput != null) {
+            print('Directly triggering animation on tap (before state change)');
+            _pulseInput!.fire();
+          } else if (_fallbackAnimation != null) {
+            print('Using fallback animation on tap (before state change)');
+            _fallbackAnimation!.reset();
+            _fallbackAnimation!.isActive = true;
+          }
         }
 
         // Call the onPressed callback to toggle the favorite state
@@ -247,11 +302,19 @@ class RiveFavoriteButtonState extends State<RiveFavoriteButton> {
         // This is in addition to the animation being triggered in didUpdateWidget
         Future.delayed(const Duration(milliseconds: 100), () {
           print('Delayed animation trigger after tap');
-          if (widget.isFavorite && _pulseInput != null) {
-            print('Firing pulse animation after delay');
-            _pulseInput!.fire();
+          if (widget.isFavorite) {
+            if (_pulseInput != null) {
+              print('Firing pulse animation after delay');
+              _pulseInput!.fire();
+            } else if (_fallbackAnimation != null) {
+              print('Using fallback animation after delay');
+              _fallbackAnimation!.reset();
+              _fallbackAnimation!.isActive = true;
+            } else {
+              print('Not firing animation after delay: both _pulseInput and _fallbackAnimation are null');
+            }
           } else {
-            print('Not firing animation after delay: isFavorite=${widget.isFavorite}, pulseInput=${_pulseInput != null}');
+            print('Not firing animation after delay: isFavorite=${widget.isFavorite}');
           }
         });
       },

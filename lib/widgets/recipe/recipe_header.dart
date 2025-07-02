@@ -5,7 +5,7 @@ import '../../redux/app_state.dart';
 import '../../screens/login_screen.dart';
 import '../../widgets/recipe/rive_favorite_button.dart';
 
-class RecipeHeader extends StatelessWidget {
+class RecipeHeader extends StatefulWidget {
   final String recipeName;
   final bool isFavorite;
   final VoidCallback onFavoriteToggle;
@@ -16,6 +16,14 @@ class RecipeHeader extends StatelessWidget {
     required this.isFavorite,
     required this.onFavoriteToggle,
   });
+
+  @override
+  State<RecipeHeader> createState() => _RecipeHeaderState();
+}
+
+class _RecipeHeaderState extends State<RecipeHeader> {
+  // Create a key to access the RiveFavoriteButton
+  final favoriteButtonKey = GlobalKey<RiveFavoriteButtonState>();
 
   void _showLoginPrompt(BuildContext context) {
     showDialog(
@@ -48,11 +56,6 @@ class RecipeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Create a key to access the RiveFavoriteButton
-    final favoriteButtonKey = GlobalKey<RiveFavoriteButtonState>();
-
-    // We're using RiveFavoriteButtonState directly to ensure we can access the triggerAnimation method
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
       child: Row(
@@ -60,7 +63,7 @@ class RecipeHeader extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              recipeName,
+              widget.recipeName,
               style: const TextStyle(
                 fontFamily: 'Roboto',
                 fontWeight: FontWeight.w500,
@@ -74,13 +77,13 @@ class RecipeHeader extends StatelessWidget {
             converter: (store) => store.state.isAuthenticated,
             builder: (context, isAuthenticated) {
               return FavoriteButton(
-                isFavorite: isFavorite,
+                isFavorite: widget.isFavorite,
                 riveButtonKey: favoriteButtonKey,
                 onPressed: isAuthenticated 
                   ? () {
                       print('RecipeHeader: onFavoriteToggle called');
                       // Call the original onFavoriteToggle callback
-                      onFavoriteToggle();
+                      widget.onFavoriteToggle();
 
                       // Try to trigger the animation directly after a short delay
                       // This is in addition to the other approaches
