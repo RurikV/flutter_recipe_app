@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:get_it/get_it.dart';
-import '../database/app_database.dart';
+import '../data/database/app_database.dart';
 
 final GetIt serviceLocator = GetIt.instance;
 

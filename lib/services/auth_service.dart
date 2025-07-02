@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../data/api_service.dart';
+import '../data/api/api_service.dart';
 import '../models/user.dart';
 
 class AuthService {

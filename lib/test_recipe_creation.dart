@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'models/recipe.dart';
-import 'data/api_service.dart';
+import 'data/api/api_service.dart';
 
 // This is a simple manual test script to verify that our fix for the duration field works correctly.
 // To run this script, you can use the following command:

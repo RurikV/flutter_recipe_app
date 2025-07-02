@@ -5,8 +5,8 @@ import 'package:flutter_recipe_app/models/ingredient.dart';
 import 'package:flutter_recipe_app/models/comment.dart';
 import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
 import 'package:flutter_recipe_app/domain/repositories/recipe_repository.dart';
-import 'package:flutter_recipe_app/data/api_service.dart';
-import 'package:flutter_recipe_app/data/database_service.dart';
+import 'package:flutter_recipe_app/data/api/api_service.dart';
+import 'package:flutter_recipe_app/data/database/database_service.dart';
 import 'package:flutter_recipe_app/services/connectivity_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 

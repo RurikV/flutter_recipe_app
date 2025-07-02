@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:flutter_recipe_app/database/app_database.dart';
+import 'package:flutter_recipe_app/data/database/app_database.dart';
 import 'package:flutter_recipe_app/services/object_detection_service.dart';
-import 'package:flutter_recipe_app/data/api_service.dart';
-import 'package:flutter_recipe_app/data/database_service.dart';
+import 'package:flutter_recipe_app/data/api/api_service.dart';
+import 'package:flutter_recipe_app/data/database/database_service.dart';
 import 'package:flutter_recipe_app/models/recipe.dart' as app_model;
 import 'package:flutter_recipe_app/models/comment.dart' as app_model;
 import 'package:flutter_recipe_app/models/recipe_image.dart';

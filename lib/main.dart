@@ -12,12 +12,13 @@ import 'redux/app_state.dart';
 import 'redux/store.dart';
 import 'redux/actions.dart';
 import 'services/auth_service.dart';
-import 'database/app_database.dart';
+import 'data/database/app_database.dart';
 import 'services/object_detection_service.dart';
 import 'services/bluetooth_service.dart';
 import 'domain/usecases/recipe_manager.dart';
 // Use conditional imports for platform-specific implementations
 import 'services/object_detection_service_locator.dart' as object_detection_locator;
+import 'services/service_locator.dart' as service_locator;
 
 // Global GetIt instance for dependency injection
 final GetIt getIt = GetIt.instance;
@@ -26,9 +27,8 @@ void main() async {
   // Initialize Flutter binding before accessing platform services
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize database
-  final AppDatabase appDatabase = AppDatabase();
-  getIt.registerSingleton<AppDatabase>(appDatabase);
+  // Initialize the service locator to register AppDatabase
+  await service_locator.initLocator();
 
   // Initialize object detection service using the platform-specific implementation
   // This uses conditional imports to ensure only the appropriate implementation is included
@@ -59,7 +59,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => LanguageProvider()),
         Provider<Store<AppState>>(create: (context) => store),
         Provider<AuthService>(create: (context) => authService),
-        Provider<AppDatabase>(create: (context) => getIt<AppDatabase>()),
+        Provider<AppDatabase>(create: (context) => service_locator.get<AppDatabase>()),
         Provider<ObjectDetectionService>(create: (context) => getIt<ObjectDetectionService>()),
         Provider<BluetoothService>(create: (context) => getIt<BluetoothService>()),
         Provider<RecipeManager>(create: (context) => getIt<RecipeManager>()),

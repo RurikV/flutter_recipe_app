@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart' if (dart.library.html) 'package:dio/browser.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../models/recipe.dart';
-import 'repositories/recipe_repository_impl.dart';
+import '../repositories/recipe_repository_impl.dart';
 
 // Import HttpClient, X509Certificate, and IOHttpClientAdapter only for non-web platforms
 import 'dart:io' if (dart.library.html) 'web_http_client.dart';
@@ -110,21 +110,7 @@ class ApiService {
         print('Successfully received response from $baseUrl/recipe/$id');
         return response.data as Map<String, dynamic>;
       },
-      errorMessage: 'Failed to load recipe $id',
-    );
-  }
-
-  /// Get all recipe ingredients
-  Future<List<dynamic>> getRecipeIngredientsData() async {
-    return _requestWithRetry(
-      request: () async {
-        final response = await _dio.get('/recipe_ingredient');
-        if (response.statusCode != 200) {
-          throw Exception('Failed to load recipe ingredients: ${response.statusCode}');
-        }
-        return response.data as List<dynamic>;
-      },
-      errorMessage: 'Failed to load recipe ingredients',
+      errorMessage: 'Failed to load recipe',
     );
   }
 
@@ -156,17 +142,17 @@ class ApiService {
     );
   }
 
-  /// Get all recipe step links
-  Future<List<dynamic>> getRecipeStepLinksData() async {
+  /// Get all recipe ingredients
+  Future<List<dynamic>> getRecipeIngredientsData() async {
     return _requestWithRetry(
       request: () async {
-        final response = await _dio.get('/recipe_step_link');
+        final response = await _dio.get('/recipe_ingredient');
         if (response.statusCode != 200) {
-          throw Exception('Failed to load recipe step links: ${response.statusCode}');
+          throw Exception('Failed to load recipe ingredients: ${response.statusCode}');
         }
         return response.data as List<dynamic>;
       },
-      errorMessage: 'Failed to load recipe step links',
+      errorMessage: 'Failed to load recipe ingredients',
     );
   }
 
@@ -184,15 +170,68 @@ class ApiService {
     );
   }
 
-  /// Create a recipe with basic information
-  Future<Map<String, dynamic>> createRecipeData(Map<String, dynamic> recipeData) async {
+  /// Get all recipe step links
+  Future<List<dynamic>> getRecipeStepLinksData() async {
     return _requestWithRetry(
       request: () async {
-        final response = await _dio.post(
-          '/recipe',
-          data: recipeData,
-        );
-        if (response.statusCode != 200 && response.statusCode != 201) {
+        final response = await _dio.get('/recipe_step_link');
+        if (response.statusCode != 200) {
+          throw Exception('Failed to load recipe step links: ${response.statusCode}');
+        }
+        return response.data as List<dynamic>;
+      },
+      errorMessage: 'Failed to load recipe step links',
+    );
+  }
+
+  /// Get all comments for a recipe
+  Future<List<dynamic>> getCommentsForRecipe(String recipeId) async {
+    return _requestWithRetry(
+      request: () async {
+        final response = await _dio.get('/comment?recipe=$recipeId');
+        if (response.statusCode != 200) {
+          throw Exception('Failed to load comments: ${response.statusCode}');
+        }
+        return response.data as List<dynamic>;
+      },
+      errorMessage: 'Failed to load comments',
+    );
+  }
+
+  /// Add a comment to a recipe
+  Future<Map<String, dynamic>> addComment(String recipeId, String authorName, String text) async {
+    return _requestWithRetry(
+      request: () async {
+        final response = await _dio.post('/comment', data: {
+          'recipe': {'id': recipeId},
+          'authorName': authorName,
+          'text': text,
+        });
+        if (response.statusCode != 201) {
+          throw Exception('Failed to add comment: ${response.statusCode}');
+        }
+        return response.data as Map<String, dynamic>;
+      },
+      errorMessage: 'Failed to add comment',
+    );
+  }
+
+  /// Create a new recipe
+  Future<Map<String, dynamic>> createRecipe(Recipe recipe) async {
+    return _requestWithRetry(
+      request: () async {
+        // Convert Recipe to API format
+        final recipeData = {
+          'name': recipe.name,
+          'description': recipe.description,
+          'instructions': recipe.instructions,
+          'difficulty': recipe.difficulty,
+          'duration': recipe.duration,
+          'rating': recipe.rating,
+        };
+
+        final response = await _dio.post('/recipe', data: recipeData);
+        if (response.statusCode != 201) {
           throw Exception('Failed to create recipe: ${response.statusCode}');
         }
         return response.data as Map<String, dynamic>;
@@ -201,185 +240,162 @@ class ApiService {
     );
   }
 
-  /// Create a new ingredient
-  Future<Map<String, dynamic>> createIngredientData(Map<String, dynamic> ingredientData) async {
+  /// Update an existing recipe
+  Future<Map<String, dynamic>> updateRecipe(String id, Recipe recipe) async {
     return _requestWithRetry(
       request: () async {
-        final response = await _dio.post(
-          '/ingredient',
-          data: ingredientData,
-        );
-        if (response.statusCode != 200 && response.statusCode != 201) {
-          throw Exception('Failed to create ingredient: ${response.statusCode}');
-        }
-        return response.data as Map<String, dynamic>;
-      },
-      errorMessage: 'Failed to create ingredient',
-    );
-  }
+        // Convert Recipe to API format
+        final recipeData = {
+          'name': recipe.name,
+          'description': recipe.description,
+          'instructions': recipe.instructions,
+          'difficulty': recipe.difficulty,
+          'duration': recipe.duration,
+          'rating': recipe.rating,
+        };
 
-  /// Create a recipe ingredient link
-  Future<Map<String, dynamic>> createRecipeIngredientData(Map<String, dynamic> recipeIngredientData) async {
-    return _requestWithRetry(
-      request: () async {
-        final response = await _dio.post(
-          '/recipe_ingredient',
-          data: recipeIngredientData,
-        );
-        if (response.statusCode != 200 && response.statusCode != 201) {
-          throw Exception('Failed to create recipe ingredient: ${response.statusCode}');
-        }
-        return response.data as Map<String, dynamic>;
-      },
-      errorMessage: 'Failed to create recipe ingredient',
-    );
-  }
-
-  /// Create a recipe step
-  Future<Map<String, dynamic>> createRecipeStepData(Map<String, dynamic> stepData) async {
-    return _requestWithRetry(
-      request: () async {
-        final response = await _dio.post(
-          '/recipe_step',
-          data: stepData,
-        );
-        if (response.statusCode != 200 && response.statusCode != 201) {
-          throw Exception('Failed to create recipe step: ${response.statusCode}');
-        }
-        return response.data as Map<String, dynamic>;
-      },
-      errorMessage: 'Failed to create recipe step',
-    );
-  }
-
-  /// Create a recipe step link
-  Future<Map<String, dynamic>> createRecipeStepLinkData(Map<String, dynamic> stepLinkData) async {
-    return _requestWithRetry(
-      request: () async {
-        final response = await _dio.post(
-          '/recipe_step_link',
-          data: stepLinkData,
-        );
-        if (response.statusCode != 200 && response.statusCode != 201) {
-          throw Exception('Failed to create recipe step link: ${response.statusCode}');
-        }
-        return response.data as Map<String, dynamic>;
-      },
-      errorMessage: 'Failed to create recipe step link',
-    );
-  }
-
-  /// Update a recipe
-  Future<Map<String, dynamic>> updateRecipeData(String id, Map<String, dynamic> recipeData) async {
-    return _requestWithRetry(
-      request: () async {
-        final response = await _dio.put(
-          '/recipe/$id',
-          data: recipeData,
-        );
+        final response = await _dio.put('/recipe/$id', data: recipeData);
         if (response.statusCode != 200) {
           throw Exception('Failed to update recipe: ${response.statusCode}');
         }
         return response.data as Map<String, dynamic>;
       },
-      errorMessage: 'Failed to update recipe $id',
+      errorMessage: 'Failed to update recipe',
     );
   }
 
   /// Delete a recipe
-  Future<bool> deleteRecipeData(String id) async {
-    return _requestWithRetry(
+  Future<void> deleteRecipe(String id) async {
+    await _requestWithRetry(
       request: () async {
         final response = await _dio.delete('/recipe/$id');
-        return response.statusCode == 204;
+        if (response.statusCode != 204) {
+          throw Exception('Failed to delete recipe: ${response.statusCode}');
+        }
       },
-      errorMessage: 'Failed to delete recipe $id',
+      errorMessage: 'Failed to delete recipe',
     );
   }
 
-  /// Add a comment to a recipe
-  Future<Map<String, dynamic>> addCommentData(String recipeId, Map<String, dynamic> commentData) async {
+  // Additional methods required by RecipeRepositoryImpl
+
+  /// Create recipe data - delegates to createRecipe
+  Future<Map<String, dynamic>> createRecipeData(Map<String, dynamic> recipeData) async {
     return _requestWithRetry(
       request: () async {
-        final response = await _dio.post(
-          '/recipe/$recipeId/comments',
-          data: commentData,
-        );
+        final response = await _dio.post('/recipe', data: recipeData);
         if (response.statusCode != 201) {
-          throw Exception('Failed to add comment: ${response.statusCode}');
+          throw Exception('Failed to create recipe data: ${response.statusCode}');
         }
         return response.data as Map<String, dynamic>;
       },
-      errorMessage: 'Failed to add comment to recipe $recipeId',
+      errorMessage: 'Failed to create recipe data',
     );
   }
 
-  /// Get recipe image
-  Future<String> getRecipeImage(String imageUrl) async {
+  /// Create ingredient data
+  Future<Map<String, dynamic>> createIngredientData(Map<String, dynamic> ingredientData) async {
     return _requestWithRetry(
       request: () async {
-        final response = await _dio.get(imageUrl);
-        if (response.statusCode != 200) {
-          throw Exception('Failed to load image: ${response.statusCode}');
+        final response = await _dio.post('/ingredient', data: ingredientData);
+        if (response.statusCode != 201) {
+          throw Exception('Failed to create ingredient data: ${response.statusCode}');
         }
-        return response.data as String;
+        return response.data as Map<String, dynamic>;
       },
-      errorMessage: 'Failed to load image from $imageUrl',
+      errorMessage: 'Failed to create ingredient data',
     );
   }
 
-  /// Toggle favorite status
-  Future<bool> toggleFavoriteData(String recipeId, bool isFavorite) async {
+  /// Create recipe ingredient data
+  Future<Map<String, dynamic>> createRecipeIngredientData(Map<String, dynamic> recipeIngredientData) async {
     return _requestWithRetry(
       request: () async {
-        final response = await _dio.put(
-          '/recipe/$recipeId/favorite',
-          data: {'isFavorite': isFavorite},
-        );
-        return response.statusCode == 200;
+        final response = await _dio.post('/recipe_ingredient', data: recipeIngredientData);
+        if (response.statusCode != 201) {
+          throw Exception('Failed to create recipe ingredient data: ${response.statusCode}');
+        }
+        return response.data as Map<String, dynamic>;
       },
-      errorMessage: 'Failed to toggle favorite status for recipe $recipeId',
+      errorMessage: 'Failed to create recipe ingredient data',
     );
   }
 
-  /// Update a recipe step
-  Future<bool> updateStepData(int stepId, Map<String, dynamic> stepData) async {
+  /// Create recipe step data
+  Future<Map<String, dynamic>> createRecipeStepData(Map<String, dynamic> stepData) async {
     return _requestWithRetry(
       request: () async {
-        final response = await _dio.put(
-          '/recipe_step/$stepId',
-          data: stepData,
-        );
-        return response.statusCode == 200;
+        final response = await _dio.post('/recipe_step', data: stepData);
+        if (response.statusCode != 201) {
+          throw Exception('Failed to create recipe step data: ${response.statusCode}');
+        }
+        return response.data as Map<String, dynamic>;
       },
-      errorMessage: 'Failed to update step $stepId',
+      errorMessage: 'Failed to create recipe step data',
     );
   }
 
-  /// Get comments for a recipe
+  /// Create recipe step link data
+  Future<Map<String, dynamic>> createRecipeStepLinkData(Map<String, dynamic> stepLinkData) async {
+    return _requestWithRetry(
+      request: () async {
+        final response = await _dio.post('/recipe_step_link', data: stepLinkData);
+        if (response.statusCode != 201) {
+          throw Exception('Failed to create recipe step link data: ${response.statusCode}');
+        }
+        return response.data as Map<String, dynamic>;
+      },
+      errorMessage: 'Failed to create recipe step link data',
+    );
+  }
+
+  /// Update recipe data - delegates to updateRecipe
+  Future<Map<String, dynamic>> updateRecipeData(String id, Map<String, dynamic> recipeData) async {
+    return _requestWithRetry(
+      request: () async {
+        final response = await _dio.put('/recipe/$id', data: recipeData);
+        if (response.statusCode != 200) {
+          throw Exception('Failed to update recipe data: ${response.statusCode}');
+        }
+        return response.data as Map<String, dynamic>;
+      },
+      errorMessage: 'Failed to update recipe data',
+    );
+  }
+
+  /// Delete recipe data - delegates to deleteRecipe
+  Future<void> deleteRecipeData(String id) async {
+    await deleteRecipe(id);
+  }
+
+  /// Add comment data
+  Future<Map<String, dynamic>> addCommentData(String recipeId, Map<String, dynamic> commentData) async {
+    return _requestWithRetry(
+      request: () async {
+        final response = await _dio.post('/comment', data: {
+          'recipe': {'id': recipeId},
+          ...commentData,
+        });
+        if (response.statusCode != 201) {
+          throw Exception('Failed to add comment data: ${response.statusCode}');
+        }
+        return response.data as Map<String, dynamic>;
+      },
+      errorMessage: 'Failed to add comment data',
+    );
+  }
+
+  /// Get comments data
   Future<List<dynamic>> getCommentsData(String recipeId) async {
     return _requestWithRetry(
       request: () async {
-        final response = await _dio.get('/recipe/$recipeId/comments');
+        final response = await _dio.get('/comment?recipe=$recipeId');
         if (response.statusCode != 200) {
-          throw Exception('Failed to load comments: ${response.statusCode}');
+          throw Exception('Failed to load comments data: ${response.statusCode}');
         }
         return response.data as List<dynamic>;
       },
-      errorMessage: 'Failed to load comments for recipe $recipeId',
+      errorMessage: 'Failed to load comments data',
     );
-  }
-
-  /// Create a recipe (legacy method for backward compatibility)
-  /// This method delegates to RecipeRepositoryImpl.saveRecipe
-  Future<Recipe> createRecipe(Recipe recipe) async {
-    // Create a repository instance
-    final repository = RecipeRepositoryImpl(apiService: this);
-
-    // Save the recipe using the repository
-    await repository.saveRecipe(recipe);
-
-    // Return the recipe (the repository doesn't return the recipe, but the tests expect it)
-    return recipe;
   }
 }
