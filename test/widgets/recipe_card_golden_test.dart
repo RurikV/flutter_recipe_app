@@ -97,7 +97,7 @@ void main() {
       ]);
 
       // Override the default network image provider
-      final imageProvider = (Uri uri) => MockHttpClientResponse(mockImage);
+      imageProvider(Uri uri) => MockHttpClientResponse(mockImage);
       HttpOverrides.global = _MockHttpOverrides(imageProvider);
     });
 

@@ -10,6 +10,9 @@ class Blob {
 
   String get type => _type ?? '';
   int get size => 0; // Simplified implementation
+
+  // Add getter to use _parts field
+  List<dynamic> get parts => _parts;
 }
 
 // Define the Element class that's used by cross_file
@@ -26,6 +29,9 @@ class Element {
   String? getAttribute(String name) {
     return _attributes[name];
   }
+
+  // Add getter to use _tag field
+  String get tagName => _tag;
 }
 
 // Define the HTMLAnchorElement class that's used by cross_file

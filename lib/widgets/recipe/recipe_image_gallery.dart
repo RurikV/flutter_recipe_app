@@ -118,7 +118,7 @@ class _RecipeImageGalleryState extends State<RecipeImageGallery> {
   // Helper method to build the appropriate image widget based on the path
   Widget _buildImage(String path) {
     // Common error builder for both network and file images
-    final errorBuilder = (BuildContext context, Object error, StackTrace? stackTrace) {
+    errorBuilder(BuildContext context, Object error, StackTrace? stackTrace) {
       return Container(
         color: Colors.grey[300],
         child: const Center(
@@ -129,7 +129,7 @@ class _RecipeImageGalleryState extends State<RecipeImageGallery> {
           ),
         ),
       );
-    };
+    }
 
     // Check if the path is a file path with file:// scheme
     if (path.startsWith('file://')) {

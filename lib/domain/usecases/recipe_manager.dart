@@ -199,6 +199,11 @@ class RecipeManager {
     }
   }
 
+  // Method to get dummy recipes for testing or initial data
+  static List<Recipe> getDummyRecipes() {
+    return _dummyRecipes;
+  }
+
   // Hardcoded list of recipes (static to be shared across instances)
   static final List<Recipe> _dummyRecipes = [
     Recipe(

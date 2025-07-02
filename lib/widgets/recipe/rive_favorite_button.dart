@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:rive/rive.dart';
+import 'dart:async';
 
 class RiveFavoriteButton extends StatefulWidget {
   final bool isFavorite;
@@ -23,6 +23,8 @@ class RiveFavoriteButtonState extends State<RiveFavoriteButton> {
   SMITrigger? _pulseInput;
   // Fallback animation controller when inputs are not found
   SimpleAnimation? _fallbackAnimation;
+  // Timer for animation
+  Timer? _animationTimer;
 
   // Expose a method to trigger the animation
   void triggerAnimation() {
@@ -42,6 +44,7 @@ class RiveFavoriteButtonState extends State<RiveFavoriteButton> {
 
   @override
   void dispose() {
+    _animationTimer?.cancel();
     _controller?.dispose();
     super.dispose();
   }
@@ -66,7 +69,8 @@ class RiveFavoriteButtonState extends State<RiveFavoriteButton> {
       if (widget.isFavorite) {
         print('Will trigger pulse animation after delay');
         // Add a small delay to ensure the state has been updated before triggering the animation
-        Future.delayed(const Duration(milliseconds: 50), () {
+        _animationTimer?.cancel(); // Cancel any existing timer
+        _animationTimer = Timer(const Duration(milliseconds: 50), () {
           print('Firing pulse animation');
           if (_pulseInput != null) {
             _pulseInput!.fire();

@@ -180,4 +180,9 @@ class AuthService {
   void dispose() {
     _authStateController.close();
   }
+
+  // Method to get the API service for direct access if needed
+  ApiService getApiService() {
+    return _apiService;
+  }
 }

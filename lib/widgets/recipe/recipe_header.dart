@@ -3,7 +3,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 import '../../widgets/recipe/favorite_button.dart';
 import '../../redux/app_state.dart';
 import '../../screens/login_screen.dart';
-import '../../widgets/recipe/rive_favorite_button.dart';
+import 'dart:async';
 
 class RecipeHeader extends StatefulWidget {
   final String recipeName;
@@ -24,6 +24,14 @@ class RecipeHeader extends StatefulWidget {
 class _RecipeHeaderState extends State<RecipeHeader> {
   // Create a key to access the RiveFavoriteButton
   final favoriteButtonKey = GlobalKey<RiveFavoriteButtonState>();
+  // Timer for animation
+  Timer? _animationTimer;
+
+  @override
+  void dispose() {
+    _animationTimer?.cancel();
+    super.dispose();
+  }
 
   void _showLoginPrompt(BuildContext context) {
     showDialog(
@@ -87,7 +95,8 @@ class _RecipeHeaderState extends State<RecipeHeader> {
 
                       // Try to trigger the animation directly after a short delay
                       // This is in addition to the other approaches
-                      Future.delayed(const Duration(milliseconds: 200), () {
+                      _animationTimer?.cancel(); // Cancel any existing timer
+                      _animationTimer = Timer(const Duration(milliseconds: 200), () {
                         print('RecipeHeader: Trying to trigger animation after delay');
 
                         // Try using the key first

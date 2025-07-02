@@ -96,6 +96,11 @@ class Recipe {
     return 'https://placehold.co/400x300/png?text=No+Image';
   }
 
+  // Use the generated _$RecipeFromJson function for simple cases
+  static Recipe _fromJsonGenerated(Map<String, dynamic> json) {
+    return _$RecipeFromJson(json);
+  }
+
   factory Recipe.fromJson(Map<String, dynamic> json) {
     // Handle the API response structure which uses 'id' instead of 'uuid'
     // and 'photo' instead of 'images'

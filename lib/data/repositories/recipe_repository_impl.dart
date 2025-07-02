@@ -154,7 +154,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
             return dbRecipes;
           }
           // If database is empty, rethrow the API error
-          throw apiError;
+          rethrow;
         }
       } else {
         // If no internet connection, get recipes from the local database

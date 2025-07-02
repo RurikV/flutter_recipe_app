@@ -33,7 +33,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // Private constructor with connection
-  AppDatabase._(QueryExecutor connection) : super(connection) {
+  AppDatabase._(super.connection) {
     _extensions = DatabaseExtensions(this);
   }
 
