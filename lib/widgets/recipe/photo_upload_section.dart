@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../services/image_service.dart';
 import '../../models/recipe_image.dart';
+import 'photo_capture_handler.dart';
 
 class PhotoUploadSection extends StatefulWidget {
   final TextEditingController controller;
@@ -15,7 +15,7 @@ class PhotoUploadSection extends StatefulWidget {
 }
 
 class _PhotoUploadSectionState extends State<PhotoUploadSection> {
-  final ImageService _imageService = ImageService();
+  final PhotoCaptureHandler _photoCaptureHandler = PhotoCaptureHandler();
   List<RecipeImage> _images = [];
 
   @override
@@ -32,102 +32,23 @@ class _PhotoUploadSectionState extends State<PhotoUploadSection> {
     }
   }
 
-  Future<void> _showImageSourceDialog(BuildContext context) async {
-    showDialog(
+  /// Handles the image capture process
+  void _handleImageCapture(RecipeImage recipeImage) {
+    if (mounted) {
+      setState(() {
+        _images.add(recipeImage);
+        // Update the controller with a JSON string representation of the images list
+        widget.controller.text = RecipeImage.encodeList(_images);
+      });
+    }
+  }
+
+  /// Shows the image source dialog
+  void _showImageSourceDialog(BuildContext context) {
+    _photoCaptureHandler.showImageSourceDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Выберите источник'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                GestureDetector(
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text('Камера'),
-                  ),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _takePhoto(context);
-                  },
-                ),
-                const SizedBox(height: 10),
-                GestureDetector(
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text('Галерея'),
-                  ),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _pickImage(context);
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+      onImageCaptured: _handleImageCapture,
     );
-  }
-
-  Future<void> _takePhoto(BuildContext context) async {
-    // Store the context before the async operation
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-    try {
-      final recipeImage = await _imageService.takePhoto();
-      if (recipeImage != null && mounted) {
-        setState(() {
-          _images.add(recipeImage);
-          // Update the controller with a JSON string representation of the images list
-          widget.controller.text = RecipeImage.encodeList(_images);
-        });
-
-        // Only show SnackBar if the widget is still mounted
-        if (mounted) {
-          scaffoldMessenger.showSnackBar(
-            const SnackBar(content: Text('Фото добавлено')),
-          );
-        }
-      }
-    } catch (e) {
-      // Only show error SnackBar if the widget is still mounted
-      if (mounted) {
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text('Ошибка при добавлении фото: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _pickImage(BuildContext context) async {
-    // Store the context before the async operation
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-    try {
-      final recipeImage = await _imageService.pickImage();
-      if (recipeImage != null && mounted) {
-        setState(() {
-          _images.add(recipeImage);
-          // Update the controller with a JSON string representation of the images list
-          widget.controller.text = RecipeImage.encodeList(_images);
-        });
-
-        // Only show SnackBar if the widget is still mounted
-        if (mounted) {
-          scaffoldMessenger.showSnackBar(
-            const SnackBar(content: Text('Фото добавлено')),
-          );
-        }
-      }
-    } catch (e) {
-      // Only show error SnackBar if the widget is still mounted
-      if (mounted) {
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text('Ошибка при добавлении фото: $e')),
-        );
-      }
-    }
   }
 
   @override
