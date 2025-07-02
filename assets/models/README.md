@@ -18,4 +18,4 @@ This directory should contain the SSD MobileNet v1 TensorFlow Lite model file.
 
 ## Usage
 
-This model is used by the `SSDObjectDetectionService` class to detect objects in images.
+This model is used by the `SSDObjectDetectionService` class in `ssd_object_detection_service.dart` to detect objects in images.
