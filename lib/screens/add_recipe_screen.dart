@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../models/recipe.dart';
 import '../../models/ingredient.dart' as models;
 import '../../models/recipe_step.dart' as models;
@@ -34,7 +35,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final List<Ingredient> _ingredients = [];
   final List<RecipeStep> _steps = [];
 
-  final RecipeManager _recipeManager = RecipeManager();
+  late final RecipeManager _recipeManager;
 
   List<String> _availableIngredients = [];
   List<String> _availableUnits = [];
@@ -44,6 +45,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   @override
   void initState() {
     super.initState();
+    _recipeManager = Provider.of<RecipeManager>(context, listen: false);
     _loadData();
   }
 

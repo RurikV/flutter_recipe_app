@@ -15,6 +15,7 @@ import 'services/auth_service.dart';
 import 'database/app_database.dart';
 import 'services/object_detection_service.dart';
 import 'services/bluetooth_service.dart';
+import 'domain/usecases/recipe_manager.dart';
 // Use conditional imports for platform-specific implementations
 import 'services/object_detection_service_locator.dart' as object_detection_locator;
 
@@ -39,6 +40,9 @@ void main() async {
   await bluetoothService.initialize();
   getIt.registerSingleton<BluetoothService>(bluetoothService);
 
+  // Register RecipeManager as a singleton
+  getIt.registerSingleton<RecipeManager>(RecipeManager());
+
   final Store<AppState> store = createStore();
   final authService = AuthService();
 
@@ -58,6 +62,7 @@ void main() async {
         Provider<AppDatabase>(create: (context) => getIt<AppDatabase>()),
         Provider<ObjectDetectionService>(create: (context) => getIt<ObjectDetectionService>()),
         Provider<BluetoothService>(create: (context) => getIt<BluetoothService>()),
+        Provider<RecipeManager>(create: (context) => getIt<RecipeManager>()),
       ],
       child: StoreProvider<AppState>(
         store: store,

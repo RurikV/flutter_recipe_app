@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:provider/provider.dart';
 import '../../models/recipe.dart';
 import '../../models/comment.dart';
 import '../../models/recipe_step.dart';
@@ -27,7 +28,7 @@ class RecipeDetailScreen extends StatefulWidget {
 }
 
 class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
-  final RecipeManager _recipeManager = RecipeManager();
+  late final RecipeManager _recipeManager;
   late Recipe _recipe;
   bool _isCookingMode = false;
 
@@ -35,6 +36,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _recipeManager = Provider.of<RecipeManager>(context, listen: false);
     _recipe = widget.recipe;
   }
 
