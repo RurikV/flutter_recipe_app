@@ -17,6 +17,7 @@ The Flutter Recipe App is a comprehensive recipe management application with the
 
 - Flutter SDK (^3.7.2)
 - Dart SDK (^3.7.2)
+- Flutter Version Manager (FVM) - recommended for consistent Flutter versions
 - Android Studio or VS Code with Flutter extensions
 - Android SDK for Android development
 - Xcode for iOS development
@@ -31,10 +32,30 @@ git clone -b <latest-branch> https://github.com/RurikV/flutter_recipe_app
 cd flutter_recipe_app
 ```
 
+### Set Up Flutter Version Manager (FVM)
+
+This project uses FVM to ensure all developers use the same Flutter version.
+
+1. Install FVM:
+```bash
+dart pub global activate fvm
+```
+
+2. Use the project's Flutter version:
+```bash
+fvm use
+```
+This will automatically use the version specified in the `.fvmrc` file (3.7.2).
+
+3. Verify the installation:
+```bash
+fvm flutter --version
+```
+
 ### Install Dependencies
 
 ```bash
-flutter pub get
+fvm flutter pub get
 ```
 
 ### Generate Required Files
@@ -42,7 +63,7 @@ flutter pub get
 Some files need to be generated before running the app:
 
 ```bash
-flutter pub run build_runner build
+fvm flutter pub run build_runner build
 ```
 
 ## Running the App
@@ -54,13 +75,13 @@ The project has multiple entry points for different purposes:
 This is the standard entry point for the production version of the app:
 
 ```bash
-flutter run lib/main.dart
+fvm flutter run lib/main.dart
 ```
 
 or simply:
 
 ```bash
-flutter run
+fvm flutter run
 ```
 
 ### 2. Development Version
@@ -68,7 +89,7 @@ flutter run
 A simplified version for development purposes:
 
 ```bash
-flutter run lib/main_dev.dart
+fvm flutter run lib/main_dev.dart
 ```
 
 ### 3. Recipe Creation Test
@@ -76,7 +97,7 @@ flutter run lib/main_dev.dart
 A specialized entry point for testing recipe creation functionality:
 
 ```bash
-flutter run lib/test_recipe_creation.dart
+fvm flutter run lib/test_recipe_creation.dart
 ```
 
 ## Testing
@@ -84,13 +105,13 @@ flutter run lib/test_recipe_creation.dart
 ### Run Unit Tests
 
 ```bash
-flutter test
+fvm flutter test
 ```
 
 ### Run Integration Tests
 
 ```bash
-flutter test integration_test
+fvm flutter test integration_test
 ```
 
 ## Project Structure
