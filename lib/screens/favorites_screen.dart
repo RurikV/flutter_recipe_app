@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import '../l10n/app_localizations.dart';
 import '../../models/recipe.dart';
-import '../domain/usecases/recipe_manager.dart';
 import '../widgets/recipe/recipe_list.dart';
+import '../redux/app_state.dart';
+import '../redux/actions.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -11,27 +14,28 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  final RecipeManager _recipeManager = RecipeManager();
-  late Future<List<Recipe>> _favoriteRecipesFuture;
+
+  void _loadFavorites() {
+    // Dispatch action to load favorite recipes
+    StoreProvider.of<AppState>(context, listen: false)
+        .dispatch(LoadFavoriteRecipesAction());
+  }
 
   @override
   void initState() {
     super.initState();
-    _loadFavoriteRecipes();
-  }
-
-  void _loadFavoriteRecipes() {
-    setState(() {
-      _favoriteRecipesFuture = _recipeManager.getFavoriteRecipes();
-    });
+    // Load favorites when the screen is first displayed
+    Future.microtask(() => _loadFavorites());
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: const Color(0xFFECECEC), // Background color as per design
       appBar: AppBar(
-        title: const Text('Избранное'),
+        title: Text(l10n.favorites),
         centerTitle: true,
         backgroundColor: const Color(0xFFECECEC), // Match background color
         elevation: 0, // No shadow
@@ -39,18 +43,18 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       body: OrientationBuilder(
         builder: (context, orientation) {
           return Center(
-            child: Container(
+            child: SizedBox(
               width: orientation == Orientation.landscape
                   ? MediaQuery.of(context).size.width * 0.5
                   : MediaQuery.of(context).size.width,
-              child: FutureBuilder<List<Recipe>>(
-                future: _favoriteRecipesFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
+              child: StoreConnector<AppState, _FavoritesViewModel>(
+                converter: (store) => _FavoritesViewModel.fromStore(store),
+                builder: (context, viewModel) {
+                  if (viewModel.isLoading) {
                     return const Center(
                       child: CircularProgressIndicator(),
                     );
-                  } else if (snapshot.hasError) {
+                  } else if (viewModel.error.isNotEmpty) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -62,19 +66,19 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'Ошибка загрузки избранных рецептов',
+                            l10n.errorLoadingFavorites,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            snapshot.error.toString(),
+                            viewModel.error,
                             style: Theme.of(context).textTheme.bodyMedium,
                             textAlign: TextAlign.center,
                           ),
                         ],
                       ),
                     );
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  } else if (viewModel.favoriteRecipes.isEmpty) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -86,14 +90,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'Нет избранных рецептов',
+                            l10n.noFavoritesAvailable,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                         ],
                       ),
                     );
                   } else {
-                    return RecipeList(recipes: snapshot.data!);
+                    return RecipeList(recipes: viewModel.favoriteRecipes);
                   }
                 },
               ),
@@ -101,6 +105,29 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           );
         },
       ),
+    );
+  }
+}
+
+
+// ViewModel for the FavoritesScreen
+class _FavoritesViewModel {
+  final List<Recipe> favoriteRecipes;
+  final bool isLoading;
+  final String error;
+
+  _FavoritesViewModel({
+    required this.favoriteRecipes,
+    required this.isLoading,
+    required this.error,
+  });
+
+  // Factory method to create a ViewModel from the Redux store
+  static _FavoritesViewModel fromStore(store) {
+    return _FavoritesViewModel(
+      favoriteRecipes: store.state.favoriteRecipes,
+      isLoading: store.state.isLoading,
+      error: store.state.error,
     );
   }
 }

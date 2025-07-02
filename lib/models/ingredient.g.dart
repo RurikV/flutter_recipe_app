@@ -7,19 +7,17 @@ part of 'ingredient.dart';
 // **************************************************************************
 
 Ingredient _$IngredientFromJson(Map<String, dynamic> json) => Ingredient(
-  id: (json['id'] as num).toInt(),
-  name: json['name'] as String,
-  caloriesForUnit: (json['caloriesForUnit'] as num).toDouble(),
-  measureUnit: MeasureUnitRef.fromJson(
-    json['measureUnit'] as Map<String, dynamic>,
-  ),
-  recipeIngredients:
-      (json['recipeIngredients'] as List<dynamic>?)
+      id: (json['id'] as num).toInt(),
+      name: json['name'] as String,
+      caloriesForUnit: (json['caloriesForUnit'] as num).toDouble(),
+      measureUnit:
+          MeasureUnitRef.fromJson(json['measureUnit'] as Map<String, dynamic>),
+      recipeIngredients: (json['recipeIngredients'] as List<dynamic>?)
           ?.map((e) => RecipeIngredient.fromJson(e as Map<String, dynamic>))
           .toList(),
-  quantity: json['quantity'] as String? ?? '',
-  unit: json['unit'] as String? ?? '',
-);
+      quantity: json['quantity'] as String? ?? '',
+      unit: json['unit'] as String? ?? '',
+    );
 
 Map<String, dynamic> _$IngredientToJson(Ingredient instance) =>
     <String, dynamic>{

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -20,6 +20,9 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
 
+  <!-- MIME type for WebAssembly -->
+  <meta http-equiv="Content-Type" content="application/wasm; charset=utf-8">
+
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -31,8 +34,33 @@
 
   <title>flutter_recipe_app</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- SQL.js library for drift (local files) -->
+  <script src="assets/js/sql-wasm.js"></script>
+  <script>
+    // Configure sql.js to find the wasm file locally
+    window.sqliteWasmPath = 'assets/js/sql-wasm.wasm';
+  </script>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+  <!-- flutter.js is generated during the Flutter build process -->
+  <script src="flutter.js" defer></script>
+  <script>
+    // Fallback for serviceWorkerVersion if not defined by Flutter build process
+    var serviceWorkerVersion = null;
+    window.addEventListener('load', function() {
+      // Download main.dart.js
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
 </body>
 </html>

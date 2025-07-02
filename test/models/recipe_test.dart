@@ -2,37 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/ingredient.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
-import 'package:flutter_recipe_app/models/measure_unit.dart';
 
 void main() {
   group('Recipe Model Tests', () {
     test('Create a recipe with ingredients and steps using FoodApiTest approach', () {
-      // Create measure units
-      final gramsUnit = MeasureUnitRef(id: 1);
-      final piecesUnit = MeasureUnitRef(id: 2);
-
-      // Create ingredients
-      final pasta = Ingredient(
-        id: 1,
-        name: 'Pasta',
-        caloriesForUnit: 350.0,
-        measureUnit: gramsUnit,
-      );
-
-      final eggs = Ingredient(
-        id: 2,
-        name: 'Eggs',
-        caloriesForUnit: 70.0,
-        measureUnit: piecesUnit,
-      );
-
-      final bacon = Ingredient(
-        id: 3,
-        name: 'Bacon',
-        caloriesForUnit: 120.0,
-        measureUnit: gramsUnit,
-      );
-
       // Create recipe
       final recipe = Recipe(
         uuid: '999',

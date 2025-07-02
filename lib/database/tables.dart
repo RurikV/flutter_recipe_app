@@ -16,6 +16,16 @@ class Recipes extends Table {
   Set<Column> get primaryKey => {uuid};
 }
 
+// Removed Favorites table as we're using the isFavorite field in Recipes table
+
+class Photos extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get recipeUuid => text().references(Recipes, #uuid)();
+  TextColumn get photoName => text()();
+  TextColumn get detectedInfo => text()();
+  BlobColumn get pict => blob()();
+}
+
 class RecipeTags extends Table {
   TextColumn get recipeUuid => text().references(Recipes, #uuid)();
   TextColumn get tag => text()();

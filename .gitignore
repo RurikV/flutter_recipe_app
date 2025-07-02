@@ -32,6 +32,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+.fvm/
 
 # Symbolication related
 app.*.symbols
@@ -46,3 +47,4 @@ app.*.map.json
 /.output.txt
 /show_py_content.py
 /FoodApiTest/
+/otus_food_app/

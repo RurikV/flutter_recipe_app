@@ -14,13 +14,23 @@ class HomeScreenContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // List of screens to display
-    final List<Widget> screens = [
-      const RecipeListScreen(),
-      const FavoritesScreen(),
-      const ProfileScreen(),
-    ];
+    // Create new instances of screens each time to ensure proper state initialization
+    Widget currentScreen;
 
-    return screens[selectedIndex];
+    switch (selectedIndex) {
+      case 0:
+        currentScreen = RecipeListScreen();
+        break;
+      case 1:
+        currentScreen = FavoritesScreen();
+        break;
+      case 2:
+        currentScreen = ProfileScreen();
+        break;
+      default:
+        currentScreen = RecipeListScreen();
+    }
+
+    return currentScreen;
   }
 }

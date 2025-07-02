@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 import '../../models/recipe.dart';
 import '../../models/comment.dart';
 import '../../models/recipe_step.dart';
@@ -6,11 +7,15 @@ import '../domain/usecases/recipe_manager.dart';
 import '../utils/entity_converters.dart';
 import '../widgets/recipe/recipe_header.dart';
 import '../widgets/recipe/duration_display.dart';
-import '../widgets/recipe/recipe_image.dart';
+import '../widgets/recipe/recipe_image_gallery.dart';
 import '../widgets/ingredient/ingredients_table.dart';
 import '../widgets/step/recipe_steps_list.dart';
 import '../widgets/recipe/cooking_mode_button.dart';
 import '../widgets/comment/comments_section.dart';
+import '../screens/gallery_screen.dart';
+import '../utils/page_transitions.dart';
+import '../redux/app_state.dart';
+import '../redux/actions.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   final Recipe recipe;
@@ -26,19 +31,18 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   late Recipe _recipe;
   bool _isCookingMode = false;
 
+
   @override
   void initState() {
     super.initState();
     _recipe = widget.recipe;
   }
 
-  void _toggleFavorite() async {
-    final success = await _recipeManager.toggleFavorite(_recipe.uuid);
-    if (success && mounted) {
-      setState(() {
-        _recipe = _recipe.copyWith(isFavorite: !_recipe.isFavorite);
-      });
-    }
+  void _toggleFavorite() {
+    // Get the store from the StoreProvider
+    final store = StoreProvider.of<AppState>(context);
+    // Dispatch the toggle favorite action to the Redux store
+    store.dispatch(ToggleFavoriteAction(_recipe.uuid));
   }
 
   void _addComment(String commentText) async {
@@ -92,6 +96,20 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.photo_library),
+            tooltip: 'Photo Gallery',
+            onPressed: () {
+              Navigator.of(context).push(
+                SlideRightPageRoute(
+                  widget: GalleryScreen(
+                    recipeUuid: _recipe.uuid,
+                    recipeName: _recipe.name,
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.share),
             onPressed: () {
               // Share functionality would go here
@@ -102,7 +120,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       body: OrientationBuilder(
         builder: (context, orientation) {
           return Center(
-            child: Container(
+            child: SizedBox(
               width: orientation == Orientation.landscape
                   ? MediaQuery.of(context).size.width * 0.5
                   : MediaQuery.of(context).size.width,
@@ -111,17 +129,37 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Recipe header with name and favorite button
-                    RecipeHeader(
-                      recipeName: _recipe.name,
-                      isFavorite: _recipe.isFavorite,
-                      onFavoriteToggle: _toggleFavorite,
+                    StoreConnector<AppState, bool>(
+                      converter: (store) {
+                        // Find the recipe in the Redux store
+                        final storeRecipe = store.state.recipes.firstWhere(
+                          (r) => r.uuid == _recipe.uuid,
+                          orElse: () => _recipe,
+                        );
+                        return storeRecipe.isFavorite;
+                      },
+                      builder: (context, isFavorite) {
+                        return RecipeHeader(
+                          recipeName: _recipe.name,
+                          isFavorite: isFavorite,
+                          onFavoriteToggle: _toggleFavorite,
+                        );
+                      },
                     ),
 
                     // Duration display
                     DurationDisplay(duration: _recipe.duration),
 
-                    // Recipe image
-                    RecipeImage(imageUrl: _recipe.images),
+                    // Recipe image gallery
+                    RecipeImageGallery(
+                      images: _recipe.images,
+                      onImagesChanged: (updatedImages) {
+                        setState(() {
+                          // Update the recipe with the new images
+                          _recipe = _recipe.copyWith(images: updatedImages);
+                        });
+                      },
+                    ),
 
                     // Ingredients table
                     IngredientsTable(

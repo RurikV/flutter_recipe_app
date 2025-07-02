@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
 import 'package:flutter_recipe_app/models/ingredient.dart';
+import 'package:flutter_recipe_app/models/comment.dart';
 import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
+import 'package:flutter_recipe_app/domain/repositories/recipe_repository.dart';
 import 'package:flutter_recipe_app/data/api_service.dart';
 import 'package:flutter_recipe_app/data/database_service.dart';
 import 'package:flutter_recipe_app/services/connectivity_service.dart';
@@ -172,6 +174,67 @@ class MockDatabaseService implements DatabaseService {
   Future<void> close() async {
     // No need to do anything in the mock
   }
+
+  @override
+  Future<void> updateRecipe(Recipe recipe) async {
+    // Mock implementation - reuse saveRecipe
+    await saveRecipe(recipe);
+  }
+
+  @override
+  Future<List<String>> getAvailableIngredients() async {
+    // Mock implementation
+    return ['Ingredient 1', 'Ingredient 2', 'Ingredient 3'];
+  }
+
+  @override
+  Future<List<String>> getAvailableUnits() async {
+    // Mock implementation
+    return ['g', 'kg', 'ml', 'l', 'pcs'];
+  }
+
+  @override
+  Future<void> addComment(String recipeUuid, Comment comment) async {
+    // Mock implementation
+    if (_recipes.containsKey(recipeUuid)) {
+      final recipe = _recipes[recipeUuid]!;
+      final updatedComments = List<Comment>.from(recipe.comments)..add(comment);
+      final updatedRecipe = Recipe(
+        uuid: recipe.uuid,
+        name: recipe.name,
+        images: recipe.images,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        difficulty: recipe.difficulty,
+        duration: recipe.duration,
+        rating: recipe.rating,
+        tags: recipe.tags,
+        ingredients: recipe.ingredients,
+        steps: recipe.steps,
+        isFavorite: recipe.isFavorite,
+        comments: updatedComments,
+      );
+      _recipes[recipeUuid] = updatedRecipe;
+    }
+  }
+
+  @override
+  Future<List<Comment>> getComments(String recipeUuid) async {
+    // Mock implementation
+    if (_recipes.containsKey(recipeUuid)) {
+      return _recipes[recipeUuid]!.comments;
+    }
+    return [];
+  }
+
+  @override
+  Future<bool> isInFavorites(String recipeId) async {
+    // Mock implementation
+    if (_recipes.containsKey(recipeId)) {
+      return _recipes[recipeId]!.isFavorite;
+    }
+    return false;
+  }
 }
 
 // Mock implementation of ConnectivityService for testing
@@ -190,25 +253,248 @@ class MockConnectivityService extends ConnectivityService {
       Stream.value(_isConnected ? ConnectivityResult.wifi : ConnectivityResult.none);
 }
 
+// Mock implementation of RecipeRepository for testing
+class MockRecipeRepository implements RecipeRepository {
+  final List<Recipe> _recipes = [];
+
+  @override
+  Future<List<Recipe>> getRecipes() async {
+    // Return a list with one mock recipe
+    return [
+      Recipe(
+        uuid: 'mock-uuid-1',
+        name: 'Mock Recipe 1',
+        images: 'https://via.placeholder.com/400x300?text=Mock+Recipe',
+        description: 'Mock description',
+        instructions: 'Mock instructions',
+        difficulty: 2,
+        duration: '30 min',
+        rating: 0,
+        tags: ['mock', 'test'],
+        ingredients: [],
+        steps: [
+          RecipeStep(
+            id: 1,
+            name: 'Mock step 1',
+            duration: 10,
+          ),
+        ],
+        isFavorite: false,
+        comments: [],
+      ),
+    ];
+  }
+
+  @override
+  Future<List<Recipe>> getFavoriteRecipes() async {
+    // Return a list with one mock favorite recipe
+    return [
+      Recipe(
+        uuid: 'mock-uuid-2',
+        name: 'Mock Favorite Recipe',
+        images: 'https://via.placeholder.com/400x300?text=Mock+Recipe',
+        description: 'Mock description',
+        instructions: 'Mock instructions',
+        difficulty: 2,
+        duration: '30 min',
+        rating: 0,
+        tags: ['mock', 'test', 'favorite'],
+        ingredients: [],
+        steps: [
+          RecipeStep(
+            id: 1,
+            name: 'Mock step 1',
+            duration: 10,
+          ),
+        ],
+        isFavorite: true,
+        comments: [],
+      ),
+    ];
+  }
+
+  @override
+  Future<Recipe?> getRecipeByUuid(String uuid) async {
+    // First check in the _recipes list for recipes added during the test
+    try {
+      return _recipes.firstWhere((recipe) => recipe.uuid == uuid);
+    } catch (e) {
+      // If not found in _recipes, check in the hardcoded list from getRecipes()
+      final recipes = await getRecipes();
+      try {
+        return recipes.firstWhere((recipe) => recipe.uuid == uuid);
+      } catch (e) {
+        return null;
+      }
+    }
+  }
+
+  @override
+  Future<void> saveRecipe(Recipe recipe) async {
+    // Simulate successful save
+    _recipes.add(recipe);
+  }
+
+  @override
+  Future<void> updateRecipe(Recipe recipe) async {
+    // Simulate successful update
+    final index = _recipes.indexWhere((r) => r.uuid == recipe.uuid);
+    if (index != -1) {
+      _recipes[index] = recipe;
+    } else {
+      _recipes.add(recipe);
+    }
+  }
+
+  @override
+  Future<void> deleteRecipe(String uuid) async {
+    // Simulate successful delete
+    _recipes.removeWhere((recipe) => recipe.uuid == uuid);
+  }
+
+  @override
+  Future<void> toggleFavorite(String uuid) async {
+    // Simulate successful toggle
+    final index = _recipes.indexWhere((r) => r.uuid == uuid);
+    if (index != -1) {
+      final recipe = _recipes[index];
+      _recipes[index] = Recipe(
+        uuid: recipe.uuid,
+        name: recipe.name,
+        images: recipe.images,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        difficulty: recipe.difficulty,
+        duration: recipe.duration,
+        rating: recipe.rating,
+        tags: recipe.tags,
+        ingredients: recipe.ingredients,
+        steps: recipe.steps,
+        isFavorite: !recipe.isFavorite,
+        comments: recipe.comments,
+      );
+    }
+  }
+
+  @override
+  Future<List<String>> getAvailableIngredients() async {
+    // Mock implementation
+    return ['Ingredient 1', 'Ingredient 2', 'Ingredient 3'];
+  }
+
+  @override
+  Future<List<String>> getAvailableUnits() async {
+    // Mock implementation
+    return ['g', 'kg', 'ml', 'l', 'pcs'];
+  }
+
+  @override
+  Future<void> addComment(String recipeUuid, Comment comment) async {
+    // Simulate successful comment addition
+    final index = _recipes.indexWhere((r) => r.uuid == recipeUuid);
+    if (index != -1) {
+      final recipe = _recipes[index];
+      final updatedComments = List<Comment>.from(recipe.comments)..add(comment);
+      _recipes[index] = Recipe(
+        uuid: recipe.uuid,
+        name: recipe.name,
+        images: recipe.images,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        difficulty: recipe.difficulty,
+        duration: recipe.duration,
+        rating: recipe.rating,
+        tags: recipe.tags,
+        ingredients: recipe.ingredients,
+        steps: recipe.steps,
+        isFavorite: recipe.isFavorite,
+        comments: updatedComments,
+      );
+    }
+  }
+
+  @override
+  Future<List<Comment>> getComments(String recipeUuid) async {
+    // Simulate successful comment retrieval
+    final index = _recipes.indexWhere((r) => r.uuid == recipeUuid);
+    if (index != -1) {
+      return _recipes[index].comments;
+    }
+    return [];
+  }
+}
+
+// Failing repository implementation for testing exception handling
+class _FailingRecipeRepository implements RecipeRepository {
+  @override
+  Future<List<Recipe>> getRecipes() async {
+    throw Exception('Failed to get recipes');
+  }
+
+  @override
+  Future<List<Recipe>> getFavoriteRecipes() async {
+    throw Exception('Failed to get favorite recipes');
+  }
+
+  @override
+  Future<Recipe?> getRecipeByUuid(String uuid) async {
+    throw Exception('Failed to get recipe by UUID');
+  }
+
+  @override
+  Future<void> saveRecipe(Recipe recipe) async {
+    throw Exception('Failed to save recipe');
+  }
+
+  @override
+  Future<void> updateRecipe(Recipe recipe) async {
+    throw Exception('Failed to update recipe');
+  }
+
+  @override
+  Future<void> deleteRecipe(String uuid) async {
+    throw Exception('Failed to delete recipe');
+  }
+
+  @override
+  Future<void> toggleFavorite(String uuid) async {
+    throw Exception('Failed to toggle favorite');
+  }
+
+  @override
+  Future<List<String>> getAvailableIngredients() async {
+    throw Exception('Failed to get available ingredients');
+  }
+
+  @override
+  Future<List<String>> getAvailableUnits() async {
+    throw Exception('Failed to get available units');
+  }
+
+  @override
+  Future<void> addComment(String recipeUuid, Comment comment) async {
+    throw Exception('Failed to add comment');
+  }
+
+  @override
+  Future<List<Comment>> getComments(String recipeUuid) async {
+    throw Exception('Failed to get comments');
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   group('Recipe Manager Tests', () {
     late RecipeManager recipeManager;
-    late MockApiService mockApiService;
-    late MockDatabaseService mockDatabaseService;
-    late MockConnectivityService mockConnectivityService;
+    late MockRecipeRepository mockRecipeRepository;
 
     setUp(() {
-      // Create mock services
-      mockApiService = MockApiService();
-      mockDatabaseService = MockDatabaseService();
-      mockConnectivityService = MockConnectivityService();
+      // Create mock repository
+      mockRecipeRepository = MockRecipeRepository();
 
-      // Create a recipe manager with mock services
+      // Create a recipe manager with mock repository
       recipeManager = RecipeManager(
-        apiService: mockApiService,
-        databaseService: mockDatabaseService,
-        connectivityService: mockConnectivityService,
+        recipeRepository: mockRecipeRepository,
       );
     });
 
@@ -308,6 +594,36 @@ void main() {
       print('[DEBUG_LOG] Retrieved ${recipes.length} recipes without internet connection');
     });
 
+    test('Get recipes throws exception when repository fails', () async {
+      // Create a failing repository
+      final failingRepository = _FailingRecipeRepository();
+
+      // Create a recipe manager with failing repository
+      final failingRecipeManager = RecipeManager(
+        recipeRepository: failingRepository,
+      );
+
+      // Expect an exception when getting recipes
+      expect(() => failingRecipeManager.getRecipes(), throwsException);
+
+      print('[DEBUG_LOG] Successfully threw exception when repository failed to get recipes');
+    });
+
+    test('Get favorite recipes throws exception when repository fails', () async {
+      // Create a failing repository
+      final failingRepository = _FailingRecipeRepository();
+
+      // Create a recipe manager with failing repository
+      final failingRecipeManager = RecipeManager(
+        recipeRepository: failingRepository,
+      );
+
+      // Expect an exception when getting favorite recipes
+      expect(() => failingRecipeManager.getFavoriteRecipes(), throwsException);
+
+      print('[DEBUG_LOG] Successfully threw exception when repository failed to get favorite recipes');
+    });
+
     test('Toggle favorite status with internet connection', () async {
       // Get recipes
       final recipes = await recipeManager.getRecipes();
@@ -382,6 +698,71 @@ void main() {
       expect(success, isTrue);
 
       print('[DEBUG_LOG] Updated step status successfully without internet connection: $recipeId, step $stepIndex');
+    });
+
+    test('Add new recipe and verify it can be retrieved', () async {
+      // Create a unique test recipe
+      final uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
+      final testRecipe = Recipe(
+        uuid: 'test-uuid-$uniqueId',
+        name: 'Test Recipe $uniqueId',
+        images: 'https://via.placeholder.com/400x300?text=Test+Recipe',
+        description: 'Test description for add/get test',
+        instructions: 'Test instructions for add/get test',
+        difficulty: 3,
+        duration: '45 min',
+        rating: 4,
+        tags: ['test', 'add-get-test'],
+        ingredients: [
+          Ingredient.simple(
+            name: 'Test ingredient 1',
+            quantity: '200',
+            unit: 'g',
+          ),
+          Ingredient.simple(
+            name: 'Test ingredient 2',
+            quantity: '100',
+            unit: 'ml',
+          ),
+        ],
+        steps: [
+          RecipeStep(
+            id: 1,
+            name: 'Test step 1 for add/get test',
+            duration: 15,
+          ),
+          RecipeStep(
+            id: 2,
+            name: 'Test step 2 for add/get test',
+            duration: 10,
+          ),
+        ],
+        isFavorite: false,
+        comments: [],
+      );
+
+      // Save the recipe
+      final saveSuccess = await recipeManager.saveRecipe(testRecipe);
+      expect(saveSuccess, isTrue);
+      print('[DEBUG_LOG] Recipe saved successfully: ${testRecipe.uuid}');
+
+      // Get the recipe by UUID
+      final retrievedRecipe = await mockRecipeRepository.getRecipeByUuid(testRecipe.uuid);
+
+      // Verify the recipe was retrieved successfully
+      expect(retrievedRecipe, isNotNull);
+      expect(retrievedRecipe?.uuid, equals(testRecipe.uuid));
+      expect(retrievedRecipe?.name, equals(testRecipe.name));
+      expect(retrievedRecipe?.description, equals(testRecipe.description));
+      expect(retrievedRecipe?.difficulty, equals(testRecipe.difficulty));
+      expect(retrievedRecipe?.duration, equals(testRecipe.duration));
+      expect(retrievedRecipe?.ingredients.length, equals(testRecipe.ingredients.length));
+      expect(retrievedRecipe?.steps.length, equals(testRecipe.steps.length));
+
+      print('[DEBUG_LOG] Recipe retrieved successfully: ${retrievedRecipe?.uuid}');
+      print('[DEBUG_LOG] Recipe name: ${retrievedRecipe?.name}');
+      print('[DEBUG_LOG] Recipe ingredients count: ${retrievedRecipe?.ingredients.length}');
+      print('[DEBUG_LOG] Recipe steps count: ${retrievedRecipe?.steps.length}');
     });
   });
 }

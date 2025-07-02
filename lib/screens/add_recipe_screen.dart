@@ -248,7 +248,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
           : OrientationBuilder(
               builder: (context, orientation) {
                 return Center(
-                  child: Container(
+                  child: SizedBox(
                     width: orientation == Orientation.landscape
                         ? MediaQuery.of(context).size.width * 0.5
                         : MediaQuery.of(context).size.width,

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_colors.dart';
 
 /// A stateless widget representing the step checkbox.
 class StepCheckbox extends StatelessWidget {
   final bool isCompleted;
   final bool isCookingMode;
-  final Function(bool) onChanged;
+  final ValueChanged<bool> onChanged;
 
   const StepCheckbox({
     super.key,
@@ -25,7 +26,7 @@ class StepCheckbox extends StatelessWidget {
         borderRadius: BorderRadius.circular(5),
       ),
       side: BorderSide(
-        color: isCookingMode ? const Color(0xFF165932) : const Color(0xFF797676),
+        color: isCookingMode ? AppColors.checkboxActiveCooking : AppColors.checkboxInactive,
         width: 4,
       ),
     );

@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/ingredient.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
 import 'package:flutter_recipe_app/models/measure_unit.dart';
 import 'package:flutter_recipe_app/screens/recipe_detail_screen.dart';
+import 'package:flutter_recipe_app/redux/app_state.dart';
+import 'package:flutter_recipe_app/redux/store.dart';
+import '../service_locator_test.dart';
 
 void main() {
+  // Initialize the service locator for tests
+  setUpAll(() {
+    initializeTestServiceLocator();
+  });
   group('Recipe Integration Tests', () {
     testWidgets('Display a recipe with ingredients and steps', (WidgetTester tester) async {
       // Create measure units
@@ -81,10 +90,16 @@ void main() {
       // They would be used in a more complex test that verifies the relationships
       // between recipes, ingredients, and steps
 
-      // Build the RecipeDetailScreen widget
+      // Create a Redux store for testing
+      final Store<AppState> store = createStore();
+
+      // Build the RecipeDetailScreen widget wrapped with StoreProvider
       await tester.pumpWidget(
-        MaterialApp(
-          home: RecipeDetailScreen(recipe: recipe),
+        StoreProvider<AppState>(
+          store: store,
+          child: MaterialApp(
+            home: RecipeDetailScreen(recipe: recipe),
+          ),
         ),
       );
 

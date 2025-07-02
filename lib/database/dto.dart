@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 
 // Custom class for Comment data since the generated class is not available
 class CommentData {

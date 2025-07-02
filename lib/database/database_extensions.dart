@@ -12,8 +12,62 @@ class DatabaseExtensions {
     return db.select(db.recipes).get();
   }
 
-  Future<List<Recipe>> getFavoriteRecipes() {
+  Future<List<Recipe>> getFavoriteRecipes() async {
+    // Get recipes that are marked as favorites in the Recipes table
+    // This is a temporary solution until the Favorites table is properly generated
     return (db.select(db.recipes)..where((r) => r.isFavorite.equals(true))).get();
+  }
+
+  // Add a recipe to favorites
+  Future<void> addToFavorites(String recipeUuid) async {
+    // Get the recipe
+    final recipe = await getRecipeByUuid(recipeUuid);
+    if (recipe != null) {
+      // Update the recipe to mark it as a favorite
+      await db.update(db.recipes).replace(
+        RecipesCompanion(
+          uuid: Value(recipeUuid),
+          name: Value(recipe.name),
+          images: Value(recipe.images),
+          description: Value(recipe.description),
+          instructions: Value(recipe.instructions),
+          difficulty: Value(recipe.difficulty),
+          duration: Value(recipe.duration),
+          rating: Value(recipe.rating),
+          isFavorite: const Value(true),
+        ),
+      );
+    }
+  }
+
+  // Remove a recipe from favorites
+  Future<void> removeFromFavorites(String recipeUuid) async {
+    // Get the recipe
+    final recipe = await getRecipeByUuid(recipeUuid);
+    if (recipe != null) {
+      // Update the recipe to mark it as not a favorite
+      await db.update(db.recipes).replace(
+        RecipesCompanion(
+          uuid: Value(recipeUuid),
+          name: Value(recipe.name),
+          images: Value(recipe.images),
+          description: Value(recipe.description),
+          instructions: Value(recipe.instructions),
+          difficulty: Value(recipe.difficulty),
+          duration: Value(recipe.duration),
+          rating: Value(recipe.rating),
+          isFavorite: const Value(false),
+        ),
+      );
+    }
+  }
+
+  // Check if a recipe is in favorites
+  Future<bool> isInFavorites(String recipeUuid) async {
+    // Get the recipe
+    final recipe = await getRecipeByUuid(recipeUuid);
+    // Return true if the recipe exists and is marked as a favorite
+    return recipe != null && recipe.isFavorite;
   }
 
   Future<Recipe?> getRecipeByUuid(String uuid) {
@@ -66,6 +120,13 @@ class DatabaseExtensions {
     return (db.delete(db.ingredients)..where((i) => i.recipeUuid.equals(recipeUuid))).go();
   }
 
+  // Get all unique ingredients from the database
+  Future<List<Ingredient>> getAllIngredients() async {
+    final query = db.select(db.ingredients)
+      ..orderBy([(i) => OrderingTerm.asc(i.name)]);
+    return query.get();
+  }
+
   // Recipe step operations
   Future<List<RecipeStep>> getStepsForRecipe(String recipeUuid) {
     return (db.select(db.recipeSteps)..where((s) => s.recipeUuid.equals(recipeUuid))).get();
@@ -86,5 +147,18 @@ class DatabaseExtensions {
       ..where((step) => step.id.equals(stepId)))
       .write(RecipeStepsCompanion(isCompleted: Value(isCompleted)));
     return rowsAffected > 0;
+  }
+
+  // Photo operations
+  Future<List<Photo>> getPhotosForRecipe(String recipeUuid) {
+    return (db.select(db.photos)..where((p) => p.recipeUuid.equals(recipeUuid))).get();
+  }
+
+  Future<int> insertPhoto(PhotosCompanion photo) {
+    return db.into(db.photos).insert(photo);
+  }
+
+  Future<int> deletePhoto(int photoId) {
+    return (db.delete(db.photos)..where((p) => p.id.equals(photoId))).go();
   }
 }

@@ -1,11 +1,14 @@
 import 'ingredient.dart';
 import 'recipe_step.dart';
 import 'comment.dart';
+import 'recipe_image.dart';
+import 'dart:convert';
 
 class Recipe {
   final String uuid;
   final String name;
-  final String images; // This should ideally be a single image URL string
+  final List<RecipeImage> images; // List of recipe images with detected objects
+  final String mainImage; // Main image URL for backward compatibility
   final String description;
   final String instructions;
   final int difficulty; // Will be removed from the card display
@@ -20,7 +23,8 @@ class Recipe {
   Recipe({
     required this.uuid,
     required this.name,
-    required this.images,
+    dynamic images,
+    this.mainImage = '',
     required this.description,
     required this.instructions,
     required this.difficulty,
@@ -31,25 +35,61 @@ class Recipe {
     this.steps = const [],
     this.isFavorite = false,
     this.comments = const [],
-  });
+  }) : images = _processImages(images);
+
+  // Helper method to process images parameter which could be a String, List<RecipeImage>, or null
+  static List<RecipeImage> _processImages(dynamic images) {
+    if (images == null) {
+      return [];
+    } else if (images is String) {
+      // Check if the string is a URL (starts with http:// or https://)
+      if (images.startsWith('http://') || images.startsWith('https://')) {
+        // If it's a URL, treat it as a single image URL
+        return [RecipeImage(path: images)];
+      }
+
+      // If it's not a URL, try to parse it as JSON
+      try {
+        final List<dynamic> decodedList = jsonDecode(images);
+        return decodedList
+            .map((item) => RecipeImage.fromJson(item as Map<String, dynamic>))
+            .toList();
+      } catch (e) {
+        // If parsing fails, treat it as a single image URL
+        return [RecipeImage(path: images)];
+      }
+    } else if (images is List<RecipeImage>) {
+      return images;
+    } else if (images is List) {
+      // If it's a list but not List<RecipeImage>, try to convert each item
+      return images.map((item) {
+        if (item is RecipeImage) {
+          return item;
+        } else if (item is Map<String, dynamic>) {
+          return RecipeImage.fromJson(item);
+        } else {
+          return RecipeImage(path: item.toString());
+        }
+      }).toList();
+    }
+    // Default fallback
+    return [];
+  }
 
   factory Recipe.fromJson(Map<String, dynamic> json) {
     // Handle the API response structure which uses 'id' instead of 'uuid'
     // and 'photo' instead of 'images'
+    final String imageUrl = (json['images'] ?? json['photo'] ?? 'https://placehold.co/400x300/png?text=No+Image') as String;
+    String validImageUrl = imageUrl;
+
+    if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+      validImageUrl = 'https://placehold.co/400x300/png?text=No+Image';
+    }
+
     return Recipe(
       uuid: (json['uuid'] ?? json['id']?.toString() ?? '0') as String,
       name: json['name'] as String,
-      // API uses 'photo' for image URL
-      // Check if the image URL is valid (starts with http:// or https://)
-      images: (() {
-        final imageUrl = (json['images'] ?? json['photo'] ?? 'https://placehold.co/400x300/png?text=No+Image') as String;
-        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-          return imageUrl;
-        }
-        // If it's just a filename like "default.png", use a placeholder
-        return 'https://placehold.co/400x300/png?text=No+Image';
-      })(),
-      // Provide default values for potentially missing fields
+      images: validImageUrl,
       description: (json['description'] ?? '') as String,
       instructions: (json['instructions'] ?? '') as String,
       difficulty: (json['difficulty'] ?? 0) as int,
@@ -195,10 +235,13 @@ class Recipe {
   }
 
   Map<String, dynamic> toJson() {
+    // Convert the list of RecipeImage objects to a JSON string
+    final String imagesJson = RecipeImage.encodeList(images);
+
     return {
       'uuid': uuid,
       'name': name,
-      'images': images,
+      'images': imagesJson,
       'description': description,
       'instructions': instructions,
       'difficulty': difficulty,
@@ -212,22 +255,12 @@ class Recipe {
     };
   }
 
-  // Helper method to ensure image URL is valid
-  static String _getValidImageUrl(String url) {
-    // Check if the URL is a valid HTTP or HTTPS URL
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-
-    // If it's just a filename like "default.png", use a placeholder
-    return 'https://placehold.co/400x300/png?text=No+Image';
-  }
 
   // Creates a copy of the recipe with the given fields replaced with the new values
   Recipe copyWith({
     String? uuid,
     String? name,
-    String? images,
+    dynamic images,
     String? description,
     String? instructions,
     int? difficulty,

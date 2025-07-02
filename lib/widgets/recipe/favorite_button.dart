@@ -1,77 +1,61 @@
 import 'package:flutter/material.dart';
+import 'rive_favorite_button.dart';
+import 'dart:async';
 
-class FavoriteButton extends StatelessWidget {
+// Explicitly import the RiveFavoriteButtonState class to ensure it's accessible
+export 'rive_favorite_button.dart' show RiveFavoriteButtonState;
+
+class FavoriteButton extends StatefulWidget {
   final bool isFavorite;
   final VoidCallback onPressed;
+  final Key? riveButtonKey;
 
   const FavoriteButton({
-    Key? key,
+    super.key,
     required this.isFavorite,
     required this.onPressed,
-  }) : super(key: key);
+    this.riveButtonKey,
+  });
+
+  @override
+  State<FavoriteButton> createState() => _FavoriteButtonState();
+}
+
+class _FavoriteButtonState extends State<FavoriteButton> {
+  // Key to access the RiveFavoriteButton
+  final GlobalKey<RiveFavoriteButtonState> _riveButtonKey = GlobalKey<RiveFavoriteButtonState>();
+  // Timer for animation
+  Timer? _animationTimer;
+
+  @override
+  void dispose() {
+    _animationTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(FavoriteButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // If the favorite state changed, try to trigger the animation
+    if (oldWidget.isFavorite != widget.isFavorite) {
+      print('FavoriteButton: Favorite state changed from ${oldWidget.isFavorite} to ${widget.isFavorite}');
+
+      // Use a small delay to ensure the RiveFavoriteButton has been updated
+      _animationTimer?.cancel(); // Cancel any existing timer
+      _animationTimer = Timer(Duration.zero, () {
+        // Try to trigger the animation through the key
+        _riveButtonKey.currentState?.triggerAnimation();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: CustomPaint(
-        size: const Size(30, 30),
-        painter: _FavoriteButtonPainter(isFavorite: isFavorite),
-      ),
+    return RiveFavoriteButton(
+      key: widget.riveButtonKey ?? _riveButtonKey,
+      isFavorite: widget.isFavorite,
+      onPressed: widget.onPressed,
     );
-  }
-}
-
-class _FavoriteButtonPainter extends CustomPainter {
-  final bool isFavorite;
-
-  _FavoriteButtonPainter({required this.isFavorite});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..color = isFavorite ? const Color(0xFF2ECC71) : Colors.grey
-      ..style = PaintingStyle.fill;
-
-    // Draw heart shape
-    final Path path = Path();
-    
-    // Starting point at the bottom of the heart
-    path.moveTo(size.width / 2, size.height * 0.85);
-    
-    // Left curve
-    path.cubicTo(
-      size.width * 0.2, size.height * 0.6,
-      size.width * 0.1, size.height * 0.35,
-      size.width * 0.25, size.height * 0.25
-    );
-    
-    // Left top curve
-    path.cubicTo(
-      size.width * 0.4, size.height * 0.15,
-      size.width * 0.45, size.height * 0.25,
-      size.width / 2, size.height * 0.35
-    );
-    
-    // Right top curve
-    path.cubicTo(
-      size.width * 0.55, size.height * 0.25,
-      size.width * 0.6, size.height * 0.15,
-      size.width * 0.75, size.height * 0.25
-    );
-    
-    // Right curve
-    path.cubicTo(
-      size.width * 0.9, size.height * 0.35,
-      size.width * 0.8, size.height * 0.6,
-      size.width / 2, size.height * 0.85
-    );
-    
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
   }
 }

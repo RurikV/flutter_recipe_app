@@ -1,0 +1,30 @@
+import 'dart:async';
+import 'object_detection_service.dart';
+
+// This file is used when neither dart:ffi nor dart:html is available
+// It provides stub implementations that throw UnimplementedError
+
+Future<void> initObjectDetectionService() async {
+  throw UnimplementedError('Object detection service is not supported on this platform');
+}
+
+ObjectDetectionService getObjectDetectionService() {
+  throw UnimplementedError('Object detection service is not supported on this platform');
+}
+
+// Service locator interface methods
+T get<T extends Object>() {
+  throw UnimplementedError('Service locator is not supported on this platform');
+}
+
+Future<void> initLocator() async {
+  throw UnimplementedError('Service locator is not supported on this platform');
+}
+
+void registerLazySingleton<T extends Object>(T Function() function) {
+  throw UnimplementedError('Service locator is not supported on this platform');
+}
+
+FutureOr unregister<T extends Object>() {
+  throw UnimplementedError('Service locator is not supported on this platform');
+}

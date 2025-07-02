@@ -1,15 +1,16 @@
-import 'dart:io';
+// Use standard imports to handle platform-specific code
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
+
+// Import platform-specific connection functions conditionally
+import 'app_database_connection_native.dart'
+    if (dart.library.html) 'app_database_connection_web.dart';
 
 import 'tables.dart';
 import 'database_extensions.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Recipes, RecipeTags, Ingredients, RecipeSteps])
+@DriftDatabase(tables: [Recipes, Photos, RecipeTags, Ingredients, RecipeSteps])
 class AppDatabase extends _$AppDatabase {
   late final DatabaseExtensions _extensions;
 
@@ -21,13 +22,37 @@ class AppDatabase extends _$AppDatabase {
     return _instance ??= AppDatabase._internal();
   }
 
+  // Constructor that accepts a QueryExecutor for platform-specific implementations
+  factory AppDatabase.withConnection(QueryExecutor connection) {
+    return AppDatabase._(connection);
+  }
+
   // Private constructor for singleton
   AppDatabase._internal() : super(_openConnection()) {
     _extensions = DatabaseExtensions(this);
   }
 
+  // Private constructor with connection
+  AppDatabase._(super.connection) {
+    _extensions = DatabaseExtensions(this);
+  }
+
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (Migrator m) {
+      return m.createAll();
+    },
+    onUpgrade: (Migrator m, int from, int to) async {
+      if (from < 2) {
+        // Add the Photos table if upgrading from version 1
+        await m.createTable(photos);
+      }
+      // Removed Favorites table migration as we're using the isFavorite field in Recipes table
+    },
+  );
 
   // Recipe operations
   Future<List<Recipe>> getAllRecipes() => _extensions.getAllRecipes();
@@ -46,18 +71,27 @@ class AppDatabase extends _$AppDatabase {
   Future<List<Ingredient>> getIngredientsForRecipe(String recipeUuid) => _extensions.getIngredientsForRecipe(recipeUuid);
   Future<void> insertIngredientsForRecipe(String recipeUuid, List<IngredientsCompanion> ingredients) => _extensions.insertIngredientsForRecipe(recipeUuid, ingredients);
   Future<int> deleteIngredientsForRecipe(String recipeUuid) => _extensions.deleteIngredientsForRecipe(recipeUuid);
+  Future<List<Ingredient>> getAllIngredients() => _extensions.getAllIngredients();
 
   // Recipe step operations
   Future<List<RecipeStep>> getStepsForRecipe(String recipeUuid) => _extensions.getStepsForRecipe(recipeUuid);
   Future<void> insertStepsForRecipe(String recipeUuid, List<RecipeStepsCompanion> steps) => _extensions.insertStepsForRecipe(recipeUuid, steps);
   Future<int> deleteStepsForRecipe(String recipeUuid) => _extensions.deleteStepsForRecipe(recipeUuid);
   Future<bool> updateStepStatus(int stepId, bool isCompleted) => _extensions.updateStepStatus(stepId, isCompleted);
-}
 
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'recipes.sqlite'));
-    return NativeDatabase(file);
-  });
+  // Photo operations
+  Future<List<Photo>> getPhotosForRecipe(String recipeUuid) => _extensions.getPhotosForRecipe(recipeUuid);
+  Future<int> insertPhoto(PhotosCompanion photo) => _extensions.insertPhoto(photo);
+  Future<int> deletePhoto(int photoId) => _extensions.deletePhoto(photoId);
+
+  // Favorites operations (using isFavorite field in Recipes table)
+  Future<void> addToFavorites(String recipeUuid) => _extensions.addToFavorites(recipeUuid);
+  Future<void> removeFromFavorites(String recipeUuid) => _extensions.removeFromFavorites(recipeUuid);
+  Future<bool> isInFavorites(String recipeUuid) => _extensions.isInFavorites(recipeUuid);
+
+  // Platform-specific database connection
+  static QueryExecutor _openConnection() {
+    // Use the platform-specific connection function
+    return createConnection();
+  }
 }
