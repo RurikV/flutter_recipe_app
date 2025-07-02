@@ -13,23 +13,35 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 // Mock implementation of ApiService for testing
 class MockApiService extends ApiService {
   @override
-  Future<Recipe> createRecipe(Recipe recipe) async {
-    // Simulate successful recipe creation
-    return Recipe(
-      uuid: 'mock-uuid',
-      name: recipe.name,
-      images: recipe.images,
-      description: recipe.description,
-      instructions: recipe.instructions,
-      difficulty: recipe.difficulty,
-      duration: recipe.duration,
-      rating: recipe.rating,
-      tags: recipe.tags,
-      ingredients: recipe.ingredients,
-      steps: recipe.steps,
-      isFavorite: recipe.isFavorite,
-      comments: recipe.comments,
-    );
+  Future<Map<String, dynamic>> createRecipe(Recipe recipe) async {
+    // Simulate successful recipe creation by returning a Map<String, dynamic>
+    return {
+      'id': 'mock-uuid',
+      'name': recipe.name,
+      'photo': recipe.images,
+      'description': recipe.description,
+      'instructions': recipe.instructions,
+      'difficulty': recipe.difficulty,
+      'duration': recipe.duration,
+      'rating': recipe.rating,
+      'tags': recipe.tags.map((tag) => {'name': tag}).toList(),
+      'ingredients': recipe.ingredients.map((ingredient) => {
+        'name': ingredient.name,
+        'quantity': ingredient.quantity,
+        'unit': ingredient.unit,
+      }).toList(),
+      'steps': recipe.steps.map((step) => {
+        'id': step.id,
+        'name': step.name,
+        'duration': step.duration,
+      }).toList(),
+      'isFavorite': recipe.isFavorite,
+      'comments': recipe.comments.map((comment) => {
+        'text': comment.text,
+        'author': comment.authorName,
+        'date': comment.date,
+      }).toList(),
+    };
   }
 
   @override
@@ -102,6 +114,16 @@ class MockDatabaseService implements DatabaseService {
         isFavorite: false,
         comments: [],
       ),
+    ];
+  }
+
+  @override
+  Future<List<Ingredient>> getAllIngredients() async {
+    // Mock implementation
+    return [
+      Ingredient.simple(name: 'Ingredient 1', quantity: '100', unit: 'g'),
+      Ingredient.simple(name: 'Ingredient 2', quantity: '200', unit: 'ml'),
+      Ingredient.simple(name: 'Ingredient 3', quantity: '3', unit: 'pcs'),
     ];
   }
 

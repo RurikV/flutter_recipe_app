@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
 import 'package:flutter_recipe_app/models/ingredient.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/reducers.dart';
 import 'package:flutter_recipe_app/l10n/app_localizations.dart';
 import 'package:flutter_recipe_app/widgets/recipe/duration_display.dart';
+import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
 import '../service_locator_test.dart';
 
 void main() {
@@ -97,14 +99,17 @@ void main() {
     });
 
     testWidgets('Navigate from recipe list to recipe detail and toggle favorite', (WidgetTester tester) async {
-      // Build the RecipeListScreen widget wrapped with StoreProvider
+      // Build the RecipeListScreen widget wrapped with StoreProvider and Provider for RecipeManager
       await tester.pumpWidget(
-        StoreProvider<AppState>(
-          store: store,
-          child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: const RecipeListScreen(loadRecipesOnInit: false),
+        Provider<RecipeManager>(
+          create: (context) => getIt<RecipeManager>(),
+          child: StoreProvider<AppState>(
+            store: store,
+            child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const RecipeListScreen(loadRecipesOnInit: false),
+            ),
           ),
         ),
       );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
 import 'package:flutter_recipe_app/models/ingredient.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_recipe_app/screens/recipe_detail_screen.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/reducers.dart';
 import 'package:flutter_recipe_app/l10n/app_localizations.dart';
+import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
 import '../service_locator_test.dart';
 
 void main() {
@@ -76,12 +78,15 @@ void main() {
     testWidgets('Favorite button toggles favorite status', (WidgetTester tester) async {
       // Build our app and trigger a frame
       await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: StoreProvider<AppState>(
-            store: store,
-            child: RecipeDetailScreen(recipe: testRecipe),
+        Provider<RecipeManager>(
+          create: (context) => getIt<RecipeManager>(),
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: StoreProvider<AppState>(
+              store: store,
+              child: RecipeDetailScreen(recipe: testRecipe),
+            ),
           ),
         ),
       );
@@ -117,12 +122,15 @@ void main() {
     testWidgets('Recipe steps are displayed correctly', (WidgetTester tester) async {
       // Build our app and trigger a frame
       await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: StoreProvider<AppState>(
-            store: store,
-            child: RecipeDetailScreen(recipe: testRecipe),
+        Provider<RecipeManager>(
+          create: (context) => getIt<RecipeManager>(),
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: StoreProvider<AppState>(
+              store: store,
+              child: RecipeDetailScreen(recipe: testRecipe),
+            ),
           ),
         ),
       );
@@ -137,12 +145,15 @@ void main() {
     testWidgets('All widgets are displayed correctly', (WidgetTester tester) async {
       // Build our app and trigger a frame
       await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: StoreProvider<AppState>(
-            store: store,
-            child: RecipeDetailScreen(recipe: testRecipe),
+        Provider<RecipeManager>(
+          create: (context) => getIt<RecipeManager>(),
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: StoreProvider<AppState>(
+              store: store,
+              child: RecipeDetailScreen(recipe: testRecipe),
+            ),
           ),
         ),
       );

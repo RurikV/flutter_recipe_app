@@ -11,7 +11,7 @@ class MockApiService extends ApiService {
   List<Map<String, dynamic>> createdIngredients = [];
 
   @override
-  Future<Recipe> createRecipe(Recipe recipe) async {
+  Future<Map<String, dynamic>> createRecipe(Recipe recipe) async {
     // Simulate the new approach to recipe creation:
     // 1. Create the recipe with basic information
     // 2. Create recipe ingredients
@@ -59,22 +59,35 @@ class MockApiService extends ApiService {
       print('[DEBUG_LOG] MockApiService: Creating recipe step link: $stepLinkJson');
     }
 
-    // Simulate successful recipe creation
-    return Recipe(
-      uuid: 'mock-uuid',
-      name: recipe.name,
-      images: recipe.images,
-      description: recipe.description,
-      instructions: recipe.instructions,
-      difficulty: recipe.difficulty,
-      duration: recipe.duration,
-      rating: recipe.rating,
-      tags: recipe.tags,
-      ingredients: recipe.ingredients,
-      steps: recipe.steps,
-      isFavorite: recipe.isFavorite,
-      comments: recipe.comments,
-    );
+    // Simulate successful recipe creation by returning a Map<String, dynamic>
+    // that contains the recipe data
+    return {
+      'id': 'mock-uuid',
+      'name': recipe.name,
+      'photo': recipe.images,
+      'description': recipe.description,
+      'instructions': recipe.instructions,
+      'difficulty': recipe.difficulty,
+      'duration': recipe.duration,
+      'rating': recipe.rating,
+      'tags': recipe.tags.map((tag) => {'name': tag}).toList(),
+      'ingredients': recipe.ingredients.map((ingredient) => {
+        'name': ingredient.name,
+        'quantity': ingredient.quantity,
+        'unit': ingredient.unit,
+      }).toList(),
+      'steps': recipe.steps.map((step) => {
+        'id': step.id,
+        'name': step.name,
+        'duration': step.duration,
+      }).toList(),
+      'isFavorite': recipe.isFavorite,
+      'comments': recipe.comments.map((comment) => {
+        'text': comment.text,
+        'author': comment.authorName,
+        'date': comment.date,
+      }).toList(),
+    };
   }
 }
 
@@ -126,8 +139,8 @@ void main() {
 
         // Verify the recipe was created successfully
         expect(createdRecipe, isNotNull);
-        expect(createdRecipe.name, equals(recipe.name));
-        expect(createdRecipe.steps.length, equals(recipe.steps.length));
+        expect(createdRecipe['name'], equals(recipe.name));
+        expect(createdRecipe['steps'].length, equals(recipe.steps.length));
 
         // Verify that steps were created separately
         expect(apiService.createdSteps.length, equals(recipe.steps.length));
@@ -143,7 +156,7 @@ void main() {
         expect(apiService.createdIngredients.length, equals(recipe.ingredients.length));
         expect(apiService.createdIngredients[0]['count'], equals(100));
 
-        print('[DEBUG_LOG] Recipe with steps created successfully: ${createdRecipe.uuid}');
+        print('[DEBUG_LOG] Recipe with steps created successfully: ${createdRecipe['id']}');
       } catch (e) {
         fail('Failed to create recipe with steps: $e');
       }

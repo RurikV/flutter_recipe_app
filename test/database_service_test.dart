@@ -93,6 +93,16 @@ class MockDatabaseService implements DatabaseService {
   }
 
   @override
+  Future<List<app_model.Ingredient>> getAllIngredients() async {
+    // Mock implementation
+    return [
+      app_model.Ingredient.simple(name: 'Ingredient 1', quantity: '100', unit: 'g'),
+      app_model.Ingredient.simple(name: 'Ingredient 2', quantity: '200', unit: 'ml'),
+      app_model.Ingredient.simple(name: 'Ingredient 3', quantity: '3', unit: 'pcs'),
+    ];
+  }
+
+  @override
   Future<List<String>> getAvailableUnits() async {
     // Mock implementation
     return ['g', 'kg', 'ml', 'l', 'pcs'];

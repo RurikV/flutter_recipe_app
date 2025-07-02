@@ -43,7 +43,7 @@ class GalleryScreen extends StatefulWidget {
 class GalleryScreenState extends State<GalleryScreen> {
   final GetIt _getIt = GetIt.instance;
   late final ObjectDetectionService _objectDetectionService;
-  List<SimplePhoto> _photos = [];
+  final List<SimplePhoto> _photos = [];
   bool _isLoading = false;
   int _nextPhotoId = 1; // Simple counter for photo IDs
 

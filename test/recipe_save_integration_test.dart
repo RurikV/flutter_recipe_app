@@ -7,26 +7,38 @@ import 'package:flutter_recipe_app/data/api/api_service.dart';
 // Mock implementation of ApiService for testing
 class MockApiService extends ApiService {
   @override
-  Future<Recipe> createRecipe(Recipe recipe) async {
+  Future<Map<String, dynamic>> createRecipe(Recipe recipe) async {
     // Simulate successful recipe creation without making actual network requests
     print('[DEBUG_LOG] MockApiService: Creating recipe ${recipe.name}');
 
-    // Return a copy of the recipe with a mock UUID
-    return Recipe(
-      uuid: 'mock-uuid-${DateTime.now().millisecondsSinceEpoch}',
-      name: recipe.name,
-      images: recipe.images,
-      description: recipe.description,
-      instructions: recipe.instructions,
-      difficulty: recipe.difficulty,
-      duration: recipe.duration,
-      rating: recipe.rating,
-      tags: recipe.tags,
-      ingredients: recipe.ingredients,
-      steps: recipe.steps,
-      isFavorite: recipe.isFavorite,
-      comments: recipe.comments,
-    );
+    // Return a Map representation of the recipe with a mock UUID
+    return {
+      'id': 'mock-uuid-${DateTime.now().millisecondsSinceEpoch}',
+      'name': recipe.name,
+      'photo': recipe.images,
+      'description': recipe.description,
+      'instructions': recipe.instructions,
+      'difficulty': recipe.difficulty,
+      'duration': recipe.duration,
+      'rating': recipe.rating,
+      'tags': recipe.tags.map((tag) => {'name': tag}).toList(),
+      'ingredients': recipe.ingredients.map((ingredient) => {
+        'name': ingredient.name,
+        'quantity': ingredient.quantity,
+        'unit': ingredient.unit,
+      }).toList(),
+      'steps': recipe.steps.map((step) => {
+        'id': step.id,
+        'name': step.name,
+        'duration': step.duration,
+      }).toList(),
+      'isFavorite': recipe.isFavorite,
+      'comments': recipe.comments.map((comment) => {
+        'text': comment.text,
+        'author': comment.authorName,
+        'date': comment.date,
+      }).toList(),
+    };
   }
 }
 
@@ -82,10 +94,10 @@ void main() {
 
         // Verify the recipe was created successfully
         expect(createdRecipe, isNotNull);
-        expect(createdRecipe.name, equals(recipe.name));
-        expect(createdRecipe.steps.length, equals(recipe.steps.length));
+        expect(createdRecipe['name'], equals(recipe.name));
+        expect(createdRecipe['steps'].length, equals(recipe.steps.length));
 
-        print('[DEBUG_LOG] Recipe with steps created successfully: ${createdRecipe.uuid}');
+        print('[DEBUG_LOG] Recipe with steps created successfully: ${createdRecipe['id']}');
       } catch (e) {
         print('[DEBUG_LOG] Failed to create recipe with steps: $e');
         fail('Failed to create recipe with steps: $e');

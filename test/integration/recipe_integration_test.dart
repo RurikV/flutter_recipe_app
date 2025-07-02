@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/ingredient.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_recipe_app/models/measure_unit.dart';
 import 'package:flutter_recipe_app/screens/recipe_detail_screen.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/store.dart';
+import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
 import '../service_locator_test.dart';
 
 void main() {
@@ -93,12 +95,15 @@ void main() {
       // Create a Redux store for testing
       final Store<AppState> store = createStore();
 
-      // Build the RecipeDetailScreen widget wrapped with StoreProvider
+      // Build the RecipeDetailScreen widget wrapped with StoreProvider and Provider for RecipeManager
       await tester.pumpWidget(
-        StoreProvider<AppState>(
-          store: store,
-          child: MaterialApp(
-            home: RecipeDetailScreen(recipe: recipe),
+        Provider<RecipeManager>(
+          create: (context) => getIt<RecipeManager>(),
+          child: StoreProvider<AppState>(
+            store: store,
+            child: MaterialApp(
+              home: RecipeDetailScreen(recipe: recipe),
+            ),
           ),
         ),
       );

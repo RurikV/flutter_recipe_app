@@ -6,7 +6,10 @@ import 'package:flutter_recipe_app/data/api/api_service.dart';
 import 'package:flutter_recipe_app/data/database/database_service.dart';
 import 'package:flutter_recipe_app/models/recipe.dart' as app_model;
 import 'package:flutter_recipe_app/models/comment.dart' as app_model;
+import 'package:flutter_recipe_app/models/ingredient.dart' as app_model;
 import 'package:flutter_recipe_app/models/recipe_image.dart';
+import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
+import 'package:flutter_recipe_app/domain/repositories/recipe_repository.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -135,8 +138,78 @@ class MockDatabaseService implements DatabaseService {
   }
 
   @override
+  Future<List<app_model.Ingredient>> getAllIngredients() async {
+    // Return an empty list for testing
+    return [];
+  }
+
+  @override
   Future<void> close() async {
     // Do nothing
+  }
+}
+
+// Mock implementation of RecipeRepository for testing
+class MockRecipeRepository implements RecipeRepository {
+  @override
+  Future<List<app_model.Recipe>> getRecipes() async {
+    // Return an empty list for testing
+    return [];
+  }
+
+  @override
+  Future<List<app_model.Recipe>> getFavoriteRecipes() async {
+    // Return an empty list for testing
+    return [];
+  }
+
+  @override
+  Future<app_model.Recipe?> getRecipeByUuid(String uuid) async {
+    // Return null for testing
+    return null;
+  }
+
+  @override
+  Future<void> saveRecipe(app_model.Recipe recipe) async {
+    // Do nothing for testing
+  }
+
+  @override
+  Future<void> updateRecipe(app_model.Recipe recipe) async {
+    // Do nothing for testing
+  }
+
+  @override
+  Future<void> deleteRecipe(String uuid) async {
+    // Do nothing for testing
+  }
+
+  @override
+  Future<void> toggleFavorite(String uuid) async {
+    // Do nothing for testing
+  }
+
+  @override
+  Future<List<String>> getAvailableIngredients() async {
+    // Return an empty list for testing
+    return [];
+  }
+
+  @override
+  Future<List<String>> getAvailableUnits() async {
+    // Return an empty list for testing
+    return [];
+  }
+
+  @override
+  Future<void> addComment(String recipeUuid, app_model.Comment comment) async {
+    // Do nothing for testing
+  }
+
+  @override
+  Future<List<app_model.Comment>> getComments(String recipeUuid) async {
+    // Return an empty list for testing
+    return [];
   }
 }
 
@@ -159,6 +232,10 @@ void initializeTestServiceLocator() {
     getIt.unregister<DatabaseService>();
   }
 
+  if (getIt.isRegistered<RecipeManager>()) {
+    getIt.unregister<RecipeManager>();
+  }
+
   // Register the AppDatabase
   final appDatabase = AppDatabase();
   getIt.registerSingleton<AppDatabase>(appDatabase);
@@ -171,6 +248,11 @@ void initializeTestServiceLocator() {
   // Register mock implementations of ApiService and DatabaseService
   getIt.registerSingleton<ApiService>(MockApiService());
   getIt.registerSingleton<DatabaseService>(MockDatabaseService());
+
+  // Register a RecipeManager with a mock RecipeRepository
+  getIt.registerSingleton<RecipeManager>(
+    RecipeManager(recipeRepository: MockRecipeRepository()),
+  );
 }
 
 void main() {

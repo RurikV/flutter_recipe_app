@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart' if (dart.library.html) 'package:dio/browser.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../models/recipe.dart';
-import '../repositories/recipe_repository_impl.dart';
 
 // Import HttpClient, X509Certificate, and IOHttpClientAdapter only for non-web platforms
 import 'dart:io' if (dart.library.html) 'web_http_client.dart';
