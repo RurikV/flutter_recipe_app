@@ -28,6 +28,14 @@ analyzer:
   errors:
     # Ignore errors for importing implementation files from tflite_flutter
     implementation_imports: ignore
+  exclude:
+    # Exclude generated files
+    - '**/*.g.dart'
+    - '**/*.freezed.dart'
+    - '**/*.gr.dart'
+    - '**/*.config.dart'
+    - 'lib/generated/**'
+    - 'lib/gen/**'
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
