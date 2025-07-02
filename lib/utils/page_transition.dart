@@ -14,7 +14,7 @@ class CustomPageRoute<T> extends PageRouteBuilder<T> {
     this.curve = Curves.easeInOut,
     this.duration = const Duration(milliseconds: 300),
     this.reverseDuration = const Duration(milliseconds: 300),
-    RouteSettings? settings,
+    super.settings,
   }) : super(
           pageBuilder: (context, animation, secondaryAnimation) => page,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -89,7 +89,6 @@ class CustomPageRoute<T> extends PageRouteBuilder<T> {
                 );
             }
           },
-          settings: settings,
           transitionDuration: duration,
           reverseTransitionDuration: reverseDuration,
         );

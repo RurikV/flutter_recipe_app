@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
-import 'dart:typed_data';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -326,12 +325,29 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
 
               // Create the interpreter from the model bytes
               final interpreterOptions = InterpreterOptions();
-              interpreter = Interpreter.fromBuffer(
-                modelBytes,
-                options: interpreterOptions,
-              );
+              try {
+                // Handle both synchronous and asynchronous implementations
+                final dynamic interpreterResult = Interpreter.fromBuffer(
+                  modelBytes,
+                  options: interpreterOptions,
+                );
 
-              isInitialized = true;
+                if (interpreterResult is Future<Interpreter>) {
+                  // For web implementation
+                  interpreter = await interpreterResult;
+                } else {
+                  // For native implementation
+                  interpreter = interpreterResult;
+                }
+
+                isInitialized = true;
+              } catch (e) {
+                mainSendPort.send(IsolateMessage(
+                  IsolateMessageType.initialize,
+                  {'success': false, 'error': 'Failed to create interpreter: $e'},
+                ).serialize());
+                return;
+              }
 
               // Send success message back to main isolate
               final resultMessage = IsolateMessage(
@@ -351,7 +367,6 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
 
           case IsolateMessageType.detect:
             final requestId = isolateMessage.data['requestId'];
-            final imagePath = isolateMessage.data['imagePath'];
             // Convert List<dynamic> to Uint8List
             final imageBytesList = isolateMessage.data['imageBytes'] as List<dynamic>;
             final Uint8List imageBytes = Uint8List.fromList(imageBytesList.cast<int>());

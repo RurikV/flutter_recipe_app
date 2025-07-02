@@ -2,11 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter_recipe_app/database/app_database.dart';
 import 'package:flutter_recipe_app/services/object_detection_service.dart';
-import 'package:flutter_recipe_app/services/isolate_object_detection_service.dart';
 import 'package:flutter_recipe_app/data/api_service.dart';
 import 'package:flutter_recipe_app/data/database_service.dart';
 import 'package:flutter_recipe_app/models/recipe.dart' as app_model;
-import 'package:flutter_recipe_app/models/recipe_step.dart' as app_model;
 import 'package:flutter_recipe_app/models/comment.dart' as app_model;
 import 'package:flutter_recipe_app/models/recipe_image.dart';
 
@@ -33,19 +31,16 @@ class MockObjectDetectionService implements ObjectDetectionService {
 
 // Mock implementation of ApiService for testing
 class MockApiService extends ApiService {
-  @override
   Future<List<app_model.Recipe>> getRecipes() async {
     // Return an empty list - we'll use the Redux store for test data
     return [];
   }
 
-  @override
   Future<bool> toggleFavorite(String recipeId, bool isFavorite) async {
     // Simulate successful toggle
     return true;
   }
 
-  @override
   Future<bool> updateStepStatus(String recipeId, int stepIndex, bool isCompleted) async {
     // Simulate successful update
     return true;
@@ -88,7 +83,6 @@ class MockDatabaseService implements DatabaseService {
     return true;
   }
 
-  @override
   Future<void> toggleFavoriteStatus(String uuid, bool isFavorite) async {
     // Do nothing
   }

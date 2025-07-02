@@ -11,7 +11,7 @@ import 'object_detection_service.dart';
 /// Note: This implementation doesn't use the getOutputTensor method from the Interpreter class
 class TensorDetectionService implements ObjectDetectionService {
   bool _initialized = false;
-  List<String> _mockLabels = [
+  final List<String> _mockLabels = [
     'apple', 'banana', 'orange', 'strawberry', 'blueberry',
     'carrot', 'broccoli', 'potato', 'tomato', 'onion',
     'chicken', 'beef', 'pork', 'fish', 'shrimp',
@@ -19,6 +19,7 @@ class TensorDetectionService implements ObjectDetectionService {
   ];
 
   // Initialize the service
+  @override
   Future<void> initialize() async {
     // Simulate initialization delay
     await Future.delayed(const Duration(milliseconds: 500));
@@ -27,6 +28,7 @@ class TensorDetectionService implements ObjectDetectionService {
   }
 
   // Detect objects in an image
+  @override
   Future<List<DetectedObject>> detectObjects(String imagePath, {int maxResults = 5}) async {
     // Initialize if not already done
     if (!_initialized) {
@@ -88,6 +90,7 @@ class TensorDetectionService implements ObjectDetectionService {
   }
 
   // Dispose of resources
+  @override
   void dispose() {
     // No resources to dispose in the mock implementation
     debugPrint('Mock object detection service disposed');

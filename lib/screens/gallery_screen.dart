@@ -15,10 +15,10 @@ class GalleryScreen extends StatefulWidget {
   final String recipeName;
 
   const GalleryScreen({
-    Key? key,
+    super.key,
     required this.recipeUuid,
     required this.recipeName,
-  }) : super(key: key);
+  });
 
   @override
   GalleryScreenState createState() => GalleryScreenState();

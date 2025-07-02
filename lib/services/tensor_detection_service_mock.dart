@@ -10,7 +10,7 @@ import 'object_detection_service.dart';
 /// This implementation doesn't use TensorFlow Lite to avoid platform-specific issues
 class TensorDetectionServiceMock implements ObjectDetectionService {
   bool _initialized = false;
-  List<String> _mockLabels = [
+  final List<String> _mockLabels = [
     'apple', 'banana', 'orange', 'strawberry', 'blueberry',
     'carrot', 'broccoli', 'potato', 'tomato', 'onion',
     'chicken', 'beef', 'pork', 'fish', 'shrimp',

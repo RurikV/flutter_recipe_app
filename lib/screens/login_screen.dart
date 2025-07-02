@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:provider/provider.dart';
-import '../l10n/app_localizations.dart';
 import '../redux/app_state.dart';
 import '../redux/actions.dart';
 import '../services/auth_service.dart';
@@ -73,7 +72,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: const Color(0xFF2ECC71), // Green background as per design

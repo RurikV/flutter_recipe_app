@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
-import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
 class TfliteIsolate {
@@ -51,7 +50,7 @@ class TfliteIsolate {
       // Load model from buffer instead of asset
       final interpreterOptions = InterpreterOptions()
         ..threads = 4; // Use multiple threads for better performance
-      interpreter = await Interpreter.fromBuffer(modelBuffer, options: interpreterOptions);
+      interpreter = Interpreter.fromBuffer(modelBuffer, options: interpreterOptions);
 
       // Get input and output tensor shapes
       interpreter.allocateTensors();
@@ -105,7 +104,7 @@ class TfliteIsolate {
               }
 
               final newOptions = InterpreterOptions()..threads = 1;
-              interpreter = await Interpreter.fromBuffer(modelBuffer, options: newOptions);
+              interpreter = Interpreter.fromBuffer(modelBuffer, options: newOptions);
               interpreter.allocateTensors();
 
               // Try with a different normalization
@@ -138,7 +137,7 @@ class TfliteIsolate {
                 }
 
                 // Create a new interpreter with default options
-                interpreter = await Interpreter.fromBuffer(modelBuffer);
+                interpreter = Interpreter.fromBuffer(modelBuffer);
                 interpreter.allocateTensors();
 
                 // Get the exact input shape the model expects
@@ -233,7 +232,7 @@ class TfliteIsolate {
 
       // Log the output buffer for debugging
       print('Output buffer length: ${outputBuffer.length}');
-      if (outputBuffer.length > 0) {
+      if (outputBuffer.isNotEmpty) {
         print('First few values: ${outputBuffer.sublist(0, math.min(5, outputBuffer.length))}');
       }
 

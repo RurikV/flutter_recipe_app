@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'rive_favorite_button.dart';
+import 'dart:async';
 
 // Explicitly import the RiveFavoriteButtonState class to ensure it's accessible
 export 'rive_favorite_button.dart' show RiveFavoriteButtonState;
@@ -23,6 +24,14 @@ class FavoriteButton extends StatefulWidget {
 class _FavoriteButtonState extends State<FavoriteButton> {
   // Key to access the RiveFavoriteButton
   final GlobalKey<RiveFavoriteButtonState> _riveButtonKey = GlobalKey<RiveFavoriteButtonState>();
+  // Timer for animation
+  Timer? _animationTimer;
+
+  @override
+  void dispose() {
+    _animationTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   void didUpdateWidget(FavoriteButton oldWidget) {
@@ -33,7 +42,8 @@ class _FavoriteButtonState extends State<FavoriteButton> {
       print('FavoriteButton: Favorite state changed from ${oldWidget.isFavorite} to ${widget.isFavorite}');
 
       // Use a small delay to ensure the RiveFavoriteButton has been updated
-      Future.delayed(Duration.zero, () {
+      _animationTimer?.cancel(); // Cancel any existing timer
+      _animationTimer = Timer(Duration.zero, () {
         // Try to trigger the animation through the key
         _riveButtonKey.currentState?.triggerAnimation();
       });
