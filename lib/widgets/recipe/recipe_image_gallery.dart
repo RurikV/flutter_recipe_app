@@ -10,12 +10,14 @@ class RecipeImageGallery extends StatefulWidget {
   final List<RecipeImage> images;
   final Function(List<RecipeImage>) onImagesChanged;
   final bool isEditable;
+  final ObjectDetectionService? objectDetectionService;
 
   const RecipeImageGallery({
     super.key,
     required this.images,
     required this.onImagesChanged,
     this.isEditable = false,
+    this.objectDetectionService,
   });
 
   @override
@@ -34,7 +36,8 @@ class _RecipeImageGalleryState extends State<RecipeImageGallery> {
   @override
   void initState() {
     super.initState();
-    _objectDetectionService = GetIt.instance<ObjectDetectionService>();
+    // Use the provided service or get it from GetIt
+    _objectDetectionService = widget.objectDetectionService ?? GetIt.instance<ObjectDetectionService>();
     // Initialize the object detection service if needed
     _objectDetectionService.initialize();
   }

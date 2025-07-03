@@ -11,14 +11,26 @@ import 'package:flutter_recipe_app/screens/recipe_detail_screen.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/store.dart';
 import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
-import '../service_locator_test.dart';
+import 'package:flutter_recipe_app/data/usecases/recipe_manager_impl.dart';
+import 'package:flutter_recipe_app/services/classification/object_detection_service.dart';
+import '../service_locator_test.dart' as test_locator;
 
 void main() {
   // Initialize the service locator for tests
   setUpAll(() {
-    initializeTestServiceLocator();
+    test_locator.initializeTestServiceLocator();
   });
   group('Recipe Integration Tests', () {
+    late RecipeManager recipeManager;
+    late ObjectDetectionService objectDetectionService;
+
+    setUp(() {
+      // Create instance directly
+      recipeManager = RecipeManagerImpl(
+        recipeRepository: test_locator.MockRecipeRepository(),
+      );
+      objectDetectionService = test_locator.MockObjectDetectionService();
+    });
     testWidgets('Display a recipe with ingredients and steps', (WidgetTester tester) async {
       // Create measure units
       final gramsUnit = MeasureUnitRef(id: 1);
@@ -95,10 +107,13 @@ void main() {
       // Create a Redux store for testing
       final Store<AppState> store = createStore();
 
-      // Build the RecipeDetailScreen widget wrapped with StoreProvider and Provider for RecipeManager
+      // Build the RecipeDetailScreen widget wrapped with StoreProvider and Providers for RecipeManager and ObjectDetectionService
       await tester.pumpWidget(
-        Provider<RecipeManager>(
-          create: (context) => getIt<RecipeManager>(),
+        MultiProvider(
+          providers: [
+            Provider<RecipeManager>(create: (context) => recipeManager),
+            Provider<ObjectDetectionService>(create: (context) => objectDetectionService),
+          ],
           child: StoreProvider<AppState>(
             store: store,
             child: MaterialApp(

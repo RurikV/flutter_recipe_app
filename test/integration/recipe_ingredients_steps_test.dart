@@ -9,6 +9,7 @@ import 'package:flutter_recipe_app/screens/recipe_detail_screen.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/store.dart';
 import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
+import 'package:flutter_recipe_app/services/classification/object_detection_service.dart';
 
 // Import the mock classes directly
 import '../service_locator_test.dart' as test_locator;
@@ -19,6 +20,7 @@ void main() {
   group('Recipe Ingredients and Steps Integration Tests', () {
     late test_locator.MockApiService apiService;
     late RecipeManager recipeManager;
+    late ObjectDetectionService objectDetectionService;
 
     setUp(() {
       // Create instances directly
@@ -26,6 +28,7 @@ void main() {
       recipeManager = RecipeManagerImpl(
         recipeRepository: test_locator.MockRecipeRepository(),
       );
+      objectDetectionService = test_locator.MockObjectDetectionService();
     });
 
     testWidgets('Create and display recipe with ingredients and steps', (WidgetTester tester) async {
@@ -74,8 +77,11 @@ void main() {
 
       // Display the recipe in the RecipeDetailScreen
       await tester.pumpWidget(
-        Provider<RecipeManager>(
-          create: (context) => recipeManager,
+        MultiProvider(
+          providers: [
+            Provider<RecipeManager>(create: (context) => recipeManager),
+            Provider<ObjectDetectionService>(create: (context) => objectDetectionService),
+          ],
           child: StoreProvider<AppState>(
             store: store,
             child: MaterialApp(

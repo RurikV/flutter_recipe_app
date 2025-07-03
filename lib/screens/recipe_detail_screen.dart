@@ -5,6 +5,7 @@ import '../../models/recipe.dart';
 import '../../models/comment.dart';
 import '../../models/recipe_step.dart';
 import '../domain/usecases/recipe_manager.dart';
+import '../services/classification/object_detection_service.dart';
 import '../utils/entity_converters.dart';
 import '../widgets/recipe/recipe_header.dart';
 import '../widgets/recipe/duration_display.dart';
@@ -31,12 +32,19 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   late final RecipeManager _recipeManager;
   late Recipe _recipe;
   bool _isCookingMode = false;
+  ObjectDetectionService? _objectDetectionService;
 
 
   @override
   void initState() {
     super.initState();
     _recipeManager = Provider.of<RecipeManager>(context, listen: false);
+    try {
+      _objectDetectionService = Provider.of<ObjectDetectionService>(context, listen: false);
+    } catch (e) {
+      // If ObjectDetectionService is not available in Provider, it will be obtained by RecipeImageGallery
+      _objectDetectionService = null;
+    }
     _recipe = widget.recipe;
   }
 
@@ -161,6 +169,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                           _recipe = _recipe.copyWith(images: updatedImages);
                         });
                       },
+                      objectDetectionService: _objectDetectionService,
                     ),
 
                     // Ingredients table
