@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'models/recipe.dart';
-import 'data/api/api_service.dart';
+import 'package:flutter_recipe_app/services/api/api_service.dart';
 
 // This is a simple manual test script to verify that our fix for the duration field works correctly.
 // To run this script, you can use the following command:
@@ -64,8 +64,8 @@ class _TestRecipeCreationScreenState extends State<TestRecipeCreationScreen> {
 
       setState(() {
         _testResults = 'Test passed: Recipe created successfully!\n'
-            'Recipe ID: ${createdRecipe.uuid}\n'
-            'Recipe Name: ${createdRecipe.name}';
+            'Recipe ID: ${createdRecipe['id']}\n'
+            'Recipe Name: ${createdRecipe['name']}';
       });
     } catch (e) {
       setState(() {
@@ -105,8 +105,8 @@ class _TestRecipeCreationScreenState extends State<TestRecipeCreationScreen> {
 
       setState(() {
         _testResults = 'Test passed: Recipe with empty duration created successfully!\n'
-            'Recipe ID: ${createdRecipe.uuid}\n'
-            'Recipe Name: ${createdRecipe.name}';
+            'Recipe ID: ${createdRecipe['id']}\n'
+            'Recipe Name: ${createdRecipe['name']}';
       });
     } catch (e) {
       setState(() {
@@ -146,8 +146,8 @@ class _TestRecipeCreationScreenState extends State<TestRecipeCreationScreen> {
 
       setState(() {
         _testResults = 'Test passed: Recipe with non-numeric duration created successfully!\n'
-            'Recipe ID: ${createdRecipe.uuid}\n'
-            'Recipe Name: ${createdRecipe.name}';
+            'Recipe ID: ${createdRecipe['id']}\n'
+            'Recipe Name: ${createdRecipe['name']}';
       });
     } catch (e) {
       setState(() {
