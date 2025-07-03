@@ -5,9 +5,9 @@ import 'package:flutter_recipe_app/models/ingredient.dart';
 import 'package:flutter_recipe_app/models/comment.dart';
 import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
 import 'package:flutter_recipe_app/domain/repositories/recipe_repository.dart';
-import 'package:flutter_recipe_app/data/api/api_service.dart';
-import 'package:flutter_recipe_app/data/database/database_service.dart';
-import 'package:flutter_recipe_app/services/connectivity_service.dart';
+import 'package:flutter_recipe_app/services/api/api_service.dart';
+import 'package:flutter_recipe_app/services/database/database_service.dart';
+import 'package:flutter_recipe_app/services/connectivity/connectivity_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 // Mock implementation of ApiService for testing
@@ -44,7 +44,7 @@ class MockApiService extends ApiService {
     };
   }
 
-  @override
+  // This method is not in the ApiService interface
   Future<List<Recipe>> getRecipes() async {
     // Return a list with one mock recipe
     return [
@@ -72,13 +72,13 @@ class MockApiService extends ApiService {
     ];
   }
 
-  @override
+  // This method is not in the ApiService interface
   Future<bool> toggleFavorite(String recipeId, bool isFavorite) async {
     // Simulate successful toggle
     return true;
   }
 
-  @override
+  // This method is not in the ApiService interface
   Future<bool> updateStep(String recipeId, int stepId, bool isCompleted) async {
     // Simulate successful update
     return true;
@@ -257,6 +257,56 @@ class MockDatabaseService implements DatabaseService {
     }
     return false;
   }
+
+  @override
+  Future<void> clearDatabase() async {
+    // Mock implementation
+    _recipes.clear();
+  }
+
+  @override
+  Future<void> updateFavoritesOrder(List<String> recipeIds) async {
+    // Mock implementation - no need to do anything in the mock
+  }
+
+  @override
+  Future<void> updateStepCompletion(String recipeId, int stepId, bool isCompleted) async {
+    // Mock implementation
+    if (_recipes.containsKey(recipeId)) {
+      final recipe = _recipes[recipeId]!;
+      final updatedSteps = List<RecipeStep>.from(recipe.steps);
+
+      // Find the step with the given ID and update its completion status
+      for (int i = 0; i < updatedSteps.length; i++) {
+        if (updatedSteps[i].id == stepId) {
+          updatedSteps[i] = RecipeStep(
+            id: updatedSteps[i].id,
+            name: updatedSteps[i].name,
+            duration: updatedSteps[i].duration,
+            isCompleted: isCompleted,
+          );
+          break;
+        }
+      }
+
+      // Update the recipe with the updated steps
+      _recipes[recipeId] = Recipe(
+        uuid: recipe.uuid,
+        name: recipe.name,
+        images: recipe.images,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        difficulty: recipe.difficulty,
+        duration: recipe.duration,
+        rating: recipe.rating,
+        tags: recipe.tags,
+        ingredients: recipe.ingredients,
+        steps: updatedSteps,
+        isFavorite: recipe.isFavorite,
+        comments: recipe.comments,
+      );
+    }
+  }
 }
 
 // Mock implementation of ConnectivityService for testing
@@ -271,7 +321,7 @@ class MockConnectivityService extends ConnectivityService {
   }
 
   @override
-  Stream<ConnectivityResult> get connectivityStream => 
+  Stream<ConnectivityResult> get connectivityStream =>
       Stream.value(_isConnected ? ConnectivityResult.wifi : ConnectivityResult.none);
 }
 

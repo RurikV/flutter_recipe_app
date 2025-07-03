@@ -3,7 +3,7 @@ import 'package:flutter_recipe_app/models/recipe.dart' as app_model;
 import 'package:flutter_recipe_app/models/recipe_step.dart' as app_model;
 import 'package:flutter_recipe_app/models/ingredient.dart' as app_model;
 import 'package:flutter_recipe_app/models/comment.dart' as app_model;
-import 'package:flutter_recipe_app/data/database/database_service.dart';
+import 'package:flutter_recipe_app/services/database/database_service.dart';
 
 // Mock implementation of DatabaseService for testing
 class MockDatabaseService implements DatabaseService {
@@ -63,7 +63,7 @@ class MockDatabaseService implements DatabaseService {
     return false;
   }
 
-  @override
+  // This method is not in the DatabaseService interface
   Future<void> close() async {
     // No need to do anything in the mock
   }
@@ -74,7 +74,7 @@ class MockDatabaseService implements DatabaseService {
     return null;
   }
 
-  @override
+  // This method is not in the DatabaseService interface
   Future<bool> updateStepStatus(int stepId, bool isCompleted) async {
     // Mock implementation
     return false;
@@ -86,13 +86,13 @@ class MockDatabaseService implements DatabaseService {
     await saveRecipe(recipe);
   }
 
-  @override
+  // This method is not in the DatabaseService interface
   Future<List<String>> getAvailableIngredients() async {
     // Mock implementation
     return ['Ingredient 1', 'Ingredient 2', 'Ingredient 3'];
   }
 
-  @override
+  // This method is not in the DatabaseService interface
   Future<List<app_model.Ingredient>> getAllIngredients() async {
     // Mock implementation
     return [
@@ -102,7 +102,7 @@ class MockDatabaseService implements DatabaseService {
     ];
   }
 
-  @override
+  // This method is not in the DatabaseService interface
   Future<List<String>> getAvailableUnits() async {
     // Mock implementation
     return ['g', 'kg', 'ml', 'l', 'pcs'];
@@ -149,6 +149,56 @@ class MockDatabaseService implements DatabaseService {
       return _recipes[recipeId]!.isFavorite;
     }
     return false;
+  }
+
+  @override
+  Future<void> clearDatabase() async {
+    // Mock implementation
+    _recipes.clear();
+  }
+
+  @override
+  Future<void> updateFavoritesOrder(List<String> recipeIds) async {
+    // Mock implementation - no need to do anything in the mock
+  }
+
+  @override
+  Future<void> updateStepCompletion(String recipeId, int stepId, bool isCompleted) async {
+    // Mock implementation
+    if (_recipes.containsKey(recipeId)) {
+      final recipe = _recipes[recipeId]!;
+      final updatedSteps = List<app_model.RecipeStep>.from(recipe.steps);
+
+      // Find the step with the given ID and update its completion status
+      for (int i = 0; i < updatedSteps.length; i++) {
+        if (updatedSteps[i].id == stepId) {
+          updatedSteps[i] = app_model.RecipeStep(
+            id: updatedSteps[i].id,
+            name: updatedSteps[i].name,
+            duration: updatedSteps[i].duration,
+            isCompleted: isCompleted,
+          );
+          break;
+        }
+      }
+
+      // Update the recipe with the updated steps
+      _recipes[recipeId] = app_model.Recipe(
+        uuid: recipe.uuid,
+        name: recipe.name,
+        images: recipe.images,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        difficulty: recipe.difficulty,
+        duration: recipe.duration,
+        rating: recipe.rating,
+        tags: recipe.tags,
+        ingredients: recipe.ingredients,
+        steps: updatedSteps,
+        isFavorite: recipe.isFavorite,
+        comments: recipe.comments,
+      );
+    }
   }
 }
 
