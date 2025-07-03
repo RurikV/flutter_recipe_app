@@ -1,22 +1,27 @@
 import '../../domain/repositories/recipe_repository.dart';
 import '../../models/recipe.dart';
 import '../../models/comment.dart';
-import '../api_service.dart';
-import '../database_service.dart';
-import '../../services/connectivity_service.dart';
+import '../../domain/services/api_service.dart';
+import '../../domain/services/database_service.dart';
+import '../../domain/services/connectivity_service.dart';
 
 class RecipeRepositoryImpl implements RecipeRepository {
   final ApiService _apiService;
+  // Uncommented DatabaseService to fix build errors
   final DatabaseService _databaseService;
   final ConnectivityService _connectivityService;
 
+  // In-memory cache for recipes
+  final List<Recipe> _cachedRecipes = [];
+  final List<Recipe> _cachedFavoriteRecipes = [];
+
   RecipeRepositoryImpl({
-    ApiService? apiService,
-    DatabaseService? databaseService,
-    ConnectivityService? connectivityService,
-  })  : _apiService = apiService ?? ApiService(),
-        _databaseService = databaseService ?? DatabaseService(),
-        _connectivityService = connectivityService ?? ConnectivityService();
+    required ApiService apiService,
+    required DatabaseService databaseService,
+    required ConnectivityService connectivityService,
+  })  : _apiService = apiService,
+        _databaseService = databaseService,
+        _connectivityService = connectivityService;
 
   @override
   Future<List<Recipe>> getRecipes() async {
@@ -141,25 +146,22 @@ class RecipeRepositoryImpl implements RecipeRepository {
             recipes.add(Recipe.fromJson(recipeData));
           }
 
-          // Save recipes to the local database
-          for (var recipe in recipes) {
-            await _databaseService.saveRecipe(recipe);
-          }
+          // Save recipes to the in-memory cache
+          _cachedRecipes.clear();
+          _cachedRecipes.addAll(recipes);
 
           return recipes;
         } catch (apiError) {
-          // If API call fails, try to get recipes from the local database
-          final dbRecipes = await _databaseService.getAllRecipes();
-          if (dbRecipes.isNotEmpty) {
-            return dbRecipes;
+          // If API call fails, try to get recipes from the in-memory cache
+          if (_cachedRecipes.isNotEmpty) {
+            return _cachedRecipes;
           }
-          // If database is empty, rethrow the API error
+          // If cache is empty, rethrow the API error
           rethrow;
         }
       } else {
-        // If no internet connection, get recipes from the local database
-        final dbRecipes = await _databaseService.getAllRecipes();
-        return dbRecipes;
+        // If no internet connection, get recipes from the in-memory cache
+        return _cachedRecipes;
       }
     } catch (e) {
       // Handle any other errors
@@ -170,7 +172,8 @@ class RecipeRepositoryImpl implements RecipeRepository {
   @override
   Future<List<Recipe>> getFavoriteRecipes() async {
     try {
-      return await _databaseService.getFavoriteRecipes();
+      // Return recipes from the in-memory cache that are marked as favorites
+      return _cachedRecipes.where((recipe) => recipe.isFavorite).toList();
     } catch (e) {
       throw Exception('Failed to get favorite recipes: $e');
     }
@@ -179,11 +182,13 @@ class RecipeRepositoryImpl implements RecipeRepository {
   @override
   Future<Recipe?> getRecipeByUuid(String uuid) async {
     try {
-      // First try to get from local database
-      final localRecipe = await _databaseService.getRecipeByUuid(uuid);
-      if (localRecipe != null) {
-        return localRecipe;
-      }
+      // First try to get from in-memory cache
+      final cachedRecipe = _cachedRecipes.firstWhere(
+        (recipe) => recipe.uuid == uuid,
+        orElse: () => throw Exception('Recipe not found in cache'),
+      );
+      return cachedRecipe;
+    } catch (cacheError) {
 
       // If not found locally and connected, try to get from API
       final isConnected = await _connectivityService.isConnected();
@@ -297,15 +302,31 @@ class RecipeRepositoryImpl implements RecipeRepository {
       }
 
       return null;
-    } catch (e) {
-      throw Exception('Failed to get recipe by UUID: $e');
     }
   }
 
   @override
   Future<void> saveRecipe(Recipe recipe) async {
     try {
-      await _databaseService.saveRecipe(recipe);
+      // Update in-memory cache
+      final index = _cachedRecipes.indexWhere((r) => r.uuid == recipe.uuid);
+      if (index >= 0) {
+        _cachedRecipes[index] = recipe;
+      } else {
+        _cachedRecipes.add(recipe);
+      }
+
+      // Update favorites cache if needed
+      if (recipe.isFavorite) {
+        final favoriteIndex = _cachedFavoriteRecipes.indexWhere((r) => r.uuid == recipe.uuid);
+        if (favoriteIndex >= 0) {
+          _cachedFavoriteRecipes[favoriteIndex] = recipe;
+        } else {
+          _cachedFavoriteRecipes.add(recipe);
+        }
+      } else {
+        _cachedFavoriteRecipes.removeWhere((r) => r.uuid == recipe.uuid);
+      }
 
       // If connected, also save to API
       final isConnected = await _connectivityService.isConnected();
@@ -482,7 +503,9 @@ class RecipeRepositoryImpl implements RecipeRepository {
   @override
   Future<void> deleteRecipe(String uuid) async {
     try {
-      await _databaseService.deleteRecipe(uuid);
+      // Delete from in-memory cache
+      _cachedRecipes.removeWhere((r) => r.uuid == uuid);
+      _cachedFavoriteRecipes.removeWhere((r) => r.uuid == uuid);
 
       // If connected, also delete from API
       final isConnected = await _connectivityService.isConnected();
@@ -502,7 +525,34 @@ class RecipeRepositoryImpl implements RecipeRepository {
   @override
   Future<void> toggleFavorite(String uuid) async {
     try {
-      await _databaseService.toggleFavorite(uuid);
+      // Toggle favorite status in in-memory cache
+      final index = _cachedRecipes.indexWhere((r) => r.uuid == uuid);
+      if (index >= 0) {
+        final recipe = _cachedRecipes[index];
+        final updatedRecipe = Recipe(
+          uuid: recipe.uuid,
+          name: recipe.name,
+          images: recipe.images,
+          description: recipe.description,
+          instructions: recipe.instructions,
+          difficulty: recipe.difficulty,
+          duration: recipe.duration,
+          rating: recipe.rating,
+          tags: recipe.tags,
+          ingredients: recipe.ingredients,
+          steps: recipe.steps,
+          isFavorite: !recipe.isFavorite,
+          comments: recipe.comments,
+        );
+        _cachedRecipes[index] = updatedRecipe;
+
+        // Update favorites cache
+        if (updatedRecipe.isFavorite) {
+          _cachedFavoriteRecipes.add(updatedRecipe);
+        } else {
+          _cachedFavoriteRecipes.removeWhere((r) => r.uuid == uuid);
+        }
+      }
     } catch (e) {
       throw Exception('Failed to toggle favorite status: $e');
     }
@@ -518,26 +568,52 @@ class RecipeRepositoryImpl implements RecipeRepository {
           // Get ingredients data from API
           final ingredientsData = await _apiService.getIngredientsData();
 
-          // Extract ingredient names
-          final List<String> ingredientNames = [];
+          // Extract ingredient names and deduplicate using a Set
+          final Set<String> ingredientNamesSet = {};
           for (final ingredient in ingredientsData) {
             if (ingredient['name'] != null) {
-              ingredientNames.add(ingredient['name'] as String);
+              ingredientNamesSet.add(ingredient['name'] as String);
             }
           }
 
-          return ingredientNames;
+          return ingredientNamesSet.toList();
         } catch (e) {
-          // API call failed, use local data
-          return await _databaseService.getAvailableIngredients();
+          // API call failed, use in-memory cache
+          return _getIngredientsFromCache();
         }
       } else {
-        // No internet connection, use local data
-        return await _databaseService.getAvailableIngredients();
+        // No internet connection, use in-memory cache
+        return _getIngredientsFromCache();
       }
     } catch (e) {
       throw Exception('Failed to get available ingredients: $e');
     }
+  }
+
+  // Helper method to extract ingredient names from in-memory cache
+  List<String> _getIngredientsFromCache() {
+    final Set<String> ingredientNames = {};
+    for (final recipe in _cachedRecipes) {
+      for (final ingredient in recipe.ingredients) {
+        if (ingredient.name.isNotEmpty) {
+          ingredientNames.add(ingredient.name);
+        }
+      }
+    }
+    return ingredientNames.toList();
+  }
+
+  // Helper method to extract unit names from in-memory cache
+  List<String> _getUnitsFromCache() {
+    final Set<String> unitNames = {};
+    for (final recipe in _cachedRecipes) {
+      for (final ingredient in recipe.ingredients) {
+        if (ingredient.unit.isNotEmpty) {
+          unitNames.add(ingredient.unit);
+        }
+      }
+    }
+    return unitNames.toList();
   }
 
   @override
@@ -550,22 +626,22 @@ class RecipeRepositoryImpl implements RecipeRepository {
           // Get measure units data from API
           final unitsData = await _apiService.getMeasureUnitsData();
 
-          // Extract unit names
-          final List<String> unitNames = [];
+          // Extract unit names and deduplicate using a Set
+          final Set<String> unitNamesSet = {};
           for (final unit in unitsData) {
             if (unit['name'] != null) {
-              unitNames.add(unit['name'] as String);
+              unitNamesSet.add(unit['name'] as String);
             }
           }
 
-          return unitNames;
+          return unitNamesSet.toList();
         } catch (e) {
-          // API call failed, use local data
-          return await _databaseService.getAvailableUnits();
+          // API call failed, use in-memory cache
+          return _getUnitsFromCache();
         }
       } else {
-        // No internet connection, use local data
-        return await _databaseService.getAvailableUnits();
+        // No internet connection, use in-memory cache
+        return _getUnitsFromCache();
       }
     } catch (e) {
       throw Exception('Failed to get available units: $e');

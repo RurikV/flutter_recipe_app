@@ -6,9 +6,25 @@ import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:get_it/get_it.dart';
-import 'package:flutter_recipe_app/database/app_database.dart';
-import 'package:flutter_recipe_app/services/object_detection_service.dart';
-import 'package:flutter_recipe_app/models/recipe_image.dart';
+import 'package:flutter_recipe_app/services/classification/object_detection_service.dart';
+import 'package:flutter_recipe_app/models/recipe_image.dart' as model;
+
+// Simple photo model for temporary use
+class SimplePhoto {
+  final int id;
+  final String recipeUuid;
+  final String photoName;
+  final String detectedInfo;
+  final Uint8List pict;
+
+  SimplePhoto({
+    required this.id,
+    required this.recipeUuid,
+    required this.photoName,
+    required this.detectedInfo,
+    required this.pict,
+  });
+}
 
 class GalleryScreen extends StatefulWidget {
   final String recipeUuid;
@@ -26,34 +42,32 @@ class GalleryScreen extends StatefulWidget {
 
 class GalleryScreenState extends State<GalleryScreen> {
   final GetIt _getIt = GetIt.instance;
-  late final AppDatabase _db;
   late final ObjectDetectionService _objectDetectionService;
-  List<Photo> _photos = [];
+  final List<SimplePhoto> _photos = [];
   bool _isLoading = false;
+  int _nextPhotoId = 1; // Simple counter for photo IDs
 
   @override
   void initState() {
     super.initState();
-    _db = _getIt<AppDatabase>();
+    // Get the object detection service from GetIt
     _objectDetectionService = _getIt<ObjectDetectionService>();
-    // No need to call initialize() as it's already initialized in main.dart
-    _loadPhotos();
+    // No need to load photos as we're not using the database
   }
 
   @override
   void dispose() {
-    // No need to call dispose() on _objectDetectionService as it's a singleton
     super.dispose();
   }
 
   // Format detected objects into a readable string
-  String _formatDetectedObjects(List<DetectedObject> objects) {
+  String _formatDetectedObjects(List<ServiceDetectedObject> objects) {
     if (objects.isEmpty) {
       return 'No objects detected';
     }
 
     // Sort by confidence (highest first)
-    final sortedObjects = List<DetectedObject>.from(objects)
+    final sortedObjects = List<ServiceDetectedObject>.from(objects)
       ..sort((a, b) => b.confidence.compareTo(a.confidence));
 
     // Take top 3 objects
@@ -63,26 +77,6 @@ class GalleryScreenState extends State<GalleryScreen> {
     return topObjects.map((obj) => 
       '${obj.label} (${(obj.confidence * 100).toStringAsFixed(1)}%)'
     ).join(', ');
-  }
-
-  Future<void> _loadPhotos() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final photos = await _db.getPhotosForRecipe(widget.recipeUuid);
-      setState(() {
-        _photos = photos;
-      });
-    } catch (e) {
-      print('Error loading photos: $e');
-      _showSnackBar('Error loading photos: $e');
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -109,39 +103,39 @@ class GalleryScreenState extends State<GalleryScreen> {
       await tempFile.writeAsBytes(imageBytes);
 
       // Detect objects in the image
-      final detectedObjects = await _objectDetectionService.detectObjects(tempFile.path);
+      final recipeImage = model.RecipeImage(path: tempFile.path);
+      final serviceDetectedObjects = await _objectDetectionService.detectObjects(recipeImage);
 
       // Convert detected objects to a string representation
-      final detectedInfo = _formatDetectedObjects(detectedObjects);
+      final detectedInfo = _formatDetectedObjects(serviceDetectedObjects);
 
-      // Save to database
-      final photo = PhotosCompanion.insert(
+      // Create a simple photo object
+      final photo = SimplePhoto(
+        id: _nextPhotoId++,
         recipeUuid: widget.recipeUuid,
         photoName: image.name,
         detectedInfo: detectedInfo,
         pict: imageBytes,
       );
 
-      await _db.insertPhoto(photo);
-      await _loadPhotos();
+      // Add to our local list
+      setState(() {
+        _photos.add(photo);
+        _isLoading = false;
+      });
     } catch (e) {
       print('Error processing image: $e');
       _showSnackBar('Error processing image: $e');
-    } finally {
       setState(() {
         _isLoading = false;
       });
     }
   }
 
-  Future<void> _deletePhoto(int photoId) async {
-    try {
-      await _db.deletePhoto(photoId);
-      await _loadPhotos();
-    } catch (e) {
-      print('Error deleting photo: $e');
-      _showSnackBar('Error deleting photo: $e');
-    }
+  void _deletePhoto(int photoId) {
+    setState(() {
+      _photos.removeWhere((photo) => photo.id == photoId);
+    });
   }
 
   void _showSnackBar(String message) {

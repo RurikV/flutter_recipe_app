@@ -3,36 +3,30 @@ import 'package:flutter_recipe_app/models/recipe.dart' as app_model;
 import 'package:flutter_recipe_app/models/recipe_step.dart' as app_model;
 import 'package:flutter_recipe_app/models/ingredient.dart' as app_model;
 import 'package:flutter_recipe_app/models/comment.dart' as app_model;
-import 'package:flutter_recipe_app/data/database_service.dart';
 
-// Mock implementation of DatabaseService for testing
-class MockDatabaseService implements DatabaseService {
+// Mock implementation for database service testing
+class MockDatabaseService {
   final Map<String, app_model.Recipe> _recipes = {};
 
-  @override
   Future<List<app_model.Recipe>> getAllRecipes() async {
     return _recipes.values.toList();
   }
 
-  @override
   Future<List<app_model.Recipe>> getFavoriteRecipes() async {
     return _recipes.values.where((recipe) => recipe.isFavorite).toList();
   }
 
-  @override
   Future<app_model.Recipe?> getRecipeByUuid(String uuid) async {
     return _recipes[uuid];
   }
 
-  @override
   Future<void> saveRecipe(app_model.Recipe recipe) async {
     _recipes[recipe.uuid] = recipe;
   }
 
-  @override
-  Future<bool> toggleFavorite(String recipeId) async {
-    if (_recipes.containsKey(recipeId)) {
-      final recipe = _recipes[recipeId]!;
+  Future<bool> toggleFavorite(String uuid) async {
+    if (_recipes.containsKey(uuid)) {
+      final recipe = _recipes[uuid]!;
       final updatedRecipe = app_model.Recipe(
         uuid: recipe.uuid,
         name: recipe.name,
@@ -48,57 +42,49 @@ class MockDatabaseService implements DatabaseService {
         isFavorite: !recipe.isFavorite,
         comments: recipe.comments,
       );
-      _recipes[recipeId] = updatedRecipe;
+      _recipes[uuid] = updatedRecipe;
       return true;
     }
     return false;
   }
 
-  @override
-  Future<bool> deleteRecipe(String recipeId) async {
-    if (_recipes.containsKey(recipeId)) {
-      _recipes.remove(recipeId);
+  Future<bool> deleteRecipe(String uuid) async {
+    if (_recipes.containsKey(uuid)) {
+      _recipes.remove(uuid);
       return true;
     }
     return false;
   }
 
-  @override
+  // Helper method for tests
   Future<void> close() async {
     // No need to do anything in the mock
   }
 
-  @override
-  Future<int?> getStepId(String recipeUuid, int stepIndex) async {
-    // Mock implementation
-    return null;
-  }
-
-  @override
-  Future<bool> updateStepStatus(int stepId, bool isCompleted) async {
-    // Mock implementation
-    return false;
-  }
-
-  @override
   Future<void> updateRecipe(app_model.Recipe recipe) async {
     // Mock implementation - reuse saveRecipe
     await saveRecipe(recipe);
   }
 
-  @override
   Future<List<String>> getAvailableIngredients() async {
     // Mock implementation
     return ['Ingredient 1', 'Ingredient 2', 'Ingredient 3'];
   }
 
-  @override
+  Future<List<app_model.Ingredient>> getAllIngredients() async {
+    // Mock implementation
+    return [
+      app_model.Ingredient.simple(name: 'Ingredient 1', quantity: '100', unit: 'g'),
+      app_model.Ingredient.simple(name: 'Ingredient 2', quantity: '200', unit: 'ml'),
+      app_model.Ingredient.simple(name: 'Ingredient 3', quantity: '3', unit: 'pcs'),
+    ];
+  }
+
   Future<List<String>> getAvailableUnits() async {
     // Mock implementation
     return ['g', 'kg', 'ml', 'l', 'pcs'];
   }
 
-  @override
   Future<void> addComment(String recipeUuid, app_model.Comment comment) async {
     // Mock implementation
     if (_recipes.containsKey(recipeUuid)) {
@@ -123,7 +109,6 @@ class MockDatabaseService implements DatabaseService {
     }
   }
 
-  @override
   Future<List<app_model.Comment>> getComments(String recipeUuid) async {
     // Mock implementation
     if (_recipes.containsKey(recipeUuid)) {
@@ -132,13 +117,62 @@ class MockDatabaseService implements DatabaseService {
     return [];
   }
 
-  @override
   Future<bool> isInFavorites(String recipeId) async {
     // Mock implementation
     if (_recipes.containsKey(recipeId)) {
       return _recipes[recipeId]!.isFavorite;
     }
     return false;
+  }
+
+  // Helper method for tests
+  Future<void> clearDatabase() async {
+    // Mock implementation
+    _recipes.clear();
+  }
+
+  // Helper method for tests
+  Future<void> updateFavoritesOrder(List<String> recipeIds) async {
+    // Mock implementation - no need to do anything in the mock
+  }
+
+  // Helper method for tests
+  Future<void> updateStepCompletion(String recipeId, int stepId, bool isCompleted) async {
+    // Mock implementation
+    if (_recipes.containsKey(recipeId)) {
+      final recipe = _recipes[recipeId]!;
+      final updatedSteps = List<app_model.RecipeStep>.from(recipe.steps);
+
+      // Find the step with the given ID and update its completion status
+      for (int i = 0; i < updatedSteps.length; i++) {
+        if (updatedSteps[i].id == stepId) {
+          updatedSteps[i] = app_model.RecipeStep(
+            id: updatedSteps[i].id,
+            name: updatedSteps[i].name,
+            duration: updatedSteps[i].duration,
+            isCompleted: isCompleted,
+          );
+          break;
+        }
+      }
+
+      // Update the recipe with the updated steps
+      _recipes[recipeId] = app_model.Recipe(
+        uuid: recipe.uuid,
+        name: recipe.name,
+        images: recipe.images,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        difficulty: recipe.difficulty,
+        duration: recipe.duration,
+        rating: recipe.rating,
+        tags: recipe.tags,
+        ingredients: recipe.ingredients,
+        steps: updatedSteps,
+        isFavorite: recipe.isFavorite,
+        comments: recipe.comments,
+      );
+    }
   }
 }
 

@@ -4,6 +4,7 @@ import 'package:flutter_recipe_app/redux/actions.dart';
 import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
 import 'package:flutter_recipe_app/models/comment.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
+import 'package:get_it/get_it.dart';
 
 // Helper method to create a default recipe
 Recipe _createDefaultRecipe(String uuid) {
@@ -45,7 +46,7 @@ Middleware<AppState> _createLoadRecipesMiddleware() {
       next(action); // Let the reducer know we're loading
 
       try {
-        final RecipeManager recipeManager = RecipeManager();
+        final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
         final recipes = await recipeManager.getRecipes();
         store.dispatch(RecipesLoadedAction(recipes));
       } catch (e) {
@@ -71,7 +72,7 @@ Middleware<AppState> _createLoadFavoriteRecipesMiddleware() {
       }
 
       try {
-        final RecipeManager recipeManager = RecipeManager();
+        final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
         final favoriteRecipes = await recipeManager.getFavoriteRecipes();
         store.dispatch(FavoriteRecipesLoadedAction(favoriteRecipes));
       } catch (e) {
@@ -104,7 +105,7 @@ Middleware<AppState> _createToggleFavoriteMiddleware() {
         orElse: () => _createDefaultRecipe(action.recipeId),
       );
 
-      final RecipeManager recipeManager = RecipeManager();
+      final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
       final success = await recipeManager.toggleFavorite(action.recipeId);
 
       if (success) {
@@ -134,7 +135,7 @@ Middleware<AppState> _createAddCommentMiddleware() {
         date: DateTime.now().toString().substring(0, 10), // Format: YYYY-MM-DD
       );
 
-      final RecipeManager recipeManager = RecipeManager();
+      final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
       final success = await recipeManager.addComment(action.recipeId, comment);
 
       if (success) {
@@ -151,7 +152,7 @@ Middleware<AppState> _createAddCommentMiddleware() {
 Middleware<AppState> _createUpdateStepStatusMiddleware() {
   return (Store<AppState> store, dynamic action, NextDispatcher next) async {
     if (action is UpdateStepStatusAction) {
-      final RecipeManager recipeManager = RecipeManager();
+      final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
       final success = await recipeManager.updateStepStatus(
         action.recipeId,
         action.stepIndex,

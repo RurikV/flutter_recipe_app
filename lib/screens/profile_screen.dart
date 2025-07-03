@@ -6,7 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../presentation/providers/language_provider.dart';
 import '../redux/app_state.dart';
 import '../redux/actions.dart';
-import '../services/auth_service.dart';
+import '../services/auth/auth_service.dart';
 import '../services/bluetooth_service.dart';
 import '../plugins/bluetooth_le_scanner/bluetooth_le_scanner.dart';
 import '../models/user.dart';
@@ -99,7 +99,7 @@ class ProfileScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(5),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey.withOpacity(0.1),
+                                  color: Colors.grey.withAlpha(26), // 0.1 opacity = 26 alpha (255 * 0.1)
                                   spreadRadius: 2,
                                   blurRadius: 4,
                                   offset: const Offset(0, 4),
@@ -148,7 +148,7 @@ class ProfileScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(5),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withOpacity(0.1),
+                                    color: Colors.grey.withAlpha(26), // 0.1 opacity = 26 alpha (255 * 0.1)
                                     spreadRadius: 2,
                                     blurRadius: 4,
                                     offset: const Offset(0, 4),

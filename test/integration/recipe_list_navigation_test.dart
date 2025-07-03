@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
 import 'package:flutter_recipe_app/models/ingredient.dart';
@@ -10,19 +11,30 @@ import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/reducers.dart';
 import 'package:flutter_recipe_app/l10n/app_localizations.dart';
 import 'package:flutter_recipe_app/widgets/recipe/duration_display.dart';
-import '../service_locator_test.dart';
+import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
+import 'package:flutter_recipe_app/services/classification/object_detection_service.dart';
+import '../service_locator_test.dart' as test_locator;
+import 'package:flutter_recipe_app/data/usecases/recipe_manager_impl.dart';
 
 void main() {
   // Initialize the service locator for tests
   setUpAll(() {
-    initializeTestServiceLocator();
+    test_locator.initializeTestServiceLocator();
   });
 
   group('Recipe List Navigation Integration Tests', () {
     late Store<AppState> store;
     late List<Recipe> testRecipes;
+    late RecipeManager recipeManager;
+    late ObjectDetectionService objectDetectionService;
 
     setUp(() {
+      // Create RecipeManager instance
+      recipeManager = RecipeManagerImpl(
+        recipeRepository: test_locator.MockRecipeRepository(),
+      );
+      objectDetectionService = test_locator.MockObjectDetectionService();
+
       // Create test recipes
       testRecipes = [
         Recipe(
@@ -97,14 +109,20 @@ void main() {
     });
 
     testWidgets('Navigate from recipe list to recipe detail and toggle favorite', (WidgetTester tester) async {
-      // Build the RecipeListScreen widget wrapped with StoreProvider
+      // Build the RecipeListScreen widget wrapped with StoreProvider and Providers for RecipeManager and ObjectDetectionService
       await tester.pumpWidget(
-        StoreProvider<AppState>(
-          store: store,
-          child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: const RecipeListScreen(loadRecipesOnInit: false),
+        MultiProvider(
+          providers: [
+            Provider<RecipeManager>(create: (context) => recipeManager),
+            Provider<ObjectDetectionService>(create: (context) => objectDetectionService),
+          ],
+          child: StoreProvider<AppState>(
+            store: store,
+            child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const RecipeListScreen(loadRecipesOnInit: false),
+            ),
           ),
         ),
       );

@@ -4,35 +4,47 @@ import 'package:flutter_recipe_app/models/recipe_step.dart';
 import 'package:flutter_recipe_app/models/ingredient.dart';
 import 'package:flutter_recipe_app/models/comment.dart';
 import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
+import 'package:flutter_recipe_app/data/usecases/recipe_manager_impl.dart';
 import 'package:flutter_recipe_app/domain/repositories/recipe_repository.dart';
-import 'package:flutter_recipe_app/data/api_service.dart';
-import 'package:flutter_recipe_app/data/database_service.dart';
-import 'package:flutter_recipe_app/services/connectivity_service.dart';
+import 'package:flutter_recipe_app/domain/services/api_service.dart';
+import 'package:flutter_recipe_app/domain/services/connectivity_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 // Mock implementation of ApiService for testing
-class MockApiService extends ApiService {
+class MockApiService implements ApiService {
   @override
-  Future<Recipe> createRecipe(Recipe recipe) async {
-    // Simulate successful recipe creation
-    return Recipe(
-      uuid: 'mock-uuid',
-      name: recipe.name,
-      images: recipe.images,
-      description: recipe.description,
-      instructions: recipe.instructions,
-      difficulty: recipe.difficulty,
-      duration: recipe.duration,
-      rating: recipe.rating,
-      tags: recipe.tags,
-      ingredients: recipe.ingredients,
-      steps: recipe.steps,
-      isFavorite: recipe.isFavorite,
-      comments: recipe.comments,
-    );
+  Future<Map<String, dynamic>> createRecipe(Recipe recipe) async {
+    // Simulate successful recipe creation by returning a Map<String, dynamic>
+    return {
+      'id': 'mock-uuid',
+      'name': recipe.name,
+      'photo': recipe.images,
+      'description': recipe.description,
+      'instructions': recipe.instructions,
+      'difficulty': recipe.difficulty,
+      'duration': recipe.duration,
+      'rating': recipe.rating,
+      'tags': recipe.tags.map((tag) => {'name': tag}).toList(),
+      'ingredients': recipe.ingredients.map((ingredient) => {
+        'name': ingredient.name,
+        'quantity': ingredient.quantity,
+        'unit': ingredient.unit,
+      }).toList(),
+      'steps': recipe.steps.map((step) => {
+        'id': step.id,
+        'name': step.name,
+        'duration': step.duration,
+      }).toList(),
+      'isFavorite': recipe.isFavorite,
+      'comments': recipe.comments.map((comment) => {
+        'text': comment.text,
+        'author': comment.authorName,
+        'date': comment.date,
+      }).toList(),
+    };
   }
 
-  @override
+  // Helper method for tests
   Future<List<Recipe>> getRecipes() async {
     // Return a list with one mock recipe
     return [
@@ -60,24 +72,197 @@ class MockApiService extends ApiService {
     ];
   }
 
-  @override
+  // Helper method for tests
   Future<bool> toggleFavorite(String recipeId, bool isFavorite) async {
     // Simulate successful toggle
     return true;
   }
 
-  @override
+  // Helper method for tests
   Future<bool> updateStep(String recipeId, int stepId, bool isCompleted) async {
     // Simulate successful update
     return true;
   }
+
+  @override
+  Future<List<dynamic>> getRecipesData() async {
+    // Mock implementation
+    return [
+      {
+        'id': 'mock-uuid-1',
+        'name': 'Mock Recipe 1',
+        'photo': 'https://via.placeholder.com/400x300?text=Mock+Recipe',
+        'description': 'Mock description',
+        'instructions': 'Mock instructions',
+        'difficulty': 2,
+        'duration': '30 min',
+        'rating': 0,
+      }
+    ];
+  }
+
+  @override
+  Future<Map<String, dynamic>> getRecipeData(String id) async {
+    // Mock implementation
+    return {
+      'id': id,
+      'name': 'Mock Recipe',
+      'photo': 'https://via.placeholder.com/400x300?text=Mock+Recipe',
+      'description': 'Mock description',
+      'instructions': 'Mock instructions',
+      'difficulty': 2,
+      'duration': '30 min',
+      'rating': 0,
+    };
+  }
+
+  @override
+  Future<List<dynamic>> getIngredientsData() async {
+    // Mock implementation
+    return [
+      {'id': 1, 'name': 'Ingredient 1'},
+      {'id': 2, 'name': 'Ingredient 2'},
+    ];
+  }
+
+  @override
+  Future<List<dynamic>> getMeasureUnitsData() async {
+    // Mock implementation
+    return [
+      {'id': 1, 'name': 'g'},
+      {'id': 2, 'name': 'ml'},
+    ];
+  }
+
+  @override
+  Future<List<dynamic>> getRecipeIngredientsData() async {
+    // Mock implementation
+    return [
+      {'recipe_id': 'mock-uuid-1', 'ingredient_id': 1, 'quantity': '100', 'unit': 'g'},
+      {'recipe_id': 'mock-uuid-1', 'ingredient_id': 2, 'quantity': '200', 'unit': 'ml'},
+    ];
+  }
+
+  @override
+  Future<List<dynamic>> getRecipeStepsData() async {
+    // Mock implementation
+    return [
+      {'id': 1, 'recipe_id': 'mock-uuid-1', 'description': 'Step 1', 'duration': '10'},
+      {'id': 2, 'recipe_id': 'mock-uuid-1', 'description': 'Step 2', 'duration': '15'},
+    ];
+  }
+
+  @override
+  Future<List<dynamic>> getRecipeStepLinksData() async {
+    // Mock implementation
+    return [
+      {'recipe_id': 'mock-uuid-1', 'step_id': 1, 'order': 1},
+      {'recipe_id': 'mock-uuid-1', 'step_id': 2, 'order': 2},
+    ];
+  }
+
+  @override
+  Future<List<dynamic>> getCommentsForRecipe(String recipeId) async {
+    // Mock implementation
+    return [
+      {'id': 1, 'recipe_id': recipeId, 'author': 'User 1', 'text': 'Comment 1', 'date': '2023-01-01'},
+      {'id': 2, 'recipe_id': recipeId, 'author': 'User 2', 'text': 'Comment 2', 'date': '2023-01-02'},
+    ];
+  }
+
+  @override
+  Future<Map<String, dynamic>> addComment(String recipeId, String authorName, String text) async {
+    // Mock implementation
+    return {
+      'id': 3,
+      'recipe_id': recipeId,
+      'author': authorName,
+      'text': text,
+      'date': DateTime.now().toString(),
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateRecipe(String id, Recipe recipe) async {
+    // Mock implementation
+    return {
+      'id': id,
+      'name': recipe.name,
+      'photo': recipe.images,
+      'description': recipe.description,
+      'instructions': recipe.instructions,
+      'difficulty': recipe.difficulty,
+      'duration': recipe.duration,
+      'rating': recipe.rating,
+    };
+  }
+
+  @override
+  Future<void> deleteRecipe(String id) async {
+    // Mock implementation
+  }
+
+  @override
+  Future<Map<String, dynamic>> createRecipeData(Map<String, dynamic> recipeData) async {
+    // Mock implementation
+    return {'id': 'mock-uuid', ...recipeData};
+  }
+
+  @override
+  Future<Map<String, dynamic>> createIngredientData(Map<String, dynamic> ingredientData) async {
+    // Mock implementation
+    return {'id': 3, ...ingredientData};
+  }
+
+  @override
+  Future<Map<String, dynamic>> createRecipeIngredientData(Map<String, dynamic> recipeIngredientData) async {
+    // Mock implementation
+    return {'id': 3, ...recipeIngredientData};
+  }
+
+  @override
+  Future<Map<String, dynamic>> createRecipeStepData(Map<String, dynamic> stepData) async {
+    // Mock implementation
+    return {'id': 3, ...stepData};
+  }
+
+  @override
+  Future<Map<String, dynamic>> createRecipeStepLinkData(Map<String, dynamic> stepLinkData) async {
+    // Mock implementation
+    return {'id': 3, ...stepLinkData};
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateRecipeData(String id, Map<String, dynamic> recipeData) async {
+    // Mock implementation
+    return {'id': id, ...recipeData};
+  }
+
+  @override
+  Future<void> deleteRecipeData(String id) async {
+    // Mock implementation
+  }
+
+  @override
+  Future<Map<String, dynamic>> addCommentData(String recipeId, Map<String, dynamic> commentData) async {
+    // Mock implementation
+    return {'id': 3, 'recipe_id': recipeId, ...commentData};
+  }
+
+  @override
+  Future<List<dynamic>> getCommentsData(String recipeId) async {
+    // Mock implementation
+    return [
+      {'id': 1, 'recipe_id': recipeId, 'author': 'User 1', 'text': 'Comment 1', 'date': '2023-01-01'},
+      {'id': 2, 'recipe_id': recipeId, 'author': 'User 2', 'text': 'Comment 2', 'date': '2023-01-02'},
+    ];
+  }
 }
 
 // Mock implementation of DatabaseService for testing
-class MockDatabaseService implements DatabaseService {
+class MockDatabaseService {
   final Map<String, Recipe> _recipes = {};
 
-  @override
   Future<List<Recipe>> getAllRecipes() async {
     // Return a list with one mock recipe
     return [
@@ -105,7 +290,15 @@ class MockDatabaseService implements DatabaseService {
     ];
   }
 
-  @override
+  Future<List<Ingredient>> getAllIngredients() async {
+    // Mock implementation
+    return [
+      Ingredient.simple(name: 'Ingredient 1', quantity: '100', unit: 'g'),
+      Ingredient.simple(name: 'Ingredient 2', quantity: '200', unit: 'ml'),
+      Ingredient.simple(name: 'Ingredient 3', quantity: '3', unit: 'pcs'),
+    ];
+  }
+
   Future<List<Recipe>> getFavoriteRecipes() async {
     // Return a list with one mock favorite recipe
     return [
@@ -133,35 +326,29 @@ class MockDatabaseService implements DatabaseService {
     ];
   }
 
-  @override
   Future<bool> toggleFavorite(String recipeId) async {
     // Simulate successful toggle
     return true;
   }
 
-  @override
   Future<bool> updateStepStatus(int stepId, bool isCompleted) async {
     // Simulate successful update
     return true;
   }
 
-  @override
   Future<void> saveRecipe(Recipe recipe) async {
     // Simulate successful save
     _recipes[recipe.uuid] = recipe;
   }
 
-  @override
   Future<Recipe?> getRecipeByUuid(String uuid) async {
     return _recipes[uuid];
   }
 
-  @override
   Future<int?> getStepId(String recipeUuid, int stepIndex) async {
     return 1; // Mock step ID
   }
 
-  @override
   Future<bool> deleteRecipe(String recipeId) async {
     if (_recipes.containsKey(recipeId)) {
       _recipes.remove(recipeId);
@@ -170,30 +357,25 @@ class MockDatabaseService implements DatabaseService {
     return false;
   }
 
-  @override
   Future<void> close() async {
     // No need to do anything in the mock
   }
 
-  @override
   Future<void> updateRecipe(Recipe recipe) async {
     // Mock implementation - reuse saveRecipe
     await saveRecipe(recipe);
   }
 
-  @override
   Future<List<String>> getAvailableIngredients() async {
     // Mock implementation
     return ['Ingredient 1', 'Ingredient 2', 'Ingredient 3'];
   }
 
-  @override
   Future<List<String>> getAvailableUnits() async {
     // Mock implementation
     return ['g', 'kg', 'ml', 'l', 'pcs'];
   }
 
-  @override
   Future<void> addComment(String recipeUuid, Comment comment) async {
     // Mock implementation
     if (_recipes.containsKey(recipeUuid)) {
@@ -218,7 +400,6 @@ class MockDatabaseService implements DatabaseService {
     }
   }
 
-  @override
   Future<List<Comment>> getComments(String recipeUuid) async {
     // Mock implementation
     if (_recipes.containsKey(recipeUuid)) {
@@ -227,13 +408,59 @@ class MockDatabaseService implements DatabaseService {
     return [];
   }
 
-  @override
   Future<bool> isInFavorites(String recipeId) async {
     // Mock implementation
     if (_recipes.containsKey(recipeId)) {
       return _recipes[recipeId]!.isFavorite;
     }
     return false;
+  }
+
+  Future<void> clearDatabase() async {
+    // Mock implementation
+    _recipes.clear();
+  }
+
+  Future<void> updateFavoritesOrder(List<String> recipeIds) async {
+    // Mock implementation - no need to do anything in the mock
+  }
+
+  Future<void> updateStepCompletion(String recipeId, int stepId, bool isCompleted) async {
+    // Mock implementation
+    if (_recipes.containsKey(recipeId)) {
+      final recipe = _recipes[recipeId]!;
+      final updatedSteps = List<RecipeStep>.from(recipe.steps);
+
+      // Find the step with the given ID and update its completion status
+      for (int i = 0; i < updatedSteps.length; i++) {
+        if (updatedSteps[i].id == stepId) {
+          updatedSteps[i] = RecipeStep(
+            id: updatedSteps[i].id,
+            name: updatedSteps[i].name,
+            duration: updatedSteps[i].duration,
+            isCompleted: isCompleted,
+          );
+          break;
+        }
+      }
+
+      // Update the recipe with the updated steps
+      _recipes[recipeId] = Recipe(
+        uuid: recipe.uuid,
+        name: recipe.name,
+        images: recipe.images,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        difficulty: recipe.difficulty,
+        duration: recipe.duration,
+        rating: recipe.rating,
+        tags: recipe.tags,
+        ingredients: recipe.ingredients,
+        steps: updatedSteps,
+        isFavorite: recipe.isFavorite,
+        comments: recipe.comments,
+      );
+    }
   }
 }
 
@@ -249,7 +476,7 @@ class MockConnectivityService extends ConnectivityService {
   }
 
   @override
-  Stream<ConnectivityResult> get connectivityStream => 
+  Stream<ConnectivityResult> get connectivityStream =>
       Stream.value(_isConnected ? ConnectivityResult.wifi : ConnectivityResult.none);
 }
 
@@ -493,7 +720,7 @@ void main() {
       mockRecipeRepository = MockRecipeRepository();
 
       // Create a recipe manager with mock repository
-      recipeManager = RecipeManager(
+      recipeManager = RecipeManagerImpl(
         recipeRepository: mockRecipeRepository,
       );
     });
@@ -599,7 +826,7 @@ void main() {
       final failingRepository = _FailingRecipeRepository();
 
       // Create a recipe manager with failing repository
-      final failingRecipeManager = RecipeManager(
+      final failingRecipeManager = RecipeManagerImpl(
         recipeRepository: failingRepository,
       );
 
@@ -614,7 +841,7 @@ void main() {
       final failingRepository = _FailingRecipeRepository();
 
       // Create a recipe manager with failing repository
-      final failingRecipeManager = RecipeManager(
+      final failingRecipeManager = RecipeManagerImpl(
         recipeRepository: failingRepository,
       );
 

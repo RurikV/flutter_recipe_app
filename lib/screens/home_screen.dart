@@ -20,10 +20,13 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     // Load both recipes and favorites when the app starts
-    Future.microtask(() {
-      final store = StoreProvider.of<AppState>(context, listen: false);
-      store.dispatch(LoadRecipesAction());
-      store.dispatch(LoadFavoriteRecipesAction());
+    // Capture the store before the async operation to avoid using BuildContext across async gaps
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final store = StoreProvider.of<AppState>(context, listen: false);
+        store.dispatch(LoadRecipesAction());
+        store.dispatch(LoadFavoriteRecipesAction());
+      }
     });
   }
 

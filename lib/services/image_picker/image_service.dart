@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-import '../models/recipe_image.dart';
+import '../../models/recipe_image.dart';
 
 class ImageService {
   final ImagePicker _picker = ImagePicker();
@@ -15,12 +15,12 @@ class ImageService {
         source: ImageSource.camera,
         imageQuality: 80,
       );
-      
+
       if (photo == null) return null;
-      
+
       // Save the image to the app's documents directory
       final savedImagePath = await _saveImageToLocalStorage(photo);
-      
+
       return RecipeImage(path: savedImagePath);
     } catch (e) {
       debugPrint('Error taking photo: $e');
@@ -35,12 +35,12 @@ class ImageService {
         source: ImageSource.gallery,
         imageQuality: 80,
       );
-      
+
       if (image == null) return null;
-      
+
       // Save the image to the app's documents directory
       final savedImagePath = await _saveImageToLocalStorage(image);
-      
+
       return RecipeImage(path: savedImagePath);
     } catch (e) {
       debugPrint('Error picking image: $e');
@@ -53,19 +53,25 @@ class ImageService {
     final appDir = await getApplicationDocumentsDirectory();
     final fileName = '${DateTime.now().millisecondsSinceEpoch}_${path.basename(image.path)}';
     final savedImage = File('${appDir.path}/images/$fileName');
-    
+
     // Create the images directory if it doesn't exist
     await Directory('${appDir.path}/images').create(recursive: true);
-    
+
     // Copy the image to the new location
     await File(image.path).copy(savedImage.path);
-    
+
     return savedImage.path;
   }
 
   // Load an image from a path
   Future<File?> loadImage(String imagePath) async {
     try {
+      // Check if the path is a URL
+      if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        debugPrint('Cannot load remote URL as a File: $imagePath');
+        return null;
+      }
+
       final file = File(imagePath);
       if (await file.exists()) {
         return file;
@@ -80,6 +86,12 @@ class ImageService {
   // Delete an image
   Future<bool> deleteImage(String imagePath) async {
     try {
+      // Check if the path is a URL
+      if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        debugPrint('Cannot delete remote URL: $imagePath');
+        return false;
+      }
+
       final file = File(imagePath);
       if (await file.exists()) {
         await file.delete();

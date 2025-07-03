@@ -1,19 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_recipe_app/services/connectivity_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 // Mock implementation of ConnectivityService for testing
-class MockConnectivityService extends ConnectivityService {
+class MockConnectivityService {
   final bool _isConnected;
 
   MockConnectivityService({bool isConnected = true}) : _isConnected = isConnected;
 
-  @override
   Future<bool> isConnected() async {
     return _isConnected;
   }
 
-  @override
   Stream<ConnectivityResult> get connectivityStream => 
       Stream.value(_isConnected ? ConnectivityResult.wifi : ConnectivityResult.none);
 }

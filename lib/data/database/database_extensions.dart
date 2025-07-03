@@ -161,4 +161,66 @@ class DatabaseExtensions {
   Future<int> deletePhoto(int photoId) {
     return (db.delete(db.photos)..where((p) => p.id.equals(photoId))).go();
   }
+
+  // Update the order of a favorite recipe
+  // Since we don't have a favoriteOrder field, we just ensure the recipe is marked as a favorite
+  Future<void> updateFavoriteOrder(String recipeUuid, int order) async {
+    // Get the recipe
+    final recipe = await getRecipeByUuid(recipeUuid);
+    if (recipe != null) {
+      // Ensure the recipe is marked as a favorite
+      if (!recipe.isFavorite) {
+        await db.update(db.recipes).replace(
+          RecipesCompanion(
+            uuid: Value(recipeUuid),
+            name: Value(recipe.name),
+            images: Value(recipe.images),
+            description: Value(recipe.description),
+            instructions: Value(recipe.instructions),
+            difficulty: Value(recipe.difficulty),
+            duration: Value(recipe.duration),
+            rating: Value(recipe.rating),
+            isFavorite: const Value(true),
+          ),
+        );
+      }
+    }
+  }
+
+  // Get all unique ingredient names from the database
+  Future<List<String>> getUniqueIngredientNames() async {
+    final query = db.select(db.ingredients)
+      ..orderBy([(i) => OrderingTerm.asc(i.name)]);
+    final results = await query.get();
+    // Extract unique ingredient names
+    final uniqueNames = <String>{};
+    for (final ingredient in results) {
+      uniqueNames.add(ingredient.name);
+    }
+    return uniqueNames.toList();
+  }
+
+  // Get all unique unit names from the database
+  Future<List<String>> getUniqueUnitNames() async {
+    final query = db.select(db.ingredients)
+      ..orderBy([(i) => OrderingTerm.asc(i.unit)]);
+    final results = await query.get();
+    // Extract unique unit names
+    final uniqueUnits = <String>{};
+    for (final ingredient in results) {
+      if (ingredient.unit.isNotEmpty) {
+        uniqueUnits.add(ingredient.unit);
+      }
+    }
+
+    // If no units found in the database, return a default list of common units
+    if (uniqueUnits.isEmpty) {
+      return [
+        'г', 'кг', 'мл', 'л', 'шт', 'ст. ложка', 'ч. ложка', 'стакан', 
+        'щепотка', 'по вкусу', 'зубчик'
+      ];
+    }
+
+    return uniqueUnits.toList();
+  }
 }
