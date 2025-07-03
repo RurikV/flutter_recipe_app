@@ -5,10 +5,31 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Load key.properties file
+import java.util.Properties
+import java.io.FileInputStream
+
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "com.example.flutter_recipe_app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
+
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -26,7 +47,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // Application ID for Google Play Store
         applicationId = "com.example.flutter_recipe_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
@@ -38,8 +59,20 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Use release signing configuration if it exists, otherwise fall back to debug
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            } else {
+                signingConfig = signingConfigs.getByName("debug")
+            }
+
+            // Disable minification and shrinking for release builds
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
+
+        debug {
+            // Debug builds use debug signing configuration
             signingConfig = signingConfigs.getByName("debug")
         }
     }
