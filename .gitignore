@@ -48,3 +48,4 @@ app.*.map.json
 /show_py_content.py
 /FoodApiTest/
 /otus_food_app/
+key.properties
