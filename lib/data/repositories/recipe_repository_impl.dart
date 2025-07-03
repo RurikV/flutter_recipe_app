@@ -1,9 +1,9 @@
 import '../../domain/repositories/recipe_repository.dart';
 import '../../models/recipe.dart';
 import '../../models/comment.dart';
-import '../api/api_service.dart';
-import '../database/database_service.dart';
-import '../../services/connectivity_service.dart';
+import '../../services/api/api_service.dart';
+import '../../services/database/database_service.dart';
+import '../../services/connectivity/connectivity_service.dart';
 
 class RecipeRepositoryImpl implements RecipeRepository {
   final ApiService _apiService;
@@ -302,8 +302,6 @@ class RecipeRepositoryImpl implements RecipeRepository {
       }
 
       return null;
-    } catch (e) {
-      throw Exception('Failed to get recipe by UUID: $e');
     }
   }
 
@@ -570,15 +568,15 @@ class RecipeRepositoryImpl implements RecipeRepository {
           // Get ingredients data from API
           final ingredientsData = await _apiService.getIngredientsData();
 
-          // Extract ingredient names
-          final List<String> ingredientNames = [];
+          // Extract ingredient names and deduplicate using a Set
+          final Set<String> ingredientNamesSet = {};
           for (final ingredient in ingredientsData) {
             if (ingredient['name'] != null) {
-              ingredientNames.add(ingredient['name'] as String);
+              ingredientNamesSet.add(ingredient['name'] as String);
             }
           }
 
-          return ingredientNames;
+          return ingredientNamesSet.toList();
         } catch (e) {
           // API call failed, use in-memory cache
           return _getIngredientsFromCache();
@@ -628,15 +626,15 @@ class RecipeRepositoryImpl implements RecipeRepository {
           // Get measure units data from API
           final unitsData = await _apiService.getMeasureUnitsData();
 
-          // Extract unit names
-          final List<String> unitNames = [];
+          // Extract unit names and deduplicate using a Set
+          final Set<String> unitNamesSet = {};
           for (final unit in unitsData) {
             if (unit['name'] != null) {
-              unitNames.add(unit['name'] as String);
+              unitNamesSet.add(unit['name'] as String);
             }
           }
 
-          return unitNames;
+          return unitNamesSet.toList();
         } catch (e) {
           // API call failed, use in-memory cache
           return _getUnitsFromCache();

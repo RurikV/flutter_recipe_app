@@ -11,9 +11,9 @@ import 'l10n/app_localizations.dart';
 import 'redux/app_state.dart';
 import 'redux/store.dart';
 import 'redux/actions.dart';
-import 'services/auth_service.dart';
+import 'services/auth/auth_service.dart';
 import 'data/database/app_database.dart';
-import 'services/object_detection_service.dart';
+import 'services/classification/object_detection_service.dart';
 import 'services/bluetooth_service.dart';
 import 'domain/usecases/recipe_manager.dart';
 // Use conditional imports for platform-specific implementations

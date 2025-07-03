@@ -1,12 +1,12 @@
 import 'dart:convert';
-import 'app_database.dart';
+import '../../data/database/app_database.dart';
 import '../../models/recipe.dart' as app_model;
 import '../../models/ingredient.dart' as app_model;
 import '../../models/recipe_step.dart' as app_model;
 import '../../models/comment.dart' as app_model;
 import '../../models/recipe_image.dart';
 import 'package:drift/drift.dart';
-import '../../services/service_locator.dart' as serviceLocator;
+import '../service_locator.dart' as serviceLocator;
 
 class DatabaseService {
   final AppDatabase _database = serviceLocator.get<AppDatabase>();
@@ -116,8 +116,8 @@ class DatabaseService {
         imagesJson = "";
       }
 
-      // Create a RecipesCompanion object for the recipe
-      final recipeCompanion = RecipesCompanion(
+      // Create or update the recipe
+      await _database.insertRecipe(RecipesCompanion(
         uuid: Value(recipe.uuid),
         name: Value(recipe.name),
         images: Value(imagesJson),
@@ -126,55 +126,55 @@ class DatabaseService {
         difficulty: Value(recipe.difficulty),
         duration: Value(recipe.duration),
         rating: Value(recipe.rating),
-        isFavorite: Value(recipe.isFavorite), // Set isFavorite based on the recipe's isFavorite property
-      );
+      ));
 
-      // Insert or update the recipe
-      if (existingRecipe == null) {
-        await _database.insertRecipe(recipeCompanion);
-      } else {
-        await _database.updateRecipe(recipeCompanion);
+      // Handle tags
+      if (existingRecipe != null) {
+        // Delete existing tags for this recipe
+        await _database.deleteTagsForRecipe(recipe.uuid);
       }
-
-      // Update favorites status if it changed
-      if (recipe.isFavorite != wasInFavorites) {
-        if (recipe.isFavorite) {
-          await _database.addToFavorites(recipe.uuid);
-        } else {
-          await _database.removeFromFavorites(recipe.uuid);
-        }
-      }
-
-      // Delete existing tags, ingredients, and steps for the recipe
-      await _database.deleteTagsForRecipe(recipe.uuid);
-      await _database.deleteIngredientsForRecipe(recipe.uuid);
-      await _database.deleteStepsForRecipe(recipe.uuid);
-
       // Insert new tags
-      if (recipe.tags.isNotEmpty) {
-        await _database.insertTagsForRecipe(recipe.uuid, recipe.tags);
-      }
+      await _database.insertTagsForRecipe(recipe.uuid, recipe.tags);
 
+      // Handle ingredients
+      if (existingRecipe != null) {
+        // Delete existing ingredients for this recipe
+        await _database.deleteIngredientsForRecipe(recipe.uuid);
+      }
       // Insert new ingredients
-      if (recipe.ingredients.isNotEmpty) {
-        final ingredientsCompanions = recipe.ingredients.map((ingredient) => IngredientsCompanion(
-          recipeUuid: Value(recipe.uuid),
-          name: Value(ingredient.name),
-          quantity: Value(ingredient.quantity),
-          unit: Value(ingredient.unit),
-        )).toList();
-        await _database.insertIngredientsForRecipe(recipe.uuid, ingredientsCompanions);
-      }
+      final ingredients = recipe.ingredients.map((ingredient) => 
+        IngredientsCompanion.insert(
+          recipeUuid: recipe.uuid,
+          name: ingredient.name,
+          quantity: ingredient.quantity,
+          unit: ingredient.unit,
+        )
+      ).toList();
+      await _database.insertIngredientsForRecipe(recipe.uuid, ingredients);
 
+      // Handle steps
+      if (existingRecipe != null) {
+        // Delete existing steps for this recipe
+        await _database.deleteStepsForRecipe(recipe.uuid);
+      }
       // Insert new steps
-      if (recipe.steps.isNotEmpty) {
-        final stepsCompanions = recipe.steps.map((step) => RecipeStepsCompanion(
-          recipeUuid: Value(recipe.uuid),
-          description: Value(step.name),
-          duration: Value(step.duration.toString()),
+      final steps = recipe.steps.map((step) => 
+        RecipeStepsCompanion.insert(
+          recipeUuid: recipe.uuid,
+          description: step.name,
+          duration: step.duration.toString(),
           isCompleted: Value(step.isCompleted),
-        )).toList();
-        await _database.insertStepsForRecipe(recipe.uuid, stepsCompanions);
+        )
+      ).toList();
+      await _database.insertStepsForRecipe(recipe.uuid, steps);
+
+      // Handle favorites status
+      if (recipe.isFavorite && !wasInFavorites) {
+        // Add to favorites if it wasn't already
+        await _database.addToFavorites(recipe.uuid);
+      } else if (!recipe.isFavorite && wasInFavorites) {
+        // Remove from favorites if it was previously a favorite
+        await _database.removeFromFavorites(recipe.uuid);
       }
     });
   }
@@ -186,86 +186,72 @@ class DatabaseService {
       await _database.deleteTagsForRecipe(uuid);
       await _database.deleteIngredientsForRecipe(uuid);
       await _database.deleteStepsForRecipe(uuid);
+      await _database.removeFromFavorites(uuid);
 
-      // Delete the recipe
+      // Delete the recipe itself
       await _database.deleteRecipe(uuid);
     });
   }
 
-  // Update the completion status of a recipe step
-  Future<bool> updateStepStatus(int stepId, bool isCompleted) async {
-    return _database.updateStepStatus(stepId, isCompleted);
+  // Update the order of favorites
+  Future<void> updateFavoritesOrder(List<String> recipeIds) async {
+    await _database.transaction(() async {
+      // Update the order for each recipe ID
+      for (int i = 0; i < recipeIds.length; i++) {
+        await _database.updateFavoriteOrder(recipeIds[i], i);
+      }
+    });
   }
 
-  // Get all unique ingredients from the database
-  Future<List<app_model.Ingredient>> getAllIngredients() async {
-    final ingredients = await _database.getAllIngredients();
-    return ingredients.map((i) => app_model.Ingredient.simple(
-      name: i.name,
-      quantity: i.quantity,
-      unit: i.unit,
-    )).toList();
+  // Toggle the favorite status of a recipe
+  Future<void> toggleFavorite(String recipeId) async {
+    final isCurrentlyFavorite = await _database.isInFavorites(recipeId);
+
+    if (isCurrentlyFavorite) {
+      // Remove from favorites
+      await _database.removeFromFavorites(recipeId);
+    } else {
+      // Add to favorites
+      await _database.addToFavorites(recipeId);
+    }
   }
 
-  // Additional methods required by RecipeRepositoryImpl
+  // Update a step's completion status
+  Future<void> updateStepCompletion(String recipeId, int stepId, bool isCompleted) async {
+    await _database.updateStepStatus(stepId, isCompleted);
+  }
 
-  /// Update a recipe - delegates to saveRecipe
+  // Update a recipe
   Future<void> updateRecipe(app_model.Recipe recipe) async {
+    // Use the saveRecipe method to update the recipe
     await saveRecipe(recipe);
   }
 
-  /// Toggle favorite status for a recipe
-  Future<bool> toggleFavorite(String uuid) async {
-    final recipe = await getRecipeByUuid(uuid);
-    if (recipe == null) {
-      return false;
-    }
-
-    // Toggle the favorite status
-    final updatedRecipe = app_model.Recipe(
-      uuid: recipe.uuid,
-      name: recipe.name,
-      images: recipe.images,
-      description: recipe.description,
-      instructions: recipe.instructions,
-      difficulty: recipe.difficulty,
-      duration: recipe.duration,
-      rating: recipe.rating,
-      tags: recipe.tags,
-      ingredients: recipe.ingredients,
-      steps: recipe.steps,
-      isFavorite: !recipe.isFavorite,
-      comments: recipe.comments,
-    );
-
-    // Save the updated recipe
-    await saveRecipe(updatedRecipe);
-    return true;
-  }
-
-  /// Get available ingredients (names only)
-  Future<List<String>> getAvailableIngredients() async {
-    final ingredients = await getAllIngredients();
-    return ingredients.map((i) => i.name).toSet().toList();
-  }
-
-  /// Get available units
-  Future<List<String>> getAvailableUnits() async {
-    final ingredients = await getAllIngredients();
-    return ingredients.map((i) => i.unit).where((unit) => unit.isNotEmpty).toSet().toList();
-  }
-
-  /// Add a comment to a recipe
+  // Add a comment to a recipe
   Future<void> addComment(String recipeUuid, app_model.Comment comment) async {
-    // Since we're not storing comments in the database, this is a no-op
-    // In a real implementation, this would add the comment to a comments table
+    // Since we don't have a Comments table anymore, we'll just log the comment
     print('Adding comment to recipe $recipeUuid: ${comment.text}');
+    // In a real implementation, this would save the comment to the database
   }
 
-  /// Get comments for a recipe
+  // Get comments for a recipe
   Future<List<app_model.Comment>> getComments(String recipeUuid) async {
-    // Since we're not storing comments in the database, return an empty list
-    // In a real implementation, this would query the comments table
+    // Since we don't have a Comments table anymore, we'll just return an empty list
+    print('Getting comments for recipe $recipeUuid');
+    // In a real implementation, this would retrieve comments from the database
     return [];
+  }
+
+  // Clear all data from the database
+  Future<void> clearDatabase() async {
+    await _database.transaction(() async {
+      // Delete all data from all tables
+      await (_database.delete(_database.recipeTags)).go();
+      await (_database.delete(_database.ingredients)).go();
+      await (_database.delete(_database.recipeSteps)).go();
+      await (_database.delete(_database.photos)).go();
+      // Delete recipes last since other tables reference it
+      await (_database.delete(_database.recipes)).go();
+    });
   }
 }

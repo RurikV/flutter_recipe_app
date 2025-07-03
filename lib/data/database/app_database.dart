@@ -88,6 +88,7 @@ class AppDatabase extends _$AppDatabase {
   Future<void> addToFavorites(String recipeUuid) => _extensions.addToFavorites(recipeUuid);
   Future<void> removeFromFavorites(String recipeUuid) => _extensions.removeFromFavorites(recipeUuid);
   Future<bool> isInFavorites(String recipeUuid) => _extensions.isInFavorites(recipeUuid);
+  Future<void> updateFavoriteOrder(String recipeUuid, int order) => _extensions.updateFavoriteOrder(recipeUuid, order);
 
   // Platform-specific database connection
   static QueryExecutor _openConnection() {

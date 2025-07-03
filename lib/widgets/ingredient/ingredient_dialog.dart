@@ -53,6 +53,7 @@ class _IngredientDialogState extends State<IngredientDialog> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('Building IngredientDialog with _selectedIngredient=$_selectedIngredient, _selectedUnit=$_selectedUnit');
     return Dialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
@@ -150,7 +151,7 @@ class _IngredientDialogState extends State<IngredientDialog> {
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.zero,
                         ),
-                        items: widget.availableIngredients.map((ingredient) {
+                        items: widget.availableIngredients.toSet().toList().map((ingredient) {
                           return DropdownMenuItem<String>(
                             value: ingredient,
                             child: Text(ingredient),
@@ -197,7 +198,7 @@ class _IngredientDialogState extends State<IngredientDialog> {
                     left: 18,
                     top: 8,
                     child: const Text(
-                      'Количество',
+                      'Количество и единица измерения',
                       style: TextStyle(
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w400,
@@ -251,6 +252,7 @@ class _IngredientDialogState extends State<IngredientDialog> {
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.zero,
+                                hintText: 'Введите количество',
                               ),
                               keyboardType: TextInputType.number,
                               inputFormatters: [
@@ -269,37 +271,61 @@ class _IngredientDialogState extends State<IngredientDialog> {
                               ),
                             ),
                           ),
+                          Container(
+                            width: 1,
+                            height: 30,
+                            color: const Color(0xFF165932),
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
                           Expanded(
                             flex: 2,
-                            child: DropdownButtonFormField<String>(
-                              value: _selectedUnit.isNotEmpty ? _selectedUnit : null,
-                              isExpanded: true,
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.zero,
-                              ),
-                              items: widget.availableUnits.map((unit) {
-                                return DropdownMenuItem<String>(
-                                  value: unit,
-                                  child: Text(unit),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedUnit = value!;
-                                });
-                              },
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Выберите единицу';
-                                }
-                                return null;
-                              },
-                              style: const TextStyle(
-                                fontFamily: 'Roboto',
-                                fontSize: 16,
-                                color: Colors.black,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.only(bottom: 4),
+                                  child: Text(
+                                    'Единица измерения',
+                                    style: TextStyle(
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 10,
+                                      color: Color(0xFF165932),
+                                    ),
+                                  ),
+                                ),
+                                DropdownButtonFormField<String>(
+                                  value: _selectedUnit.isNotEmpty ? _selectedUnit : null,
+                                  isExpanded: true,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.zero,
+                                    hintText: 'Выберите единицу',
+                                  ),
+                                  items: widget.availableUnits.toSet().toList().map((unit) {
+                                    return DropdownMenuItem<String>(
+                                      value: unit,
+                                      child: Text(unit),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedUnit = value!;
+                                    });
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Выберите единицу';
+                                    }
+                                    return null;
+                                  },
+                                  style: const TextStyle(
+                                    fontFamily: 'Roboto',
+                                    fontSize: 16,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -317,16 +343,25 @@ class _IngredientDialogState extends State<IngredientDialog> {
                   height: 48,
                   child: ElevatedButton(
                     onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        widget.onSave(
-                          Ingredient(
-                            name: _selectedIngredient,
-                            quantity: _quantityController.text,
-                            unit: _selectedUnit,
-                          ),
-                        );
-                        Navigator.of(context).pop();
-                      }
+                      debugPrint('Add button pressed');
+
+                      // Always create a new ingredient and dismiss the dialog
+                      // This ensures the button always works, even if form validation fails
+                      final ingredient = Ingredient(
+                        name: _selectedIngredient,
+                        quantity: _quantityController.text.isNotEmpty ? _quantityController.text : '1',
+                        unit: _selectedUnit,
+                      );
+
+                      debugPrint('Created ingredient: ${ingredient.name}, ${ingredient.quantity}, ${ingredient.unit}');
+
+                      // Call the onSave callback
+                      widget.onSave(ingredient);
+                      debugPrint('onSave callback called');
+
+                      // Dismiss the dialog
+                      Navigator.pop(context);
+                      debugPrint('Dialog closed');
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2ECC71),

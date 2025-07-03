@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter_recipe_app/data/database/app_database.dart';
-import 'package:flutter_recipe_app/services/object_detection_service.dart';
-import 'package:flutter_recipe_app/data/api/api_service.dart';
-import 'package:flutter_recipe_app/data/database/database_service.dart';
+import 'package:flutter_recipe_app/services/classification/object_detection_service.dart';
+import 'package:flutter_recipe_app/services/api/api_service.dart';
+import 'package:flutter_recipe_app/services/database/database_service.dart';
 import 'package:flutter_recipe_app/models/recipe.dart' as app_model;
 import 'package:flutter_recipe_app/models/comment.dart' as app_model;
 import 'package:flutter_recipe_app/models/ingredient.dart' as app_model;
-import 'package:flutter_recipe_app/models/recipe_image.dart';
+import 'package:flutter_recipe_app/models/recipe_image.dart' as model;
 import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
 import 'package:flutter_recipe_app/domain/repositories/recipe_repository.dart';
 
@@ -17,33 +17,34 @@ final GetIt getIt = GetIt.instance;
 class MockObjectDetectionService implements ObjectDetectionService {
   @override
   Future<void> initialize() async {
-    // Do nothing
+    // Do nothing for testing
   }
 
   @override
-  Future<List<DetectedObject>> detectObjects(String imagePath, {int maxResults = 5}) async {
-    // Return empty list
-    return [];
+  Future<List<ServiceDetectedObject>> detectObjects(model.RecipeImage image) async {
+    // Return empty list for testing
+    return <ServiceDetectedObject>[];
   }
 
   @override
-  void dispose() {
-    // Do nothing
-  }
+  bool get isInitialized => true;
 }
 
 // Mock implementation of ApiService for testing
 class MockApiService extends ApiService {
+  // These methods are not in the interface, so remove @override
   Future<List<app_model.Recipe>> getRecipes() async {
     // Return an empty list - we'll use the Redux store for test data
     return [];
   }
 
+  // These methods are not in the interface, so remove @override
   Future<bool> toggleFavorite(String recipeId, bool isFavorite) async {
     // Simulate successful toggle
     return true;
   }
 
+  // These methods are not in the interface, so remove @override
   Future<bool> updateStepStatus(String recipeId, int stepIndex, bool isCompleted) async {
     // Simulate successful update
     return true;
@@ -52,6 +53,8 @@ class MockApiService extends ApiService {
 
 // Mock implementation of DatabaseService for testing
 class MockDatabaseService implements DatabaseService {
+  final AppDatabase _database = AppDatabase();
+
   @override
   Future<List<app_model.Recipe>> getAllRecipes() async {
     // Return an empty list - we'll use the Redux store for test data
@@ -82,16 +85,6 @@ class MockDatabaseService implements DatabaseService {
 
   @override
   Future<bool> deleteRecipe(String recipeId) async {
-    // Do nothing
-    return true;
-  }
-
-  Future<void> toggleFavoriteStatus(String uuid, bool isFavorite) async {
-    // Do nothing
-  }
-
-  @override
-  Future<bool> updateStepStatus(int stepId, bool isCompleted) async {
     // Do nothing
     return true;
   }
@@ -146,6 +139,21 @@ class MockDatabaseService implements DatabaseService {
   @override
   Future<void> close() async {
     // Do nothing
+  }
+
+  @override
+  Future<void> clearDatabase() async {
+    // Do nothing for testing
+  }
+
+  @override
+  Future<void> updateFavoritesOrder(List<String> recipeIds) async {
+    // Do nothing for testing
+  }
+
+  @override
+  Future<void> updateStepCompletion(String recipeId, int stepId, bool isCompleted) async {
+    // Do nothing for testing
   }
 }
 

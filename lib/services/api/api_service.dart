@@ -206,7 +206,7 @@ class ApiService {
           'authorName': authorName,
           'text': text,
         });
-        if (response.statusCode != 201) {
+        if (response.statusCode != 201 && response.statusCode != 200) {
           throw Exception('Failed to add comment: ${response.statusCode}');
         }
         return response.data as Map<String, dynamic>;
@@ -230,7 +230,7 @@ class ApiService {
         };
 
         final response = await _dio.post('/recipe', data: recipeData);
-        if (response.statusCode != 201) {
+        if (response.statusCode != 201 && response.statusCode != 200) {
           throw Exception('Failed to create recipe: ${response.statusCode}');
         }
         return response.data as Map<String, dynamic>;
@@ -283,7 +283,7 @@ class ApiService {
     return _requestWithRetry(
       request: () async {
         final response = await _dio.post('/recipe', data: recipeData);
-        if (response.statusCode != 201) {
+        if (response.statusCode != 201 && response.statusCode != 200) {
           throw Exception('Failed to create recipe data: ${response.statusCode}');
         }
         return response.data as Map<String, dynamic>;
@@ -297,7 +297,7 @@ class ApiService {
     return _requestWithRetry(
       request: () async {
         final response = await _dio.post('/ingredient', data: ingredientData);
-        if (response.statusCode != 201) {
+        if (response.statusCode != 201 && response.statusCode != 200) {
           throw Exception('Failed to create ingredient data: ${response.statusCode}');
         }
         return response.data as Map<String, dynamic>;
@@ -311,7 +311,7 @@ class ApiService {
     return _requestWithRetry(
       request: () async {
         final response = await _dio.post('/recipe_ingredient', data: recipeIngredientData);
-        if (response.statusCode != 201) {
+        if (response.statusCode != 201 && response.statusCode != 200) {
           throw Exception('Failed to create recipe ingredient data: ${response.statusCode}');
         }
         return response.data as Map<String, dynamic>;
@@ -325,7 +325,7 @@ class ApiService {
     return _requestWithRetry(
       request: () async {
         final response = await _dio.post('/recipe_step', data: stepData);
-        if (response.statusCode != 201) {
+        if (response.statusCode != 201 && response.statusCode != 200) {
           throw Exception('Failed to create recipe step data: ${response.statusCode}');
         }
         return response.data as Map<String, dynamic>;
@@ -339,7 +339,7 @@ class ApiService {
     return _requestWithRetry(
       request: () async {
         final response = await _dio.post('/recipe_step_link', data: stepLinkData);
-        if (response.statusCode != 201) {
+        if (response.statusCode != 201 && response.statusCode != 200) {
           throw Exception('Failed to create recipe step link data: ${response.statusCode}');
         }
         return response.data as Map<String, dynamic>;
@@ -375,7 +375,7 @@ class ApiService {
           'recipe': {'id': recipeId},
           ...commentData,
         });
-        if (response.statusCode != 201) {
+        if (response.statusCode != 201 && response.statusCode != 200) {
           throw Exception('Failed to add comment data: ${response.statusCode}');
         }
         return response.data as Map<String, dynamic>;

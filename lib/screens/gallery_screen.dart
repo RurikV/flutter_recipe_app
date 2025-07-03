@@ -6,8 +6,8 @@ import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:get_it/get_it.dart';
-import 'package:flutter_recipe_app/services/object_detection_service.dart';
-import 'package:flutter_recipe_app/models/recipe_image.dart';
+import 'package:flutter_recipe_app/services/classification/object_detection_service.dart';
+import 'package:flutter_recipe_app/models/recipe_image.dart' as model;
 
 // Simple photo model for temporary use
 class SimplePhoto {
@@ -61,13 +61,13 @@ class GalleryScreenState extends State<GalleryScreen> {
   }
 
   // Format detected objects into a readable string
-  String _formatDetectedObjects(List<DetectedObject> objects) {
+  String _formatDetectedObjects(List<ServiceDetectedObject> objects) {
     if (objects.isEmpty) {
       return 'No objects detected';
     }
 
     // Sort by confidence (highest first)
-    final sortedObjects = List<DetectedObject>.from(objects)
+    final sortedObjects = List<ServiceDetectedObject>.from(objects)
       ..sort((a, b) => b.confidence.compareTo(a.confidence));
 
     // Take top 3 objects
@@ -103,10 +103,11 @@ class GalleryScreenState extends State<GalleryScreen> {
       await tempFile.writeAsBytes(imageBytes);
 
       // Detect objects in the image
-      final detectedObjects = await _objectDetectionService.detectObjects(tempFile.path);
+      final recipeImage = model.RecipeImage(path: tempFile.path);
+      final serviceDetectedObjects = await _objectDetectionService.detectObjects(recipeImage);
 
       // Convert detected objects to a string representation
-      final detectedInfo = _formatDetectedObjects(detectedObjects);
+      final detectedInfo = _formatDetectedObjects(serviceDetectedObjects);
 
       // Create a simple photo object
       final photo = SimplePhoto(

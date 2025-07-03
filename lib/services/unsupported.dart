@@ -1,8 +1,14 @@
 import 'dart:async';
-import 'object_detection_service.dart';
 
 // This file is used when neither dart:ffi nor dart:html is available
 // It provides stub implementations that throw UnimplementedError
+
+// Forward declaration of the ObjectDetectionService interface
+abstract class ObjectDetectionService {
+  Future<void> initialize();
+  Future<List<dynamic>> detectObjects(dynamic image);
+  bool get isInitialized;
+}
 
 Future<void> initObjectDetectionService() async {
   throw UnimplementedError('Object detection service is not supported on this platform');

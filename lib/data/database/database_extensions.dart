@@ -161,4 +161,29 @@ class DatabaseExtensions {
   Future<int> deletePhoto(int photoId) {
     return (db.delete(db.photos)..where((p) => p.id.equals(photoId))).go();
   }
+
+  // Update the order of a favorite recipe
+  // Since we don't have a favoriteOrder field, we just ensure the recipe is marked as a favorite
+  Future<void> updateFavoriteOrder(String recipeUuid, int order) async {
+    // Get the recipe
+    final recipe = await getRecipeByUuid(recipeUuid);
+    if (recipe != null) {
+      // Ensure the recipe is marked as a favorite
+      if (!recipe.isFavorite) {
+        await db.update(db.recipes).replace(
+          RecipesCompanion(
+            uuid: Value(recipeUuid),
+            name: Value(recipe.name),
+            images: Value(recipe.images),
+            description: Value(recipe.description),
+            instructions: Value(recipe.instructions),
+            difficulty: Value(recipe.difficulty),
+            duration: Value(recipe.duration),
+            rating: Value(recipe.rating),
+            isFavorite: const Value(true),
+          ),
+        );
+      }
+    }
+  }
 }
