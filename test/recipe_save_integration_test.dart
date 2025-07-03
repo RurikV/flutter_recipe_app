@@ -2,45 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
 import 'package:flutter_recipe_app/models/ingredient.dart';
-import 'package:flutter_recipe_app/services/api/api_service.dart';
+import 'package:flutter_recipe_app/domain/services/api_service.dart';
 
-// Mock implementation of ApiService for testing
-class MockApiService extends ApiService {
-  @override
-  Future<Map<String, dynamic>> createRecipe(Recipe recipe) async {
-    // Simulate successful recipe creation without making actual network requests
-    print('[DEBUG_LOG] MockApiService: Creating recipe ${recipe.name}');
-
-    // Return a Map representation of the recipe with a mock UUID
-    return {
-      'id': 'mock-uuid-${DateTime.now().millisecondsSinceEpoch}',
-      'name': recipe.name,
-      'photo': recipe.images,
-      'description': recipe.description,
-      'instructions': recipe.instructions,
-      'difficulty': recipe.difficulty,
-      'duration': recipe.duration,
-      'rating': recipe.rating,
-      'tags': recipe.tags.map((tag) => {'name': tag}).toList(),
-      'ingredients': recipe.ingredients.map((ingredient) => {
-        'name': ingredient.name,
-        'quantity': ingredient.quantity,
-        'unit': ingredient.unit,
-      }).toList(),
-      'steps': recipe.steps.map((step) => {
-        'id': step.id,
-        'name': step.name,
-        'duration': step.duration,
-      }).toList(),
-      'isFavorite': recipe.isFavorite,
-      'comments': recipe.comments.map((comment) => {
-        'text': comment.text,
-        'author': comment.authorName,
-        'date': comment.date,
-      }).toList(),
-    };
-  }
-}
+// Use the MockApiService from service_locator_test.dart
+import 'service_locator_test.dart' as test_locator;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -48,8 +13,8 @@ void main() {
     late ApiService apiService;
 
     setUp(() {
-      // Use mock API service instead of real one to avoid network issues in tests
-      apiService = MockApiService();
+      // Create a new MockApiService instance directly
+      apiService = test_locator.MockApiService();
     });
 
     test('Create recipe with steps - verify API accepts the request', () async {

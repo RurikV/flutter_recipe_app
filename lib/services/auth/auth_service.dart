@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../api/api_service.dart';
+import '../../domain/services/api_service.dart';
+import '../../data/services/api/api_service_impl.dart';
 import '../../models/user.dart';
 
 class AuthService {
@@ -21,7 +22,7 @@ class AuthService {
   User? get currentUser => _currentUser;
 
   AuthService() : 
-    _apiService = ApiService(),
+    _apiService = ApiServiceImpl(),
     _dio = Dio() {
     _dio.options.baseUrl = baseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 5);

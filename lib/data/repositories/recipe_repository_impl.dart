@@ -1,9 +1,9 @@
 import '../../domain/repositories/recipe_repository.dart';
 import '../../models/recipe.dart';
 import '../../models/comment.dart';
-import '../../services/api/api_service.dart';
-import '../../services/database/database_service.dart';
-import '../../services/connectivity/connectivity_service.dart';
+import '../../domain/services/api_service.dart';
+import '../../domain/services/database_service.dart';
+import '../../domain/services/connectivity_service.dart';
 
 class RecipeRepositoryImpl implements RecipeRepository {
   final ApiService _apiService;
@@ -16,12 +16,12 @@ class RecipeRepositoryImpl implements RecipeRepository {
   final List<Recipe> _cachedFavoriteRecipes = [];
 
   RecipeRepositoryImpl({
-    ApiService? apiService,
-    DatabaseService? databaseService,
-    ConnectivityService? connectivityService,
-  })  : _apiService = apiService ?? ApiService(),
-        _databaseService = databaseService ?? DatabaseService(),
-        _connectivityService = connectivityService ?? ConnectivityService();
+    required ApiService apiService,
+    required DatabaseService databaseService,
+    required ConnectivityService connectivityService,
+  })  : _apiService = apiService,
+        _databaseService = databaseService,
+        _connectivityService = connectivityService;
 
   @override
   Future<List<Recipe>> getRecipes() async {

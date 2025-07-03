@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../../models/recipe_image.dart';
+import '../../models/recipe_image.dart' as model;
 import 'object_detection_service.dart';
 
 /// A tensor-based implementation of the object detection service
@@ -25,7 +25,7 @@ class TensorDetectionService implements ObjectDetectionService {
   }
 
   @override
-  Future<List<DetectedObject>> detectObjects(RecipeImage image) async {
+  Future<List<ServiceDetectedObject>> detectObjects(model.RecipeImage image) async {
     // Initialize if not already done
     if (!_isInitialized) {
       await initialize();
@@ -51,7 +51,7 @@ class TensorDetectionService implements ObjectDetectionService {
       await Future.delayed(const Duration(milliseconds: 300));
 
       // Generate mock detection results
-      final List<DetectedObject> detectedObjects = [];
+      final List<ServiceDetectedObject> detectedObjects = [];
 
       // Generate a seed based on the image path to ensure consistent results for the same image
       final int seed = image.path.hashCode % _mockLabels.length;
@@ -74,7 +74,7 @@ class TensorDetectionService implements ObjectDetectionService {
         final double width = 0.1 + (_random.nextDouble() * 0.2);
         final double height = 0.1 + (_random.nextDouble() * 0.2);
 
-        detectedObjects.add(DetectedObject(
+        detectedObjects.add(ServiceDetectedObject(
           label: label,
           confidence: confidence,
           boundingBox: Rect(

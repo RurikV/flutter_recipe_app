@@ -2,21 +2,22 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart' if (dart.library.html) 'package:dio/browser.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import '../../models/recipe.dart';
+import '../../../../models/recipe.dart';
+import '../../../../domain/services/api_service.dart';
 
 // Import HttpClient, X509Certificate, and IOHttpClientAdapter only for non-web platforms
 import 'dart:io' if (dart.library.html) 'web_http_client.dart';
 // Import IOHttpClientAdapter explicitly for non-web platforms
 import 'package:dio/io.dart' if (dart.library.html) 'web_http_client.dart' show IOHttpClientAdapter;
 
-/// ApiService handles direct API calls to the backend.
+/// ApiServiceImpl handles direct API calls to the backend.
 /// It provides methods for each API endpoint without combining data from multiple endpoints.
-class ApiService {
+class ApiServiceImpl implements ApiService {
   final Dio _dio;
   final String baseUrl = 'https://foodapi.dzolotov.pro';
   final int _maxRetries = 3;
 
-  ApiService() : _dio = Dio() {
+  ApiServiceImpl() : _dio = Dio() {
     _dio.options.baseUrl = baseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 5);
     _dio.options.receiveTimeout = const Duration(seconds: 10);
@@ -75,9 +76,7 @@ class ApiService {
     }
   }
 
-  // Basic API endpoint methods
-
-  /// Get all recipes (basic data only)
+  @override
   Future<List<dynamic>> getRecipesData() async {
     print('ApiService.getRecipesData() called with baseUrl: $baseUrl');
     return _requestWithRetry(
@@ -95,7 +94,7 @@ class ApiService {
     );
   }
 
-  /// Get a recipe by ID (basic data only)
+  @override
   Future<Map<String, dynamic>> getRecipeData(String id) async {
     print('ApiService.getRecipeData() called for id: $id with baseUrl: $baseUrl');
     return _requestWithRetry(
@@ -113,7 +112,7 @@ class ApiService {
     );
   }
 
-  /// Get all ingredients
+  @override
   Future<List<dynamic>> getIngredientsData() async {
     return _requestWithRetry(
       request: () async {
@@ -127,7 +126,7 @@ class ApiService {
     );
   }
 
-  /// Get all measure units
+  @override
   Future<List<dynamic>> getMeasureUnitsData() async {
     return _requestWithRetry(
       request: () async {
@@ -141,7 +140,7 @@ class ApiService {
     );
   }
 
-  /// Get all recipe ingredients
+  @override
   Future<List<dynamic>> getRecipeIngredientsData() async {
     return _requestWithRetry(
       request: () async {
@@ -155,7 +154,7 @@ class ApiService {
     );
   }
 
-  /// Get all recipe steps
+  @override
   Future<List<dynamic>> getRecipeStepsData() async {
     return _requestWithRetry(
       request: () async {
@@ -169,7 +168,7 @@ class ApiService {
     );
   }
 
-  /// Get all recipe step links
+  @override
   Future<List<dynamic>> getRecipeStepLinksData() async {
     return _requestWithRetry(
       request: () async {
@@ -183,7 +182,7 @@ class ApiService {
     );
   }
 
-  /// Get all comments for a recipe
+  @override
   Future<List<dynamic>> getCommentsForRecipe(String recipeId) async {
     return _requestWithRetry(
       request: () async {
@@ -197,7 +196,7 @@ class ApiService {
     );
   }
 
-  /// Add a comment to a recipe
+  @override
   Future<Map<String, dynamic>> addComment(String recipeId, String authorName, String text) async {
     return _requestWithRetry(
       request: () async {
@@ -215,7 +214,7 @@ class ApiService {
     );
   }
 
-  /// Create a new recipe
+  @override
   Future<Map<String, dynamic>> createRecipe(Recipe recipe) async {
     return _requestWithRetry(
       request: () async {
@@ -239,7 +238,7 @@ class ApiService {
     );
   }
 
-  /// Update an existing recipe
+  @override
   Future<Map<String, dynamic>> updateRecipe(String id, Recipe recipe) async {
     return _requestWithRetry(
       request: () async {
@@ -263,7 +262,7 @@ class ApiService {
     );
   }
 
-  /// Delete a recipe
+  @override
   Future<void> deleteRecipe(String id) async {
     await _requestWithRetry(
       request: () async {
@@ -276,9 +275,7 @@ class ApiService {
     );
   }
 
-  // Additional methods required by RecipeRepositoryImpl
-
-  /// Create recipe data - delegates to createRecipe
+  @override
   Future<Map<String, dynamic>> createRecipeData(Map<String, dynamic> recipeData) async {
     return _requestWithRetry(
       request: () async {
@@ -292,7 +289,7 @@ class ApiService {
     );
   }
 
-  /// Create ingredient data
+  @override
   Future<Map<String, dynamic>> createIngredientData(Map<String, dynamic> ingredientData) async {
     return _requestWithRetry(
       request: () async {
@@ -306,7 +303,7 @@ class ApiService {
     );
   }
 
-  /// Create recipe ingredient data
+  @override
   Future<Map<String, dynamic>> createRecipeIngredientData(Map<String, dynamic> recipeIngredientData) async {
     return _requestWithRetry(
       request: () async {
@@ -320,7 +317,7 @@ class ApiService {
     );
   }
 
-  /// Create recipe step data
+  @override
   Future<Map<String, dynamic>> createRecipeStepData(Map<String, dynamic> stepData) async {
     return _requestWithRetry(
       request: () async {
@@ -334,7 +331,7 @@ class ApiService {
     );
   }
 
-  /// Create recipe step link data
+  @override
   Future<Map<String, dynamic>> createRecipeStepLinkData(Map<String, dynamic> stepLinkData) async {
     return _requestWithRetry(
       request: () async {
@@ -348,7 +345,7 @@ class ApiService {
     );
   }
 
-  /// Update recipe data - delegates to updateRecipe
+  @override
   Future<Map<String, dynamic>> updateRecipeData(String id, Map<String, dynamic> recipeData) async {
     return _requestWithRetry(
       request: () async {
@@ -362,12 +359,12 @@ class ApiService {
     );
   }
 
-  /// Delete recipe data - delegates to deleteRecipe
+  @override
   Future<void> deleteRecipeData(String id) async {
     await deleteRecipe(id);
   }
 
-  /// Add comment data
+  @override
   Future<Map<String, dynamic>> addCommentData(String recipeId, Map<String, dynamic> commentData) async {
     return _requestWithRetry(
       request: () async {
@@ -384,7 +381,7 @@ class ApiService {
     );
   }
 
-  /// Get comments data
+  @override
   Future<List<dynamic>> getCommentsData(String recipeId) async {
     return _requestWithRetry(
       request: () async {

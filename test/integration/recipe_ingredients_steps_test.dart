@@ -1,64 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_recipe_app/data/usecases/recipe_manager_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
-import 'package:flutter_recipe_app/services/api/api_service.dart';
 import 'package:flutter_recipe_app/screens/recipe_detail_screen.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/store.dart';
 import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
-import '../service_locator_test.dart';
 
-// Mock implementation of ApiService for testing
-class MockApiService extends ApiService {
-  @override
-  Future<Map<String, dynamic>> createRecipe(Recipe recipe) async {
-    // Simulate successful recipe creation by returning a Map<String, dynamic>
-    return {
-      'id': 'mock-uuid',
-      'name': recipe.name,
-      'photo': recipe.images,
-      'description': recipe.description,
-      'instructions': recipe.instructions,
-      'difficulty': recipe.difficulty,
-      'duration': recipe.duration,
-      'rating': recipe.rating,
-      'tags': recipe.tags.map((tag) => {'name': tag}).toList(),
-      'ingredients': recipe.ingredients.map((ingredient) => {
-        'name': ingredient.name,
-        'quantity': ingredient.quantity,
-        'unit': ingredient.unit,
-      }).toList(),
-      'steps': recipe.steps.map((step) => {
-        'id': step.id,
-        'name': step.name,
-        'duration': step.duration,
-      }).toList(),
-      'isFavorite': recipe.isFavorite,
-      'comments': recipe.comments.map((comment) => {
-        'text': comment.text,
-        'author': comment.authorName,
-        'date': comment.date,
-      }).toList(),
-    };
-  }
-}
+// Import the mock classes directly
+import '../service_locator_test.dart' as test_locator;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize the service locator for tests
-  setUpAll(() {
-    initializeTestServiceLocator();
-  });
-
   group('Recipe Ingredients and Steps Integration Tests', () {
-    late ApiService apiService;
+    late test_locator.MockApiService apiService;
+    late RecipeManager recipeManager;
 
     setUp(() {
-      apiService = MockApiService();
+      // Create instances directly
+      apiService = test_locator.MockApiService();
+      recipeManager = RecipeManagerImpl(
+        recipeRepository: test_locator.MockRecipeRepository(),
+      );
     });
 
     testWidgets('Create and display recipe with ingredients and steps', (WidgetTester tester) async {
@@ -108,7 +75,7 @@ void main() {
       // Display the recipe in the RecipeDetailScreen
       await tester.pumpWidget(
         Provider<RecipeManager>(
-          create: (context) => getIt<RecipeManager>(),
+          create: (context) => recipeManager,
           child: StoreProvider<AppState>(
             store: store,
             child: MaterialApp(

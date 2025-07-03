@@ -1,23 +1,29 @@
 import 'dart:convert';
-import '../../data/database/app_database.dart';
-import '../../models/recipe.dart' as app_model;
-import '../../models/ingredient.dart' as app_model;
-import '../../models/recipe_step.dart' as app_model;
-import '../../models/comment.dart' as app_model;
-import '../../models/recipe_image.dart';
+import '../../../../data/database/app_database.dart';
+import '../../../../models/recipe.dart' as app_model;
+import '../../../../models/ingredient.dart' as app_model;
+import '../../../../models/recipe_step.dart' as app_model;
+import '../../../../models/comment.dart' as app_model;
+import '../../../../models/recipe_image.dart';
 import 'package:drift/drift.dart';
-import '../service_locator.dart' as serviceLocator;
+import '../../../../domain/services/database_service.dart';
+import '../../../../services/service_locator.dart' as serviceLocator;
 
-class DatabaseService {
-  final AppDatabase _database = serviceLocator.get<AppDatabase>();
+/// Implementation of the DatabaseService interface
+class DatabaseServiceImpl implements DatabaseService {
+  final AppDatabase _database;
 
-  // Get all recipes with their related data
+  /// Constructor with optional AppDatabase dependency
+  DatabaseServiceImpl({AppDatabase? database}) 
+      : _database = database ?? serviceLocator.get<AppDatabase>();
+
+  @override
   Future<List<app_model.Recipe>> getAllRecipes() async {
     final recipes = await _database.getAllRecipes();
     return Future.wait(recipes.map((recipe) => _getCompleteRecipe(recipe)).toList());
   }
 
-  // Get favorite recipes with their related data
+  @override
   Future<List<app_model.Recipe>> getFavoriteRecipes() async {
     // Get recipes from the Favorites table, ordered by the 'order' field
     final recipes = await _database.getFavoriteRecipes();
@@ -26,12 +32,12 @@ class DatabaseService {
     return Future.wait(recipes.map((recipe) => _getCompleteRecipe(recipe)).toList());
   }
 
-  // Check if a recipe is in favorites
+  @override
   Future<bool> isInFavorites(String recipeId) async {
     return _database.isInFavorites(recipeId);
   }
 
-  // Get a recipe by UUID with all related data
+  @override
   Future<app_model.Recipe?> getRecipeByUuid(String uuid) async {
     final recipe = await _database.getRecipeByUuid(uuid);
     if (recipe == null) {
@@ -95,7 +101,7 @@ class DatabaseService {
     );
   }
 
-  // Save a recipe with all its related data
+  @override
   Future<void> saveRecipe(app_model.Recipe recipe) async {
     // Start a transaction to ensure all operations succeed or fail together
     await _database.transaction(() async {
@@ -179,7 +185,7 @@ class DatabaseService {
     });
   }
 
-  // Delete a recipe and all its related data
+  @override
   Future<void> deleteRecipe(String uuid) async {
     await _database.transaction(() async {
       // Delete related data first
@@ -193,7 +199,6 @@ class DatabaseService {
     });
   }
 
-  // Update the order of favorites
   Future<void> updateFavoritesOrder(List<String> recipeIds) async {
     await _database.transaction(() async {
       // Update the order for each recipe ID
@@ -203,38 +208,37 @@ class DatabaseService {
     });
   }
 
-  // Toggle the favorite status of a recipe
-  Future<void> toggleFavorite(String recipeId) async {
-    final isCurrentlyFavorite = await _database.isInFavorites(recipeId);
+  @override
+  Future<void> toggleFavorite(String uuid) async {
+    final isCurrentlyFavorite = await _database.isInFavorites(uuid);
 
     if (isCurrentlyFavorite) {
       // Remove from favorites
-      await _database.removeFromFavorites(recipeId);
+      await _database.removeFromFavorites(uuid);
     } else {
       // Add to favorites
-      await _database.addToFavorites(recipeId);
+      await _database.addToFavorites(uuid);
     }
   }
 
-  // Update a step's completion status
   Future<void> updateStepCompletion(String recipeId, int stepId, bool isCompleted) async {
     await _database.updateStepStatus(stepId, isCompleted);
   }
 
-  // Update a recipe
+  @override
   Future<void> updateRecipe(app_model.Recipe recipe) async {
     // Use the saveRecipe method to update the recipe
     await saveRecipe(recipe);
   }
 
-  // Add a comment to a recipe
+  @override
   Future<void> addComment(String recipeUuid, app_model.Comment comment) async {
     // Since we don't have a Comments table anymore, we'll just log the comment
     print('Adding comment to recipe $recipeUuid: ${comment.text}');
     // In a real implementation, this would save the comment to the database
   }
 
-  // Get comments for a recipe
+  @override
   Future<List<app_model.Comment>> getComments(String recipeUuid) async {
     // Since we don't have a Comments table anymore, we'll just return an empty list
     print('Getting comments for recipe $recipeUuid');
@@ -242,7 +246,6 @@ class DatabaseService {
     return [];
   }
 
-  // Clear all data from the database
   Future<void> clearDatabase() async {
     await _database.transaction(() async {
       // Delete all data from all tables
@@ -253,5 +256,19 @@ class DatabaseService {
       // Delete recipes last since other tables reference it
       await (_database.delete(_database.recipes)).go();
     });
+  }
+
+  @override
+  Future<List<String>> getAvailableIngredients() async {
+    // Get all unique ingredient names from the database
+    final ingredients = await _database.getUniqueIngredientNames();
+    return ingredients;
+  }
+
+  @override
+  Future<List<String>> getAvailableUnits() async {
+    // Get all unique unit names from the database
+    final units = await _database.getUniqueUnitNames();
+    return units;
   }
 }

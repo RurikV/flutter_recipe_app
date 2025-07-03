@@ -16,6 +16,15 @@ import 'data/database/app_database.dart';
 import 'services/classification/object_detection_service.dart';
 import 'services/bluetooth_service.dart';
 import 'domain/usecases/recipe_manager.dart';
+import 'data/usecases/recipe_manager_impl.dart';
+import 'domain/repositories/recipe_repository.dart';
+import 'data/repositories/recipe_repository_impl.dart';
+import 'domain/services/api_service.dart';
+import 'data/services/api/api_service_impl.dart';
+import 'domain/services/database_service.dart';
+import 'data/services/database/database_service_impl.dart';
+import 'domain/services/connectivity_service.dart';
+import 'data/services/connectivity/connectivity_service_impl.dart';
 // Use conditional imports for platform-specific implementations
 import 'services/object_detection_service_locator.dart' as object_detection_locator;
 import 'services/service_locator.dart' as service_locator;
@@ -40,8 +49,24 @@ void main() async {
   await bluetoothService.initialize();
   getIt.registerSingleton<BluetoothService>(bluetoothService);
 
-  // Register RecipeManager as a singleton
-  getIt.registerSingleton<RecipeManager>(RecipeManager());
+  // Register services as singletons
+  getIt.registerSingleton<ApiService>(ApiServiceImpl());
+  getIt.registerSingleton<DatabaseService>(DatabaseServiceImpl());
+  getIt.registerSingleton<ConnectivityService>(ConnectivityServiceImpl());
+
+  // Register RecipeRepository as a singleton with service dependencies
+  getIt.registerSingleton<RecipeRepository>(
+    RecipeRepositoryImpl(
+      apiService: getIt<ApiService>(),
+      databaseService: getIt<DatabaseService>(),
+      connectivityService: getIt<ConnectivityService>()
+    )
+  );
+
+  // Register RecipeManager as a singleton with RecipeRepository dependency
+  getIt.registerSingleton<RecipeManager>(
+    RecipeManagerImpl(recipeRepository: getIt<RecipeRepository>())
+  );
 
   final Store<AppState> store = createStore();
   final authService = AuthService();
@@ -62,6 +87,10 @@ void main() async {
         Provider<AppDatabase>(create: (context) => service_locator.get<AppDatabase>()),
         Provider<ObjectDetectionService>(create: (context) => getIt<ObjectDetectionService>()),
         Provider<BluetoothService>(create: (context) => getIt<BluetoothService>()),
+        Provider<ApiService>(create: (context) => getIt<ApiService>()),
+        Provider<DatabaseService>(create: (context) => getIt<DatabaseService>()),
+        Provider<ConnectivityService>(create: (context) => getIt<ConnectivityService>()),
+        Provider<RecipeRepository>(create: (context) => getIt<RecipeRepository>()),
         Provider<RecipeManager>(create: (context) => getIt<RecipeManager>()),
       ],
       child: StoreProvider<AppState>(

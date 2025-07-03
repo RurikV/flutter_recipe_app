@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../models/recipe_image.dart';
+import '../../models/recipe_image.dart' as model;
 import 'object_detection_service.dart';
 
 /// Web implementation of the object detection service
@@ -14,14 +14,14 @@ class WebObjectDetectionService implements ObjectDetectionService {
   }
 
   @override
-  Future<List<DetectedObject>> detectObjects(RecipeImage image) async {
+  Future<List<ServiceDetectedObject>> detectObjects(model.RecipeImage image) async {
     // Simple implementation for web that returns dummy data
     // In a real implementation, this would use a web-based ML solution
     debugPrint('WebObjectDetectionService.detectObjects called with image: ${image.path}');
     
     // Return dummy detection results
     return [
-      DetectedObject(
+      ServiceDetectedObject(
         label: 'apple',
         confidence: 0.95,
         boundingBox: Rect(
@@ -31,7 +31,7 @@ class WebObjectDetectionService implements ObjectDetectionService {
           bottom: 100.0,
         ),
       ),
-      DetectedObject(
+      ServiceDetectedObject(
         label: 'banana',
         confidence: 0.85,
         boundingBox: Rect(

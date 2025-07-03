@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../../models/recipe_image.dart';
+import '../../models/recipe_image.dart' as model;
 import 'object_detection_service.dart';
 
 /// SSD (Single Shot MultiBox Detector) implementation of the object detection service
@@ -23,7 +23,7 @@ class SSDObjectDetectionService implements ObjectDetectionService {
   }
 
   @override
-  Future<List<DetectedObject>> detectObjects(RecipeImage image) async {
+  Future<List<ServiceDetectedObject>> detectObjects(model.RecipeImage image) async {
     if (!_isInitialized) {
       await initialize();
     }
@@ -50,7 +50,7 @@ class SSDObjectDetectionService implements ObjectDetectionService {
 
       // Generate random number of detections (1-5)
       final int numDetections = _random.nextInt(4) + 1;
-      final List<DetectedObject> detectedObjects = [];
+      final List<ServiceDetectedObject> detectedObjects = [];
 
       for (int i = 0; i < numDetections; i++) {
         // Pick a random label
@@ -65,7 +65,7 @@ class SSDObjectDetectionService implements ObjectDetectionService {
         final double width = 0.2 + _random.nextDouble() * 0.3;
         final double height = 0.2 + _random.nextDouble() * 0.3;
 
-        detectedObjects.add(DetectedObject(
+        detectedObjects.add(ServiceDetectedObject(
           label: label,
           confidence: confidence,
           boundingBox: Rect(
