@@ -32,6 +32,15 @@ class _IngredientDialogState extends State<IngredientDialog> {
     super.initState();
     _isEditMode = widget.ingredient != null;
 
+    // Ensure we have non-empty lists for dropdowns
+    final safeIngredients = widget.availableIngredients.isNotEmpty 
+        ? widget.availableIngredients 
+        : ['Ингредиент']; // Default if empty
+
+    final safeUnits = widget.availableUnits.isNotEmpty 
+        ? widget.availableUnits 
+        : ['шт']; // Default if empty
+
     if (_isEditMode) {
       // Initialize with the existing ingredient values
       _selectedIngredient = widget.ingredient!.name;
@@ -39,10 +48,15 @@ class _IngredientDialogState extends State<IngredientDialog> {
       _selectedUnit = widget.ingredient!.unit;
     } else {
       // Initialize with default values
-      _selectedIngredient = widget.availableIngredients.isNotEmpty ? widget.availableIngredients[0] : '';
+      _selectedIngredient = safeIngredients.first;
       _quantityController = TextEditingController();
-      _selectedUnit = widget.availableUnits.isNotEmpty ? widget.availableUnits[0] : '';
+      _selectedUnit = safeUnits.first;
     }
+
+    // Debug output to verify initialization
+    debugPrint('Initialized with _selectedIngredient=$_selectedIngredient, _selectedUnit=$_selectedUnit');
+    debugPrint('Available ingredients: ${safeIngredients.join(', ')}');
+    debugPrint('Available units: ${safeUnits.join(', ')}');
   }
 
   @override
@@ -54,6 +68,16 @@ class _IngredientDialogState extends State<IngredientDialog> {
   @override
   Widget build(BuildContext context) {
     debugPrint('Building IngredientDialog with _selectedIngredient=$_selectedIngredient, _selectedUnit=$_selectedUnit');
+
+    // Ensure we have non-empty lists for dropdowns
+    final safeIngredients = widget.availableIngredients.isNotEmpty 
+        ? widget.availableIngredients 
+        : ['Ингредиент']; // Default if empty
+
+    final safeUnits = widget.availableUnits.isNotEmpty 
+        ? widget.availableUnits 
+        : ['шт']; // Default if empty
+
     return Dialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
@@ -132,17 +156,18 @@ class _IngredientDialogState extends State<IngredientDialog> {
                         else
                           Padding(
                             padding: const EdgeInsets.only(bottom: 8.0),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: DropdownButtonFormField<String>(
-                                value: _selectedIngredient.isNotEmpty ? _selectedIngredient : null,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4.0),
+                              ),
+                              child: DropdownButton<String>(
+                                value: _selectedIngredient.isNotEmpty ? _selectedIngredient : safeIngredients.first,
                                 isExpanded: true,
                                 icon: const Icon(Icons.arrow_drop_down),
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.zero,
-                                ),
-                                items: widget.availableIngredients.toSet().toList().map((ingredient) {
+                                underline: Container(height: 0),
+                                items: safeIngredients.toSet().toList().map((ingredient) {
                                   return DropdownMenuItem<String>(
                                     value: ingredient,
                                     child: Text(ingredient),
@@ -154,12 +179,6 @@ class _IngredientDialogState extends State<IngredientDialog> {
                                       _selectedIngredient = value;
                                     });
                                   }
-                                },
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Пожалуйста, выберите ингредиент';
-                                  }
-                                  return null;
                                 },
                                 style: const TextStyle(
                                   fontFamily: 'Roboto',
@@ -264,18 +283,18 @@ class _IngredientDialogState extends State<IngredientDialog> {
                                 ),
                                 Expanded(
                                   flex: 2,
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: DropdownButtonFormField<String>(
-                                      value: _selectedUnit.isNotEmpty ? _selectedUnit : null,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(4.0),
+                                    ),
+                                    child: DropdownButton<String>(
+                                      value: _selectedUnit.isNotEmpty ? _selectedUnit : safeUnits.first,
                                       isExpanded: true,
                                       icon: const Icon(Icons.arrow_drop_down),
-                                      decoration: const InputDecoration(
-                                        border: InputBorder.none,
-                                        contentPadding: EdgeInsets.zero,
-                                        hintText: 'Выберите единицу',
-                                      ),
-                                      items: widget.availableUnits.toSet().toList().map((unit) {
+                                      underline: Container(height: 0),
+                                      items: safeUnits.toSet().toList().map((unit) {
                                         return DropdownMenuItem<String>(
                                           value: unit,
                                           child: Text(unit),
@@ -287,12 +306,6 @@ class _IngredientDialogState extends State<IngredientDialog> {
                                             _selectedUnit = value;
                                           });
                                         }
-                                      },
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Выберите единицу';
-                                        }
-                                        return null;
                                       },
                                       style: const TextStyle(
                                         fontFamily: 'Roboto',

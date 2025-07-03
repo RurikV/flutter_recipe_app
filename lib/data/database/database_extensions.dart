@@ -212,6 +212,15 @@ class DatabaseExtensions {
         uniqueUnits.add(ingredient.unit);
       }
     }
+
+    // If no units found in the database, return a default list of common units
+    if (uniqueUnits.isEmpty) {
+      return [
+        'г', 'кг', 'мл', 'л', 'шт', 'ст. ложка', 'ч. ложка', 'стакан', 
+        'щепотка', 'по вкусу', 'зубчик'
+      ];
+    }
+
     return uniqueUnits.toList();
   }
 }
