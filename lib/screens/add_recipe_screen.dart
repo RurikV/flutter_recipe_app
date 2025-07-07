@@ -58,13 +58,17 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       _availableIngredients = await _recipeManager.getIngredients();
       _availableUnits = await _recipeManager.getUnits();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка загрузки данных: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка загрузки данных: $e')),
+        );
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

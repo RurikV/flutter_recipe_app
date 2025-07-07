@@ -21,18 +21,23 @@ class ProfileScreen extends StatelessWidget {
       final authService = Provider.of<AuthService>(context, listen: false);
       await authService.logout();
 
-      // Dispatch logout action to update Redux state
-      StoreProvider.of<AppState>(context, listen: false)
-          .dispatch(LogoutAction());
+      // Check if the context is still valid before using it
+      if (context.mounted) {
+        // Dispatch logout action to update Redux state
+        StoreProvider.of<AppState>(context, listen: false)
+            .dispatch(LogoutAction());
 
-      // Navigate to login screen
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
+        // Navigate to login screen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка при выходе: ${e.toString()}')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка при выходе: ${e.toString()}')),
+        );
+      }
     }
   }
 

@@ -362,7 +362,16 @@ Future<void> _handleInitializeMessage(IsolateMessage message, SendPort sendPort)
 
     // Initialize TensorFlow Lite interpreter
     // (This is a placeholder - actual implementation would use TFLite)
+    // In a real implementation, modelData and labels would be used here:
+    // interpreter = Interpreter.fromBuffer(modelData);
+    // _labels = labels;
     await Future.delayed(const Duration(milliseconds: 100)); // Simulate initialization
+
+    // Suppress unused variable warnings for placeholder implementation
+    // ignore: unused_local_variable
+    modelData;
+    // ignore: unused_local_variable
+    labels;
 
     // Send success message back to main thread
     final resultMessage = IsolateMessage(

@@ -315,10 +315,6 @@ class ObjectDetectionPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 
-    final textPaint = Paint()
-      ..color = Colors.black
-      ..style = PaintingStyle.fill;
-
     for (final object in detectedObjects) {
       // Convert normalized coordinates to actual pixel values
       final rect = ui.Rect.fromLTRB(
