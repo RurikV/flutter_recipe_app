@@ -3,7 +3,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:provider/provider.dart';
 import '../redux/app_state.dart';
 import '../redux/actions.dart';
-import '../services/auth_service.dart';
+import '../services/auth/auth_service.dart';
 import '../widgets/navigation/auth_bottom_navigation_bar.dart';
 import 'registration_screen.dart';
 import 'home_screen.dart';

@@ -1,5 +1,5 @@
 name: flutter_recipe_app
-description: "A new Flutter project."
+description: "A comprehensive recipe management app that helps you organize, create, and discover delicious recipes."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -44,7 +44,7 @@ dependencies:
   auto_route: ^7.8.4
 
   # Database
-  drift: ^2.14.1
+  drift: ^2.14.0
   sqlite3_flutter_libs: ^0.5.20
   path_provider: ^2.1.2
   path: ^1.8.3
@@ -102,9 +102,12 @@ dependency_overrides:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
 
+  # Database
+  drift: ^2.14.0
+
   # Code generation
   build_runner: ^2.4.8
-  drift_dev: ^2.14.1
+  drift_dev: ^2.14.0
   json_serializable: ^6.7.1
   auto_route_generator: ^7.3.2
 

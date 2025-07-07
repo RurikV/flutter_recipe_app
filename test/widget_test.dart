@@ -12,34 +12,14 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'package:flutter_recipe_app/models/recipe.dart';
 import 'package:flutter_recipe_app/models/recipe_step.dart';
-import 'package:flutter_recipe_app/data/api_service.dart';
+import 'package:flutter_recipe_app/domain/services/api_service.dart';
 import 'package:flutter_recipe_app/main.dart';
 import 'package:flutter_recipe_app/presentation/providers/language_provider.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/store.dart';
 
-// Mock implementation of ApiService for testing
-class MockApiService extends ApiService {
-  @override
-  Future<Recipe> createRecipe(Recipe recipe) async {
-    // Simulate successful recipe creation
-    return Recipe(
-      uuid: 'mock-uuid',
-      name: recipe.name,
-      images: recipe.images,
-      description: recipe.description,
-      instructions: recipe.instructions,
-      difficulty: recipe.difficulty,
-      duration: recipe.duration,
-      rating: recipe.rating,
-      tags: recipe.tags,
-      ingredients: recipe.ingredients,
-      steps: recipe.steps,
-      isFavorite: recipe.isFavorite,
-      comments: recipe.comments,
-    );
-  }
-}
+// Use the MockApiService from service_locator_test.dart
+import 'service_locator_test.dart' as test_locator;
 
 void main() {
   // Basic app rendering test
@@ -71,8 +51,8 @@ void main() {
     late ApiService apiService;
 
     setUp(() {
-      // Use mock API service instead of real one
-      apiService = MockApiService();
+      // Create a new MockApiService instance directly
+      apiService = test_locator.MockApiService();
     });
 
     test('Create recipe with valid data', () async {
@@ -108,9 +88,9 @@ void main() {
 
         // Verify the recipe was created successfully
         expect(createdRecipe, isNotNull);
-        expect(createdRecipe.name, equals(recipe.name));
+        expect(createdRecipe['name'], equals(recipe.name));
 
-        print('[DEBUG_LOG] Recipe created successfully: ${createdRecipe.uuid}');
+        print('[DEBUG_LOG] Recipe created successfully: ${createdRecipe['id']}');
       } catch (e) {
         fail('Failed to create recipe: $e');
       }
@@ -144,9 +124,9 @@ void main() {
 
         // Verify the recipe was created successfully
         expect(createdRecipe, isNotNull);
-        expect(createdRecipe.name, equals(recipe.name));
+        expect(createdRecipe['name'], equals(recipe.name));
 
-        print('[DEBUG_LOG] Recipe with empty duration created successfully: ${createdRecipe.uuid}');
+        print('[DEBUG_LOG] Recipe with empty duration created successfully: ${createdRecipe['id']}');
       } catch (e) {
         fail('Failed to create recipe with empty duration: $e');
       }
@@ -180,9 +160,9 @@ void main() {
 
         // Verify the recipe was created successfully
         expect(createdRecipe, isNotNull);
-        expect(createdRecipe.name, equals(recipe.name));
+        expect(createdRecipe['name'], equals(recipe.name));
 
-        print('[DEBUG_LOG] Recipe with non-numeric duration created successfully: ${createdRecipe.uuid}');
+        print('[DEBUG_LOG] Recipe with non-numeric duration created successfully: ${createdRecipe['id']}');
       } catch (e) {
         fail('Failed to create recipe with non-numeric duration: $e');
       }

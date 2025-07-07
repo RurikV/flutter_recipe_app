@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../services/image_service.dart';
+import '../../services/image_picker/image_service.dart';
 import '../../models/recipe_image.dart';
 import 'image_source_dialog.dart';
 
 /// A handler class that manages photo capture and selection operations.
 class PhotoCaptureHandler {
   final ImageService _imageService = ImageService();
-  
+
   /// Shows a dialog to select the image source (camera or gallery)
   /// and handles the selected option.
   Future<void> showImageSourceDialog({
