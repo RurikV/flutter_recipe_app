@@ -190,6 +190,70 @@ fvm flutter run lib/test_recipe_creation.dart
 flutter run lib/test_recipe_creation.dart
 ```
 
+## Authentication
+
+The app integrates with the FoodAPI service (https://foodapi.dzolotov.pro) for user authentication and recipe management. To use the app's features, you need to authenticate with valid credentials.
+
+### Test User Credentials
+
+For testing and development purposes, you can use the following test user credentials:
+
+- **Username:** `user1`
+- **Password:** `user1`
+
+### How to Authenticate
+
+#### 1. Using the App Interface
+
+1. Launch the app using any of the entry points mentioned above
+2. Navigate to the login/authentication screen
+3. Enter the test credentials:
+   - Username: `user1`
+   - Password: `user1`
+4. Tap the login button to authenticate
+
+#### 2. API Authentication
+
+The app uses the FoodAPI service for authentication. The authentication process works as follows:
+
+1. **Login Endpoint:** `PUT https://foodapi.dzolotov.pro/user`
+2. **Request Body:**
+   ```json
+   {
+     "login": "user1",
+     "password": "user1"
+   }
+   ```
+3. **Response:** Returns a token and user ID for authenticated requests
+
+#### 3. Direct User Profile Access
+
+You can also access user profiles directly using the API:
+
+```bash
+curl https://foodapi.dzolotov.pro/user/1
+```
+
+This will return the user profile information for user ID 1 (which corresponds to the `user1` test account).
+
+### Authentication Features
+
+- **Automatic Token Management:** The app automatically handles authentication tokens
+- **Persistent Login:** User sessions are maintained across app restarts
+- **Fallback Authentication:** The app includes fallback mechanisms for API compatibility
+- **User Profile Access:** Access to user-specific data like favorites and created recipes
+
+### Troubleshooting Authentication
+
+If you encounter authentication issues:
+
+1. **Check Network Connection:** Ensure you have internet access to reach the FoodAPI service
+2. **Verify Credentials:** Make sure you're using the correct test credentials (`user1`/`user1`)
+3. **API Status:** The FoodAPI service should be accessible at https://foodapi.dzolotov.pro
+4. **Clear App Data:** If persistent login issues occur, try clearing the app's stored data
+
+For more detailed information about the API integration, see [FOODAPI_INTEGRATION.md](FOODAPI_INTEGRATION.md).
+
 ## Testing
 
 ### Run Unit Tests
