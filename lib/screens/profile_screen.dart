@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
@@ -206,11 +207,13 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ),
 
-                        // Bluetooth devices section
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: BluetoothDevicesSection(),
-                        ),
+                        // Bluetooth devices section - only show on mobile platforms
+                        if (defaultTargetPlatform == TargetPlatform.android || 
+                            defaultTargetPlatform == TargetPlatform.iOS)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 24.0),
+                            child: BluetoothDevicesSection(),
+                          ),
 
                         // Add some bottom padding
                         const SizedBox(height: 40),

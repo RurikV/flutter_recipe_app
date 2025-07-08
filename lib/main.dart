@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -44,10 +45,13 @@ void main() async {
   // The service is registered in the platform-specific implementation
   await object_detection_locator.initObjectDetectionService();
 
-  // Initialize and register Bluetooth service
-  final bluetoothService = BluetoothService();
-  await bluetoothService.initialize();
-  getIt.registerSingleton<BluetoothService>(bluetoothService);
+  // Initialize and register Bluetooth service only on mobile platforms
+  if (defaultTargetPlatform == TargetPlatform.android || 
+      defaultTargetPlatform == TargetPlatform.iOS) {
+    final bluetoothService = BluetoothService();
+    await bluetoothService.initialize();
+    getIt.registerSingleton<BluetoothService>(bluetoothService);
+  }
 
   // Register services as singletons
   getIt.registerSingleton<ApiService>(ApiServiceImpl());
@@ -86,7 +90,10 @@ void main() async {
         Provider<AuthService>(create: (context) => authService),
         Provider<AppDatabase>(create: (context) => service_locator.get<AppDatabase>()),
         Provider<ObjectDetectionService>(create: (context) => getIt<ObjectDetectionService>()),
-        Provider<BluetoothService>(create: (context) => getIt<BluetoothService>()),
+        // Only provide BluetoothService on mobile platforms
+        if (defaultTargetPlatform == TargetPlatform.android || 
+            defaultTargetPlatform == TargetPlatform.iOS)
+          Provider<BluetoothService>(create: (context) => getIt<BluetoothService>()),
         Provider<ApiService>(create: (context) => getIt<ApiService>()),
         Provider<DatabaseService>(create: (context) => getIt<DatabaseService>()),
         Provider<ConnectivityService>(create: (context) => getIt<ConnectivityService>()),
