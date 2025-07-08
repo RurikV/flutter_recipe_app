@@ -2,7 +2,6 @@ import 'package:redux/redux.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/actions.dart';
 import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
-import 'package:flutter_recipe_app/data/models/comment.dart' as data_model;
 import 'package:flutter_recipe_app/domain/entities/comment.dart' as domain;
 import 'package:flutter_recipe_app/data/models/recipe.dart';
 import 'package:get_it/get_it.dart';
