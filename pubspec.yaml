@@ -90,6 +90,7 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   golden_toolkit: ^0.15.0
+  flutter_launcher_icons: ^0.13.1
 
 # Override dependencies to exclude problematic packages
 dependency_overrides:
@@ -158,3 +159,11 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Flutter Launcher Icons configuration
+flutter_launcher_icons:
+  android: true
+  ios: true
+  web:
+    generate: true
+  image_path: "assets/app_icon.png"
