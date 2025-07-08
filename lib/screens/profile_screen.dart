@@ -9,7 +9,7 @@ import '../redux/actions.dart';
 import '../services/auth/auth_service.dart';
 import '../services/bluetooth_service.dart';
 import '../plugins/bluetooth_le_scanner/bluetooth_le_scanner.dart';
-import '../models/user.dart';
+import '../data/models/user.dart';
 import 'login_screen.dart';
 
 /// A stateless widget representing the profile screen.

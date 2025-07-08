@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../../models/recipe_image.dart' as model;
+import '../../../data/models/recipe_image.dart' as model;
 import 'object_detection_service.dart';
 
 /// SSD (Single Shot MultiBox Detector) implementation of the object detection service

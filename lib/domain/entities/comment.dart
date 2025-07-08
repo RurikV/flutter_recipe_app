@@ -11,15 +11,7 @@ class Comment {
     required this.date,
   });
 
-  factory Comment.fromJson(Map<String, dynamic> json) {
-    return Comment(
-      id: json['id'] as String,
-      authorName: json['authorName'] as String,
-      text: json['text'] as String,
-      date: json['date'] as String,
-    );
-  }
-
+  /// Convert Comment to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -27,5 +19,15 @@ class Comment {
       'text': text,
       'date': date,
     };
+  }
+
+  /// Create Comment from JSON
+  factory Comment.fromJson(Map<String, dynamic> json) {
+    return Comment(
+      id: json['id'] as String,
+      authorName: json['authorName'] as String,
+      text: json['text'] as String,
+      date: json['date'] as String,
+    );
   }
 }

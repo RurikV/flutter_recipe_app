@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import '../../models/recipe_image.dart';
+import '../../../data/models/recipe_image.dart';
 import '../../services/image_picker/image_service.dart';
 import '../../services/classification/object_detection_service.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/recipe_image.dart';
+import '../../../data/models/recipe_image.dart';
 import 'photo_capture_handler.dart';
 
 class PhotoUploadSection extends StatefulWidget {

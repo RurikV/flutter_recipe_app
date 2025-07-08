@@ -6,7 +6,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
-import '../../models/recipe_image.dart' as model;
+import '../../../data/models/recipe_image.dart' as model;
 import 'object_detection_service.dart';
 
 // Mock implementation of initTfliteFlutterPlugin for now

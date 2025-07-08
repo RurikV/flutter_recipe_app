@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import '../l10n/app_localizations.dart';
-import '../../models/recipe.dart';
+import '../../../data/models/recipe.dart';
 import '../utils/page_transition.dart';
 import '../widgets/recipe/recipe_list.dart';
 import '../widgets/navigation/auth_bottom_navigation_bar.dart';

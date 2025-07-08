@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:provider/provider.dart';
-import '../../models/recipe.dart';
-import '../../models/comment.dart';
-import '../../models/recipe_step.dart';
+import '../../../data/models/recipe.dart';
+import '../../../data/models/comment.dart' as data_model;
+import '../domain/entities/comment.dart' as domain;
+import '../../../data/models/recipe_step.dart';
 import '../domain/usecases/recipe_manager.dart';
 import '../services/classification/object_detection_service.dart';
 import '../utils/entity_converters.dart';
@@ -58,18 +59,30 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   void _addComment(String commentText) async {
     if (commentText.isEmpty) return;
 
-    final comment = Comment(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+    final commentId = DateTime.now().millisecondsSinceEpoch.toString();
+    final commentDate = DateTime.now().toString().substring(0, 10); // Format: YYYY-MM-DD
+
+    // Create domain Comment for RecipeManager
+    final domainComment = domain.Comment(
+      id: commentId,
       authorName: 'User', // In a real app, this would be the current user's name
       text: commentText,
-      date: DateTime.now().toString().substring(0, 10), // Format: YYYY-MM-DD
+      date: commentDate,
     );
 
-    final success = await _recipeManager.addComment(_recipe.uuid, comment);
+    final success = await _recipeManager.addComment(_recipe.uuid, domainComment);
     if (success && mounted) {
       setState(() {
+        // Create data model Comment for Recipe state update
+        final dataComment = data_model.Comment(
+          id: commentId,
+          authorName: 'User',
+          text: commentText,
+          date: commentDate,
+        );
+
         // Update the local recipe object with the new comment
-        final updatedComments = List<Comment>.from(_recipe.comments)..add(comment);
+        final updatedComments = List<data_model.Comment>.from(_recipe.comments)..add(dataComment);
         _recipe = _recipe.copyWith(comments: updatedComments);
       });
     }

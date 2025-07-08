@@ -1,12 +1,65 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_recipe_app/services/auth/auth_service.dart';
+import 'package:dio/dio.dart';
+
+// Create a Dio instance with interceptors for mocking
+Dio createMockDio() {
+  final dio = Dio();
+
+  dio.interceptors.add(InterceptorsWrapper(
+    onRequest: (options, handler) {
+      // Mock login endpoint
+      if (options.method == 'PUT' && options.path == '/user') {
+        handler.resolve(Response(
+          data: {
+            'token': 'mock_token_123',
+            'id': 1,
+          },
+          statusCode: 200,
+          requestOptions: options,
+        ));
+        return;
+      }
+
+      // Mock getUserProfile endpoint
+      if (options.method == 'GET' && options.path == '/user/1') {
+        handler.resolve(Response(
+          data: {
+            'id': 1,
+            'login': 'user1',
+            'password': 'user1',
+            'userFreezer': [],
+            'favoriteRecipes': [],
+            'comments': [],
+          },
+          statusCode: 200,
+          requestOptions: options,
+        ));
+        return;
+      }
+
+      // For any other requests, return 404
+      handler.resolve(Response(
+        data: {'error': 'Not found'},
+        statusCode: 404,
+        requestOptions: options,
+      ));
+    },
+  ));
+
+  return dio;
+}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('AuthService Tests', () {
     late AuthService authService;
+    late Dio mockDio;
 
     setUp(() {
-      authService = AuthService();
+      mockDio = createMockDio();
+      authService = AuthService(dio: mockDio, initializeUser: false);
     });
 
     test('Should authenticate user1 with user1', () async {

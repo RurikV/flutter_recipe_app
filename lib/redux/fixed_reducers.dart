@@ -1,7 +1,7 @@
-import 'package:flutter_recipe_app/models/recipe.dart';
-import 'package:flutter_recipe_app/models/recipe_step.dart';
-import 'package:flutter_recipe_app/models/comment.dart';
-import 'package:flutter_recipe_app/models/user.dart';
+import 'package:flutter_recipe_app/data/models/recipe.dart';
+import 'package:flutter_recipe_app/data/models/recipe_step.dart';
+import 'package:flutter_recipe_app/data/models/comment.dart';
+import 'package:flutter_recipe_app/data/models/user.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/actions.dart';
 

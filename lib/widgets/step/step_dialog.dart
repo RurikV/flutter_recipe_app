@@ -436,6 +436,7 @@ class _StepDialogState extends State<StepDialog> {
                       if (_formKey.currentState!.validate()) {
                         widget.onSave(
                           RecipeStep(
+                            name: _descriptionController.text,
                             description: _descriptionController.text,
                             duration: _durationController.text,
                             isCompleted: _isEditMode ? widget.step!.isCompleted : false,

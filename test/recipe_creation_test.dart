@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_recipe_app/models/recipe.dart';
-import 'package:flutter_recipe_app/models/recipe_step.dart';
+import 'package:flutter_recipe_app/data/models/recipe.dart';
+import 'package:flutter_recipe_app/data/models/recipe_step.dart';
 import 'package:flutter_recipe_app/domain/services/api_service.dart';
 
 // Use the MockApiService from service_locator_test.dart
