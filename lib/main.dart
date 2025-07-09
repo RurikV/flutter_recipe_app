@@ -77,10 +77,6 @@ void main() async {
   // Check authentication status
   store.dispatch(CheckAuthStatusAction());
 
-  // Load initial data
-  store.dispatch(LoadRecipesAction());
-  store.dispatch(LoadFavoriteRecipesAction());
-
   runApp(
     MultiProvider(
       providers: [

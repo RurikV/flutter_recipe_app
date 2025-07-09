@@ -19,13 +19,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    // Load both recipes and favorites when the app starts
+    // Load recipes when the app starts (favorites will be loaded automatically after recipes complete)
     // Capture the store before the async operation to avoid using BuildContext across async gaps
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         final store = StoreProvider.of<AppState>(context, listen: false);
         store.dispatch(LoadRecipesAction());
-        store.dispatch(LoadFavoriteRecipesAction());
       }
     });
   }
@@ -35,10 +34,9 @@ class _HomeScreenState extends State<HomeScreen> {
       _selectedIndex = index;
     });
 
-    // Always dispatch both actions to ensure both recipes and favorites are loaded
+    // Dispatch LoadRecipesAction to refresh data (favorites will be loaded automatically after recipes complete)
     final store = StoreProvider.of<AppState>(context, listen: false);
     store.dispatch(LoadRecipesAction());
-    store.dispatch(LoadFavoriteRecipesAction());
   }
 
   @override

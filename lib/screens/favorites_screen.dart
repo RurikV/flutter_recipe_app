@@ -4,7 +4,6 @@ import '../l10n/app_localizations.dart';
 import '../../../data/models/recipe.dart';
 import '../widgets/recipe/recipe_list.dart';
 import '../redux/app_state.dart';
-import '../redux/actions.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -15,17 +14,11 @@ class FavoritesScreen extends StatefulWidget {
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
 
-  void _loadFavorites() {
-    // Dispatch action to load favorite recipes
-    StoreProvider.of<AppState>(context, listen: false)
-        .dispatch(LoadFavoriteRecipesAction());
-  }
-
   @override
   void initState() {
     super.initState();
-    // Load favorites when the screen is first displayed
-    Future.microtask(() => _loadFavorites());
+    // Favorites should already be available in Redux state from previous loads
+    // No need to reload them here as it can cause them to disappear if the operation fails
   }
 
   @override
@@ -50,11 +43,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               child: StoreConnector<AppState, _FavoritesViewModel>(
                 converter: (store) => _FavoritesViewModel.fromStore(store),
                 builder: (context, viewModel) {
-                  if (viewModel.isLoading) {
+                  // Show loading indicator only if we have no favorites and are loading
+                  if (viewModel.isLoading && viewModel.favoriteRecipes.isEmpty) {
                     return const Center(
                       child: CircularProgressIndicator(),
                     );
-                  } else if (viewModel.error.isNotEmpty) {
+                  } 
+                  // Show error only if we have no favorites and there's an error
+                  else if (viewModel.error.isNotEmpty && viewModel.favoriteRecipes.isEmpty) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -78,7 +74,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         ],
                       ),
                     );
-                  } else if (viewModel.favoriteRecipes.isEmpty) {
+                  } 
+                  // Show "no favorites" message only if we're not loading and have no favorites
+                  else if (viewModel.favoriteRecipes.isEmpty && !viewModel.isLoading) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -96,8 +94,41 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         ],
                       ),
                     );
-                  } else {
-                    return RecipeList(recipes: viewModel.favoriteRecipes);
+                  } 
+                  // Show favorites list with optional error banner
+                  else {
+                    return Column(
+                      children: [
+                        // Show error banner if there's an error but we have favorites to show
+                        if (viewModel.error.isNotEmpty)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(8.0),
+                            color: Colors.orange.withValues(alpha: 0.1),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.warning, color: Colors.orange, size: 16),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Unable to refresh favorites',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Colors.orange.shade700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        // Show loading indicator at top if refreshing
+                        if (viewModel.isLoading)
+                          const LinearProgressIndicator(),
+                        // Show the favorites list
+                        Expanded(
+                          child: RecipeList(recipes: viewModel.favoriteRecipes),
+                        ),
+                      ],
+                    );
                   }
                 },
               ),

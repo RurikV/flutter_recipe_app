@@ -28,21 +28,14 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
         .dispatch(LoadRecipesAction());
   }
 
-  void _loadFavorites() {
-    // Dispatch action to load favorite recipes
-    StoreProvider.of<AppState>(context, listen: false)
-        .dispatch(LoadFavoriteRecipesAction());
-  }
-
   @override
   void initState() {
     super.initState();
-    // Load both recipes and favorites when the screen is first displayed
+    // Load recipes when the screen is first displayed (favorites will be loaded automatically after recipes complete)
     // Only if loadRecipesOnInit is true (default)
     if (widget.loadRecipesOnInit) {
       Future.microtask(() {
         _loadRecipes();
-        _loadFavorites();
       });
     }
   }

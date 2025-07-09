@@ -3,7 +3,7 @@ import 'package:redux/redux.dart';
 import 'package:flutter_recipe_app/data/models/recipe.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/actions.dart';
-import 'package:flutter_recipe_app/redux/reducers_fixed.dart';
+import 'package:flutter_recipe_app/redux/reducers.dart';
 
 // Mock recipe data for testing
 final List<Recipe> mockRecipes = [
