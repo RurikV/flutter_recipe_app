@@ -155,15 +155,13 @@ class RecipeDetailPage extends StatelessWidget {
 
 @RoutePage()
 class GalleryPage extends StatelessWidget {
-  @pathParam
   final String recipeUuid;
-  @queryParam
   final String recipeName;
 
   const GalleryPage({
     super.key,
-    required this.recipeUuid,
-    required this.recipeName,
+    @pathParam required this.recipeUuid,
+    @queryParam required this.recipeName,
   });
 
   @override
