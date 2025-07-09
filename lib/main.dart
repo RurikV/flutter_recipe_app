@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'package:get_it/get_it.dart';
-import 'screens/home_screen.dart';
-import 'screens/login_screen.dart';
 import 'theme/app_theme.dart';
 import 'presentation/providers/language_provider.dart';
 import 'l10n/app_localizations.dart';
@@ -26,6 +24,7 @@ import 'domain/services/database_service.dart';
 import 'data/services/database/database_service_impl.dart';
 import 'domain/services/connectivity_service.dart';
 import 'data/services/connectivity/connectivity_service_impl.dart';
+import 'routing/app_router.dart';
 // Use conditional imports for platform-specific implementations
 import 'services/object_detection_service_locator.dart' as object_detection_locator;
 import 'services/service_locator.dart' as service_locator;
@@ -114,8 +113,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
+    final appRouter = AppRouter();
 
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Recipes',
       debugShowCheckedModeBanner: false,
 
@@ -140,12 +140,9 @@ class MyApp extends StatelessWidget {
           },
         ),
       ),
-      home: StoreConnector<AppState, bool>(
-        converter: (store) => store.state.isAuthenticated,
-        builder: (context, isAuthenticated) {
-          return isAuthenticated ? const HomeScreen() : const LoginScreen();
-        },
-      ),
+
+      // Navigator 2.0 configuration
+      routerConfig: appRouter.config(),
     );
   }
 }
