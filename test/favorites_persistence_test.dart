@@ -71,20 +71,6 @@ void main() {
       // This would be done by the middleware to update the favorites list
       store.dispatch(LoadFavoriteRecipesAction());
 
-      // Step 4: Manually update the favorites list in the store
-      // This simulates what would happen when the database returns the updated favorites
-      final updatedFavorites = [...store.state.favoriteRecipes, mockRecipes[0].copyWith(isFavorite: true)];
-      store = Store<AppState>(
-        appReducer,
-        initialState: store.state.copyWith(
-          favoriteRecipes: updatedFavorites,
-          recipes: store.state.recipes.map((r) => 
-            r.uuid == '1' ? r.copyWith(isFavorite: true) : r
-          ).toList(),
-          isAuthenticated: store.state.isAuthenticated,
-        ),
-      );
-
       // Print debug info after toggling
       print('[DEBUG_LOG] Favorites after toggling: ${store.state.favoriteRecipes.map((r) => r.name).join(', ')}');
       print('[DEBUG_LOG] Favorites count after toggling: ${store.state.favoriteRecipes.length}');
@@ -93,7 +79,7 @@ void main() {
       expect(store.state.favoriteRecipes.length, 2);
       expect(store.state.favoriteRecipes.any((r) => r.uuid == '1'), isTrue);
 
-      // Step 5: Simulate switching to favorites screen
+      // Step 4: Simulate switching to favorites screen
       // This would happen when user taps the favorites tab
       // In the real app, this would trigger LoadFavoriteRecipesAction
       store.dispatch(LoadFavoriteRecipesAction());
@@ -104,7 +90,7 @@ void main() {
       // Verify that both favorites are still in the store
       expect(store.state.favoriteRecipes.length, 2);
 
-      // Step 6: Simulate switching back to recipes screen
+      // Step 5: Simulate switching back to recipes screen
       // This would happen when user taps the recipes tab
       // In the real app, this would trigger LoadRecipesAction and LoadFavoriteRecipesAction
       store.dispatch(LoadRecipesAction());
