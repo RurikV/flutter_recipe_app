@@ -4,6 +4,7 @@ import 'package:flutter_recipe_app/redux/actions.dart';
 import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
 import 'package:flutter_recipe_app/domain/entities/comment.dart' as domain;
 import 'package:flutter_recipe_app/data/models/recipe.dart';
+import 'package:flutter_recipe_app/data/mappers/recipe_mapper.dart';
 import 'package:get_it/get_it.dart';
 
 // Helper method to create a default recipe
@@ -47,8 +48,9 @@ Middleware<AppState> _createLoadRecipesMiddleware() {
 
       try {
         final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
-        final recipes = await recipeManager.getRecipes();
-        store.dispatch(RecipesLoadedAction(recipes));
+        final domainRecipes = await recipeManager.getRecipes();
+        final dataModelRecipes = domainRecipes.map((domainRecipe) => RecipeMapper.toModel(domainRecipe)).toList();
+        store.dispatch(RecipesLoadedAction(dataModelRecipes));
       } catch (e) {
         store.dispatch(RecipesLoadErrorAction(e.toString()));
       }
@@ -73,8 +75,9 @@ Middleware<AppState> _createLoadFavoriteRecipesMiddleware() {
 
       try {
         final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
-        final favoriteRecipes = await recipeManager.getFavoriteRecipes();
-        store.dispatch(FavoriteRecipesLoadedAction(favoriteRecipes));
+        final domainFavoriteRecipes = await recipeManager.getFavoriteRecipes();
+        final dataModelFavoriteRecipes = domainFavoriteRecipes.map((domainRecipe) => RecipeMapper.toModel(domainRecipe)).toList();
+        store.dispatch(FavoriteRecipesLoadedAction(dataModelFavoriteRecipes));
       } catch (e) {
         // Handle error if needed
         print('Error loading favorite recipes: $e');

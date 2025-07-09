@@ -18,7 +18,7 @@ AppState appReducer(AppState state, dynamic action) {
 // Recipes reducer
 List<Recipe> recipesReducer(List<Recipe> recipes, dynamic action) {
   if (action is RecipesLoadedAction) {
-    return action.recipes.cast<Recipe>();
+    return action.recipes;
   } else if (action is ToggleFavoriteAction) {
     return recipes.map((recipe) {
       if (recipe.uuid == action.recipeId) {
@@ -64,7 +64,7 @@ List<Recipe> recipesReducer(List<Recipe> recipes, dynamic action) {
 // Favorite recipes reducer
 List<Recipe> favoriteRecipesReducer(List<Recipe> favoriteRecipes, dynamic action) {
   if (action is FavoriteRecipesLoadedAction) {
-    return action.favoriteRecipes.cast<Recipe>();
+    return action.favoriteRecipes;
   } else if (action is ToggleFavoriteAction) {
     // Find the recipe in the recipes list
     final recipe = favoriteRecipes.firstWhere(
