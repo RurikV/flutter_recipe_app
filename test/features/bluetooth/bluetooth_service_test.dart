@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_recipe_app/services/bluetooth_service.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('BluetoothService', () {
     late BluetoothService bluetoothService;
 
@@ -28,7 +30,7 @@ void main() {
       );
 
       final result = await bluetoothService.startScan();
-      
+
       expect(result.success, true);
       expect(result.message, 'Scanning started successfully');
     });
@@ -52,7 +54,7 @@ void main() {
       );
 
       final result = await bluetoothService.startScan();
-      
+
       expect(result.success, false);
       expect(result.message, contains('геолокации'));
       expect(result.message, contains('разрешение'));
@@ -77,7 +79,7 @@ void main() {
       );
 
       final result = await bluetoothService.startScan();
-      
+
       expect(result.success, false);
       expect(result.message, contains('Bluetooth отключен'));
     });
@@ -99,10 +101,10 @@ void main() {
 
       // Start scanning first time
       await bluetoothService.startScan();
-      
+
       // Try to start scanning again
       final result = await bluetoothService.startScan();
-      
+
       expect(result.success, true);
       expect(result.message, 'Already scanning');
     });
