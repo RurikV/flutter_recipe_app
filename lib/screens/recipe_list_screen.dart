@@ -95,6 +95,8 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                           child: CircularProgressIndicator(),
                         );
                       } else if (viewModel.error.isNotEmpty) {
+                        // Log error to console when displaying to user
+                        print('[UI_ERROR] Displaying error in RecipeListScreen: ${viewModel.error}');
                         return Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,

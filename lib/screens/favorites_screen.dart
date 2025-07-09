@@ -55,6 +55,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       child: CircularProgressIndicator(),
                     );
                   } else if (viewModel.error.isNotEmpty) {
+                    // Log error to console when displaying to user
+                    print('[UI_ERROR] Displaying error in FavoritesScreen: ${viewModel.error}');
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,

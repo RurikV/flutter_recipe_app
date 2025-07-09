@@ -34,6 +34,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   void _register() async {
     // Validate passwords match
     if (_passwordController.text != _confirmPasswordController.text) {
+      print('[UI_ERROR] Registration failed - passwords do not match');
       setState(() {
         _errorMessage = 'Пароли не совпадают';
       });
@@ -63,6 +64,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     } catch (e) {
+      print('[UI_ERROR] Registration failed: $e');
       setState(() {
         _errorMessage = e.toString();
       });
@@ -249,7 +251,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       ),
 
                       // Error message
-                      if (_errorMessage.isNotEmpty)
+                      if (_errorMessage.isNotEmpty) ...[
+                        // Log error to console when displaying to user
+                        Builder(builder: (context) {
+                          print('[UI_ERROR] Displaying registration error to user: $_errorMessage');
+                          return const SizedBox.shrink();
+                        }),
                         Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
@@ -260,6 +267,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             ),
                           ),
                         ),
+                      ],
 
                       // Register button
                       Padding(

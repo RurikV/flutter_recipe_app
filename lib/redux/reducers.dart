@@ -132,15 +132,22 @@ bool loadingReducer(bool isLoading, dynamic action) {
 // Error reducer
 String errorReducer(String error, dynamic action) {
   if (action is RecipesLoadErrorAction) {
+    print('[ERROR] Recipes Load Error: ${action.error}');
     return action.error;
   } else if (action is LoginErrorAction) {
+    print('[ERROR] Login Error: ${action.error}');
     return action.error;
   } else if (action is RegisterErrorAction) {
+    print('[ERROR] Registration Error: ${action.error}');
     return action.error;
   } else if (action is RecipesLoadedAction || 
              action is FavoriteRecipesLoadedAction ||
              action is LoginSuccessAction ||
              action is RegisterSuccessAction) {
+    // Clear error on successful actions
+    if (error.isNotEmpty) {
+      print('[INFO] Error cleared after successful action: ${action.runtimeType}');
+    }
     return '';
   }
   return error;
