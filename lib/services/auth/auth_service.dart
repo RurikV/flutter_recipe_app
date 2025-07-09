@@ -4,12 +4,14 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/services/api_service.dart';
 import '../../data/services/api/api_service_impl.dart';
+import '../../domain/services/config_service.dart';
 import '../../../data/models/user.dart';
 
 class AuthService {
   final ApiService _apiService;
   final Dio _dio;
-  final String baseUrl = 'https://foodapi.dzolotov.pro';
+  final ConfigService _configService;
+  String? _baseUrl;
 
   // Key for storing the auth token in SharedPreferences
   static const String _tokenKey = 'auth_token';
@@ -22,21 +24,31 @@ class AuthService {
   User? _currentUser;
   User? get currentUser => _currentUser;
 
-  AuthService({Dio? dio, bool initializeUser = true}) : 
-    _apiService = ApiServiceImpl(),
+  AuthService({required ConfigService configService, Dio? dio, bool initializeUser = true}) : 
+    _configService = configService,
+    _apiService = ApiServiceImpl(configService: configService),
     _dio = dio ?? Dio() {
-    _dio.options.baseUrl = baseUrl;
-    _dio.options.connectTimeout = const Duration(seconds: 5);
-    _dio.options.receiveTimeout = const Duration(seconds: 10);
-    _dio.options.headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
 
     // Initialize by checking for existing token (skip in test environments)
     if (initializeUser) {
-      _initializeUser();
+      _initializeService();
     }
+  }
+
+  // Initialize the service with configuration
+  Future<void> _initializeService() async {
+    if (_baseUrl == null) {
+      _baseUrl = await _configService.getApiBaseUrl();
+      _dio.options.baseUrl = _baseUrl!;
+      _dio.options.connectTimeout = const Duration(seconds: 5);
+      _dio.options.receiveTimeout = const Duration(seconds: 10);
+      _dio.options.headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+    }
+
+    await _initializeUser();
   }
 
   // Initialize user from SharedPreferences if available

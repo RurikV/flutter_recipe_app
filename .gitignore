@@ -49,3 +49,4 @@ app.*.map.json
 /FoodApiTest/
 /otus_food_app/
 key.properties
+/api/

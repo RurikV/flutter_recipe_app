@@ -4,6 +4,7 @@ import 'package:dio/io.dart' if (dart.library.html) 'package:dio/browser.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../../../../data/models/recipe.dart';
 import '../../../../domain/services/api_service.dart';
+import '../../../../domain/services/config_service.dart';
 
 // Import HttpClient, X509Certificate, and IOHttpClientAdapter only for non-web platforms
 import 'dart:io' if (dart.library.html) 'web_http_client.dart';
@@ -14,36 +15,45 @@ import 'package:dio/io.dart' if (dart.library.html) 'web_http_client.dart' show 
 /// It provides methods for each API endpoint without combining data from multiple endpoints.
 class ApiServiceImpl implements ApiService {
   final Dio _dio;
-  final String baseUrl = 'https://foodapi.dzolotov.pro';
+  final ConfigService _configService;
   final int _maxRetries = 3;
+  String? _baseUrl;
 
-  ApiServiceImpl() : _dio = Dio() {
-    _dio.options.baseUrl = baseUrl;
-    _dio.options.connectTimeout = const Duration(seconds: 5);
-    _dio.options.receiveTimeout = const Duration(seconds: 10);
-    _dio.options.headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
+  ApiServiceImpl({required ConfigService configService}) 
+      : _configService = configService,
+        _dio = Dio();
 
-    // Add interceptor for logging
-    _dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-      logPrint: (object) => print('DIO: $object'),
-    ));
-
-    // Configure HTTP client adapter based on platform
-    if (!kIsWeb) {
-      // Native platforms: Configure to accept self-signed certificates
-      final adapter = _dio.httpClientAdapter as IOHttpClientAdapter;
-      adapter.createHttpClient = () {
-        final client = HttpClient();
-        client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-        return client;
+  /// Initialize the API service with configuration
+  Future<void> _initializeIfNeeded() async {
+    if (_baseUrl == null) {
+      _baseUrl = await _configService.getApiBaseUrl();
+      _dio.options.baseUrl = _baseUrl!;
+      _dio.options.connectTimeout = const Duration(seconds: 5);
+      _dio.options.receiveTimeout = const Duration(seconds: 10);
+      _dio.options.headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
       };
+
+      // Add interceptor for logging
+      _dio.interceptors.add(LogInterceptor(
+        requestBody: true,
+        responseBody: true,
+        logPrint: (object) => print('DIO: $object'),
+      ));
+
+      // Configure HTTP client adapter based on platform
+      if (!kIsWeb) {
+        // Native platforms: Configure to accept self-signed certificates
+        final adapter = _dio.httpClientAdapter as IOHttpClientAdapter;
+        adapter.createHttpClient = () {
+          final client = HttpClient();
+          client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+          return client;
+        };
+      }
+      // For web, use the default BrowserHttpClientAdapter which is already set
     }
-    // For web, use the default BrowserHttpClientAdapter which is already set
   }
 
   // Generic method to handle API requests with retry logic
@@ -78,16 +88,17 @@ class ApiServiceImpl implements ApiService {
 
   @override
   Future<List<dynamic>> getRecipesData() async {
-    print('ApiService.getRecipesData() called with baseUrl: $baseUrl');
+    await _initializeIfNeeded();
+    print('ApiService.getRecipesData() called with baseUrl: $_baseUrl');
     return _requestWithRetry(
       request: () async {
-        print('Making GET request to $baseUrl/recipe');
+        print('Making GET request to $_baseUrl/recipe');
         final response = await _dio.get('/recipe');
         if (response.statusCode != 200) {
           print('Failed to load recipes: ${response.statusCode}');
           throw Exception('Failed to load recipes: ${response.statusCode}');
         }
-        print('Successfully received response from $baseUrl/recipe');
+        print('Successfully received response from $_baseUrl/recipe');
         return response.data as List<dynamic>;
       },
       errorMessage: 'Failed to load recipes',
@@ -96,16 +107,17 @@ class ApiServiceImpl implements ApiService {
 
   @override
   Future<Map<String, dynamic>> getRecipeData(String id) async {
-    print('ApiService.getRecipeData() called for id: $id with baseUrl: $baseUrl');
+    await _initializeIfNeeded();
+    print('ApiService.getRecipeData() called for id: $id with baseUrl: $_baseUrl');
     return _requestWithRetry(
       request: () async {
-        print('Making GET request to $baseUrl/recipe/$id');
+        print('Making GET request to $_baseUrl/recipe/$id');
         final response = await _dio.get('/recipe/$id');
         if (response.statusCode != 200) {
           print('Failed to load recipe: ${response.statusCode}');
           throw Exception('Failed to load recipe: ${response.statusCode}');
         }
-        print('Successfully received response from $baseUrl/recipe/$id');
+        print('Successfully received response from $_baseUrl/recipe/$id');
         return response.data as Map<String, dynamic>;
       },
       errorMessage: 'Failed to load recipe',
@@ -114,6 +126,7 @@ class ApiServiceImpl implements ApiService {
 
   @override
   Future<List<dynamic>> getIngredientsData() async {
+    await _initializeIfNeeded();
     return _requestWithRetry(
       request: () async {
         final response = await _dio.get('/ingredient');
@@ -128,6 +141,7 @@ class ApiServiceImpl implements ApiService {
 
   @override
   Future<List<dynamic>> getMeasureUnitsData() async {
+    await _initializeIfNeeded();
     return _requestWithRetry(
       request: () async {
         final response = await _dio.get('/measure_unit');
@@ -184,6 +198,7 @@ class ApiServiceImpl implements ApiService {
 
   @override
   Future<List<dynamic>> getCommentsForRecipe(String recipeId) async {
+    await _initializeIfNeeded();
     return _requestWithRetry(
       request: () async {
         final response = await _dio.get('/comment?recipe=$recipeId');
@@ -198,6 +213,7 @@ class ApiServiceImpl implements ApiService {
 
   @override
   Future<Map<String, dynamic>> addComment(String recipeId, String authorName, String text) async {
+    await _initializeIfNeeded();
     return _requestWithRetry(
       request: () async {
         final response = await _dio.post('/comment', data: {
@@ -216,6 +232,7 @@ class ApiServiceImpl implements ApiService {
 
   @override
   Future<Map<String, dynamic>> createRecipe(Recipe recipe) async {
+    await _initializeIfNeeded();
     return _requestWithRetry(
       request: () async {
         // Convert Recipe to API format
@@ -240,6 +257,7 @@ class ApiServiceImpl implements ApiService {
 
   @override
   Future<Map<String, dynamic>> updateRecipe(String id, Recipe recipe) async {
+    await _initializeIfNeeded();
     return _requestWithRetry(
       request: () async {
         // Convert Recipe to API format
@@ -264,6 +282,7 @@ class ApiServiceImpl implements ApiService {
 
   @override
   Future<void> deleteRecipe(String id) async {
+    await _initializeIfNeeded();
     await _requestWithRetry(
       request: () async {
         final response = await _dio.delete('/recipe/$id');
@@ -277,6 +296,7 @@ class ApiServiceImpl implements ApiService {
 
   @override
   Future<Map<String, dynamic>> createRecipeData(Map<String, dynamic> recipeData) async {
+    await _initializeIfNeeded();
     return _requestWithRetry(
       request: () async {
         final response = await _dio.post('/recipe', data: recipeData);
@@ -291,6 +311,7 @@ class ApiServiceImpl implements ApiService {
 
   @override
   Future<Map<String, dynamic>> createIngredientData(Map<String, dynamic> ingredientData) async {
+    await _initializeIfNeeded();
     return _requestWithRetry(
       request: () async {
         final response = await _dio.post('/ingredient', data: ingredientData);

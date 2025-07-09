@@ -26,6 +26,8 @@ import 'domain/services/database_service.dart';
 import 'data/services/database/database_service_impl.dart';
 import 'domain/services/connectivity_service.dart';
 import 'data/services/connectivity/connectivity_service_impl.dart';
+import 'domain/services/config_service.dart';
+import 'data/services/config/config_service_impl.dart';
 // Use conditional imports for platform-specific implementations
 import 'services/object_detection_service_locator.dart' as object_detection_locator;
 import 'services/service_locator.dart' as service_locator;
@@ -53,8 +55,13 @@ void main() async {
     getIt.registerSingleton<BluetoothService>(bluetoothService);
   }
 
+  // Register and initialize configuration service first
+  final configService = ConfigServiceImpl();
+  await configService.initialize();
+  getIt.registerSingleton<ConfigService>(configService);
+
   // Register services as singletons
-  getIt.registerSingleton<ApiService>(ApiServiceImpl());
+  getIt.registerSingleton<ApiService>(ApiServiceImpl(configService: getIt<ConfigService>()));
   getIt.registerSingleton<DatabaseService>(DatabaseServiceImpl());
   getIt.registerSingleton<ConnectivityService>(ConnectivityServiceImpl());
 
@@ -73,7 +80,7 @@ void main() async {
   );
 
   final Store<AppState> store = createStore();
-  final authService = AuthService();
+  final authService = AuthService(configService: getIt<ConfigService>());
 
   // Check authentication status
   store.dispatch(CheckAuthStatusAction());
