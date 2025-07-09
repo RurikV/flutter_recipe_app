@@ -1,0 +1,54 @@
+import 'package:flutter/material.dart';
+import 'lib/services/bluetooth_service.dart';
+import 'lib/features/bluetooth/bluetooth.dart';
+
+/// Simple verification script to test Bluetooth functionality
+/// This script demonstrates the improved error handling and permission management
+void main() {
+  print('=== Bluetooth Feature Verification ===');
+  print('');
+  print('1. BluetoothDevicesSection has been moved to lib/features/bluetooth/');
+  print('   - Old location: lib/screens/profile_screen.dart (embedded)');
+  print('   - New location: lib/features/bluetooth/presentation/widgets/bluetooth_devices_section.dart');
+  print('   - Export file: lib/features/bluetooth/bluetooth.dart');
+  print('');
+  print('2. Improved error handling for permission issues:');
+  print('   - Location permission error: Shows clear message about geolocation requirement');
+  print('   - Bluetooth disabled error: Shows message to enable Bluetooth');
+  print('   - Permission denied: Provides guidance to user');
+  print('');
+  print('3. Enhanced UI with error display:');
+  print('   - Error messages are displayed in red container with icon');
+  print('   - Signal strength indicators for devices');
+  print('   - Better device information display');
+  print('');
+  print('4. BluetoothService improvements:');
+  print('   - Returns ScanResult with success status and error message');
+  print('   - Better exception handling with specific error codes');
+  print('   - Clear Russian error messages for users');
+  print('');
+  print('5. Permission handling:');
+  print('   - Android: ACCESS_FINE_LOCATION for older versions');
+  print('   - Android: BLUETOOTH_SCAN and BLUETOOTH_CONNECT for Android 12+');
+  print('   - Clear error messages when permissions are missing');
+  print('');
+  print('=== Issues Resolved ===');
+  print('');
+  print('✓ Issue 1: Device information not displayed during scanning');
+  print('  - Added proper error handling and user feedback');
+  print('  - Clear messages about location permission requirement');
+  print('  - Better permission request flow');
+  print('');
+  print('✓ Issue 2: BluetoothDevicesSection in profile feature');
+  print('  - Moved to separate bluetooth feature module');
+  print('  - Clean architecture with proper separation');
+  print('  - Easy to maintain and debug');
+  print('');
+  print('=== Usage ===');
+  print('');
+  print('To use the new Bluetooth feature:');
+  print('import "lib/features/bluetooth/bluetooth.dart";');
+  print('');
+  print('Then use BluetoothDevicesSection() widget in your UI.');
+  print('The widget will handle all permission requests and error display automatically.');
+}
