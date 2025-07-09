@@ -148,12 +148,31 @@ class RecipeRepositoryImpl implements RecipeRepository {
             recipes.add(model.Recipe.fromJson(recipeData));
           }
 
-          // Save recipes to the in-memory cache
+          // Save recipes to the in-memory cache, preserving favorite status
+          // Create a map of existing favorite statuses before clearing cache
+          final Map<String, bool> existingFavoriteStatuses = {};
+          for (final cachedRecipe in _cachedRecipes) {
+            existingFavoriteStatuses[cachedRecipe.uuid] = cachedRecipe.isFavorite;
+          }
+
+          // Apply existing favorite statuses to new recipes
+          final List<model.Recipe> recipesWithFavorites = recipes.map((recipe) {
+            final existingFavoriteStatus = existingFavoriteStatuses[recipe.uuid];
+            if (existingFavoriteStatus != null && existingFavoriteStatus) {
+              return recipe.copyWith(isFavorite: true);
+            }
+            return recipe;
+          }).toList();
+
           _cachedRecipes.clear();
-          _cachedRecipes.addAll(recipes);
+          _cachedRecipes.addAll(recipesWithFavorites);
+
+          // Update the favorites cache to stay in sync
+          _cachedFavoriteRecipes.clear();
+          _cachedFavoriteRecipes.addAll(recipesWithFavorites.where((recipe) => recipe.isFavorite));
 
           // Convert data models to domain entities before returning
-          return recipes.map((modelRecipe) => RecipeMapper.toDomain(modelRecipe)).toList();
+          return recipesWithFavorites.map((modelRecipe) => RecipeMapper.toDomain(modelRecipe)).toList();
         } catch (apiError) {
           // If API call fails, try to get recipes from the in-memory cache
           if (_cachedRecipes.isNotEmpty) {
