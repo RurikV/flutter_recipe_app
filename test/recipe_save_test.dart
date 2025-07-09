@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_recipe_app/models/recipe.dart';
-import 'package:flutter_recipe_app/models/ingredient.dart';
-import 'package:flutter_recipe_app/models/recipe_step.dart';
+import 'package:flutter_recipe_app/data/models/recipe.dart';
+import 'package:flutter_recipe_app/data/models/ingredient.dart';
+import 'package:flutter_recipe_app/data/models/recipe_step.dart';
 
 void main() {
   test('Recipe serialization and deserialization preserves ingredients and steps', () {

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
@@ -9,7 +10,7 @@ import '../redux/actions.dart';
 import '../services/auth/auth_service.dart';
 import '../services/bluetooth_service.dart';
 import '../plugins/bluetooth_le_scanner/bluetooth_le_scanner.dart';
-import '../models/user.dart';
+import '../data/models/user.dart';
 import 'login_screen.dart';
 
 /// A stateless widget representing the profile screen.
@@ -21,18 +22,23 @@ class ProfileScreen extends StatelessWidget {
       final authService = Provider.of<AuthService>(context, listen: false);
       await authService.logout();
 
-      // Dispatch logout action to update Redux state
-      StoreProvider.of<AppState>(context, listen: false)
-          .dispatch(LogoutAction());
+      // Check if the context is still valid before using it
+      if (context.mounted) {
+        // Dispatch logout action to update Redux state
+        StoreProvider.of<AppState>(context, listen: false)
+            .dispatch(LogoutAction());
 
-      // Navigate to login screen
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
+        // Navigate to login screen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка при выходе: ${e.toString()}')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка при выходе: ${e.toString()}')),
+        );
+      }
     }
   }
 
@@ -201,11 +207,13 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ),
 
-                        // Bluetooth devices section
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: BluetoothDevicesSection(),
-                        ),
+                        // Bluetooth devices section - only show on mobile platforms
+                        if (defaultTargetPlatform == TargetPlatform.android || 
+                            defaultTargetPlatform == TargetPlatform.iOS)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 24.0),
+                            child: BluetoothDevicesSection(),
+                          ),
 
                         // Add some bottom padding
                         const SizedBox(height: 40),

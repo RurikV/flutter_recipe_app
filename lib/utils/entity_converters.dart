@@ -1,5 +1,5 @@
-import '../../models/ingredient.dart' as model;
-import '../../models/recipe_step.dart' as model;
+import '../../../data/models/ingredient.dart' as model;
+import '../../../data/models/recipe_step.dart' as model;
 import '../../domain/entities/ingredient.dart' as entity;
 import '../../domain/entities/recipe_step.dart' as entity;
 
@@ -36,7 +36,9 @@ class EntityConverters {
   /// Convert a model RecipeStep to a domain entity RecipeStep
   static entity.RecipeStep modelToEntityRecipeStep(model.RecipeStep step) {
     return entity.RecipeStep(
-      description: step.name, // Use name instead of description
+      id: step.id,
+      name: step.name,
+      description: step.name, // Use name for both name and description
       duration: step.duration.toString(), // Convert int to String
       isCompleted: step.isCompleted,
     );

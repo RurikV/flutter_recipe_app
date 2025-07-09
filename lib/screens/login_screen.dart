@@ -52,6 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     } catch (e) {
+      print('[UI_ERROR] Login failed: $e');
       setState(() {
         _errorMessage = e.toString();
       });
@@ -194,7 +195,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
 
                       // Error message
-                      if (_errorMessage.isNotEmpty)
+                      if (_errorMessage.isNotEmpty) ...[
+                        // Log error to console when displaying to user
+                        Builder(builder: (context) {
+                          print('[UI_ERROR] Displaying login error to user: $_errorMessage');
+                          return const SizedBox.shrink();
+                        }),
                         Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
@@ -205,6 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
+                      ],
 
                       // Login button
                       Padding(

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-import '../../models/recipe_image.dart';
+import '../../../data/models/recipe_image.dart';
 
 class ImageService {
   final ImagePicker _picker = ImagePicker();

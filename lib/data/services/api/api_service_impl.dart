@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart' if (dart.library.html) 'package:dio/browser.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import '../../../../models/recipe.dart';
+import '../../../../../data/models/recipe.dart';
 import '../../../../domain/services/api_service.dart';
 
 // Import HttpClient, X509Certificate, and IOHttpClientAdapter only for non-web platforms

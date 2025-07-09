@@ -1,8 +1,8 @@
 import '../../domain/usecases/recipe_manager.dart';
-import '../../models/recipe.dart';
-import '../../models/ingredient.dart';
-import '../../models/recipe_step.dart';
-import '../../models/comment.dart';
+import '../../domain/entities/recipe.dart';
+import '../../domain/entities/comment.dart';
+import '../../domain/entities/ingredient.dart';
+import '../../domain/entities/recipe_step.dart';
 import '../../domain/repositories/recipe_repository.dart';
 
 /// Implementation of the RecipeManager interface
@@ -74,7 +74,7 @@ class RecipeManagerImpl implements RecipeManager {
   @override
   Future<List<Recipe>> getRecipes() async {
     try {
-      // Use the repository to get recipes
+      // Use the repository to get recipes (now returns domain entities)
       return await _recipeRepository.getRecipes();
     } catch (e) {
       print('Error in getRecipes: $e');
@@ -170,6 +170,7 @@ class RecipeManagerImpl implements RecipeManager {
       updatedSteps[stepIndex] = RecipeStep(
         id: recipe.steps[stepIndex].id,
         name: recipe.steps[stepIndex].name,
+        description: recipe.steps[stepIndex].description,
         duration: recipe.steps[stepIndex].duration,
         isCompleted: isCompleted,
       );
@@ -218,43 +219,49 @@ class RecipeManagerImpl implements RecipeManager {
       rating: 5,
       tags: ['Итальянская кухня', 'Паста', 'Ужин'],
       ingredients: [
-        Ingredient.simple(name: 'Спагетти', quantity: '400', unit: 'г'),
-        Ingredient.simple(name: 'Гуанчиале', quantity: '150', unit: 'г'),
-        Ingredient.simple(name: 'Яйца', quantity: '4', unit: 'шт'),
-        Ingredient.simple(name: 'Сыр пармезан', quantity: '50', unit: 'г'),
-        Ingredient.simple(name: 'Черный перец', quantity: '1', unit: 'ч. ложка'),
-        Ingredient.simple(name: 'Соль', quantity: '1', unit: 'по вкусу'),
+        Ingredient(name: 'Спагетти', quantity: '400', unit: 'г'),
+        Ingredient(name: 'Гуанчиале', quantity: '150', unit: 'г'),
+        Ingredient(name: 'Яйца', quantity: '4', unit: 'шт'),
+        Ingredient(name: 'Сыр пармезан', quantity: '50', unit: 'г'),
+        Ingredient(name: 'Черный перец', quantity: '1', unit: 'ч. ложка'),
+        Ingredient(name: 'Соль', quantity: '1', unit: 'по вкусу'),
       ],
       steps: [
         RecipeStep(
           id: 1,
           name: 'Отварите спагетти в подсоленной воде до состояния аль денте.',
-          duration: 10,
+          description: 'Отварите спагетти в подсоленной воде до состояния аль денте.',
+          duration: '10',
         ),
         RecipeStep(
           id: 2,
           name: 'Нарежьте гуанчиале небольшими кубиками и обжарьте на сковороде до золотистого цвета.',
-          duration: 5,
+          description: 'Нарежьте гуанчиале небольшими кубиками и обжарьте на сковороде до золотистого цвета.',
+          duration: '5',
         ),
         RecipeStep(
           id: 3,
           name: 'Смешайте яйца, тертый пармезан и черный перец в миске.',
-          duration: 3,
+          description: 'Смешайте яйца, тертый пармезан и черный перец в миске.',
+          duration: '3',
         ),
         RecipeStep(
           id: 4,
           name: 'Добавьте горячие спагетти к гуанчиале, перемешайте и снимите с огня.',
-          duration: 2,
+          description: 'Добавьте горячие спагетти к гуанчиале, перемешайте и снимите с огня.',
+          duration: '2',
         ),
         RecipeStep(
           id: 5,
           name: 'Влейте яичную смесь и быстро перемешайте, чтобы получился кремовый соус.',
-          duration: 1,
+          description: 'Влейте яичную смесь и быстро перемешайте, чтобы получился кремовый соус.',
+          duration: '1',
         ),
         RecipeStep(
           id: 6,
           name: 'Подавайте сразу же, посыпав дополнительным пармезаном и черным перцем.',
-          duration: 1,
+          description: 'Подавайте сразу же, посыпав дополнительным пармезаном и черным перцем.',
+          duration: '1',
         ),
       ],
     ),

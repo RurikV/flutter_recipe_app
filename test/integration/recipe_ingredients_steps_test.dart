@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_recipe_app/models/recipe.dart';
+import 'package:flutter_recipe_app/data/models/recipe.dart';
 import 'package:flutter_recipe_app/screens/recipe_detail_screen.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/store.dart';

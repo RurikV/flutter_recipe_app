@@ -2,8 +2,9 @@ import 'package:redux/redux.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/actions.dart';
 import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
-import 'package:flutter_recipe_app/models/comment.dart';
-import 'package:flutter_recipe_app/models/recipe.dart';
+import 'package:flutter_recipe_app/domain/entities/comment.dart' as domain;
+import 'package:flutter_recipe_app/data/models/recipe.dart';
+import 'package:flutter_recipe_app/data/mappers/recipe_mapper.dart';
 import 'package:get_it/get_it.dart';
 
 // Helper method to create a default recipe
@@ -47,9 +48,12 @@ Middleware<AppState> _createLoadRecipesMiddleware() {
 
       try {
         final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
-        final recipes = await recipeManager.getRecipes();
-        store.dispatch(RecipesLoadedAction(recipes));
+        final domainRecipes = await recipeManager.getRecipes();
+        final dataModelRecipes = domainRecipes.map((domainRecipe) => RecipeMapper.toModel(domainRecipe)).toList();
+        print('[INFO] Successfully loaded ${dataModelRecipes.length} recipes');
+        store.dispatch(RecipesLoadedAction(dataModelRecipes));
       } catch (e) {
+        print('[ERROR] Failed to load recipes in middleware: $e');
         store.dispatch(RecipesLoadErrorAction(e.toString()));
       }
     } else {
@@ -73,11 +77,13 @@ Middleware<AppState> _createLoadFavoriteRecipesMiddleware() {
 
       try {
         final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
-        final favoriteRecipes = await recipeManager.getFavoriteRecipes();
-        store.dispatch(FavoriteRecipesLoadedAction(favoriteRecipes));
+        final domainFavoriteRecipes = await recipeManager.getFavoriteRecipes();
+        final dataModelFavoriteRecipes = domainFavoriteRecipes.map((domainRecipe) => RecipeMapper.toModel(domainRecipe)).toList();
+        print('[INFO] Successfully loaded ${dataModelFavoriteRecipes.length} favorite recipes');
+        store.dispatch(FavoriteRecipesLoadedAction(dataModelFavoriteRecipes));
       } catch (e) {
-        // Handle error if needed
-        print('Error loading favorite recipes: $e');
+        print('[ERROR] Failed to load favorite recipes in middleware: $e');
+        // Note: No error action dispatched for favorites, but error is logged
       }
     } else {
       next(action);
@@ -109,6 +115,7 @@ Middleware<AppState> _createToggleFavoriteMiddleware() {
       final success = await recipeManager.toggleFavorite(action.recipeId);
 
       if (success) {
+        print('[INFO] Successfully toggled favorite status for recipe: ${action.recipeId}');
         // Dispatch action to update state
         store.dispatch(FavoriteToggledAction(
           action.recipeId,
@@ -117,6 +124,8 @@ Middleware<AppState> _createToggleFavoriteMiddleware() {
 
         // Also load favorite recipes to ensure the favorites list is updated
         store.dispatch(LoadFavoriteRecipesAction());
+      } else {
+        print('[ERROR] Failed to toggle favorite status for recipe: ${action.recipeId}');
       }
     } else {
       next(action);
@@ -128,7 +137,7 @@ Middleware<AppState> _createToggleFavoriteMiddleware() {
 Middleware<AppState> _createAddCommentMiddleware() {
   return (Store<AppState> store, dynamic action, NextDispatcher next) async {
     if (action is AddCommentAction) {
-      final comment = Comment(
+      final comment = domain.Comment(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         authorName: 'User', // In a real app, this would be the current user's name
         text: action.commentText,
@@ -139,8 +148,11 @@ Middleware<AppState> _createAddCommentMiddleware() {
       final success = await recipeManager.addComment(action.recipeId, comment);
 
       if (success) {
+        print('[INFO] Successfully added comment to recipe: ${action.recipeId}');
         // Dispatch action to update state
         store.dispatch(CommentAddedAction(action.recipeId, comment));
+      } else {
+        print('[ERROR] Failed to add comment to recipe: ${action.recipeId}');
       }
     } else {
       next(action);
@@ -160,12 +172,15 @@ Middleware<AppState> _createUpdateStepStatusMiddleware() {
       );
 
       if (success) {
+        print('[INFO] Successfully updated step status for recipe: ${action.recipeId}, step: ${action.stepIndex}, completed: ${action.isCompleted}');
         // Dispatch action to update state
         store.dispatch(StepStatusUpdatedAction(
           action.recipeId,
           action.stepIndex,
           action.isCompleted,
         ));
+      } else {
+        print('[ERROR] Failed to update step status for recipe: ${action.recipeId}, step: ${action.stepIndex}');
       }
     } else {
       next(action);

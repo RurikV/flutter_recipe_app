@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'package:get_it/get_it.dart';
-import 'screens/home_screen.dart';
-import 'screens/login_screen.dart';
 import 'theme/app_theme.dart';
 import 'presentation/providers/language_provider.dart';
 import 'l10n/app_localizations.dart';
@@ -25,6 +24,7 @@ import 'domain/services/database_service.dart';
 import 'data/services/database/database_service_impl.dart';
 import 'domain/services/connectivity_service.dart';
 import 'data/services/connectivity/connectivity_service_impl.dart';
+import 'routing/app_router.dart';
 // Use conditional imports for platform-specific implementations
 import 'services/object_detection_service_locator.dart' as object_detection_locator;
 import 'services/service_locator.dart' as service_locator;
@@ -44,10 +44,13 @@ void main() async {
   // The service is registered in the platform-specific implementation
   await object_detection_locator.initObjectDetectionService();
 
-  // Initialize and register Bluetooth service
-  final bluetoothService = BluetoothService();
-  await bluetoothService.initialize();
-  getIt.registerSingleton<BluetoothService>(bluetoothService);
+  // Initialize and register Bluetooth service only on mobile platforms
+  if (defaultTargetPlatform == TargetPlatform.android || 
+      defaultTargetPlatform == TargetPlatform.iOS) {
+    final bluetoothService = BluetoothService();
+    await bluetoothService.initialize();
+    getIt.registerSingleton<BluetoothService>(bluetoothService);
+  }
 
   // Register services as singletons
   getIt.registerSingleton<ApiService>(ApiServiceImpl());
@@ -86,7 +89,10 @@ void main() async {
         Provider<AuthService>(create: (context) => authService),
         Provider<AppDatabase>(create: (context) => service_locator.get<AppDatabase>()),
         Provider<ObjectDetectionService>(create: (context) => getIt<ObjectDetectionService>()),
-        Provider<BluetoothService>(create: (context) => getIt<BluetoothService>()),
+        // Only provide BluetoothService on mobile platforms
+        if (defaultTargetPlatform == TargetPlatform.android || 
+            defaultTargetPlatform == TargetPlatform.iOS)
+          Provider<BluetoothService>(create: (context) => getIt<BluetoothService>()),
         Provider<ApiService>(create: (context) => getIt<ApiService>()),
         Provider<DatabaseService>(create: (context) => getIt<DatabaseService>()),
         Provider<ConnectivityService>(create: (context) => getIt<ConnectivityService>()),
@@ -107,8 +113,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
+    final appRouter = AppRouter();
 
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Recipes',
       debugShowCheckedModeBanner: false,
 
@@ -133,12 +140,9 @@ class MyApp extends StatelessWidget {
           },
         ),
       ),
-      home: StoreConnector<AppState, bool>(
-        converter: (store) => store.state.isAuthenticated,
-        builder: (context, isAuthenticated) {
-          return isAuthenticated ? const HomeScreen() : const LoginScreen();
-        },
-      ),
+
+      // Navigator 2.0 configuration
+      routerConfig: appRouter.config(),
     );
   }
 }

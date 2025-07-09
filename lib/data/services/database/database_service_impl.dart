@@ -1,13 +1,13 @@
 import 'dart:convert';
 import '../../../../data/database/app_database.dart';
-import '../../../../models/recipe.dart' as app_model;
-import '../../../../models/ingredient.dart' as app_model;
-import '../../../../models/recipe_step.dart' as app_model;
-import '../../../../models/comment.dart' as app_model;
-import '../../../../models/recipe_image.dart';
+import '../../../../data/models/recipe.dart' as app_model;
+import '../../../data/models/ingredient.dart' as app_model;
+import '../../../data/models/recipe_step.dart' as app_model;
+import '../../../data/models/comment.dart' as app_model;
+import '../../../data/models/recipe_image.dart';
 import 'package:drift/drift.dart';
 import '../../../../domain/services/database_service.dart';
-import '../../../../services/service_locator.dart' as serviceLocator;
+import '../../../../services/service_locator.dart' as service_locator;
 
 /// Implementation of the DatabaseService interface
 class DatabaseServiceImpl implements DatabaseService {
@@ -15,7 +15,7 @@ class DatabaseServiceImpl implements DatabaseService {
 
   /// Constructor with optional AppDatabase dependency
   DatabaseServiceImpl({AppDatabase? database}) 
-      : _database = database ?? serviceLocator.get<AppDatabase>();
+      : _database = database ?? service_locator.get<AppDatabase>();
 
   @override
   Future<List<app_model.Recipe>> getAllRecipes() async {

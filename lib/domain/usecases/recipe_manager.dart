@@ -1,5 +1,5 @@
-import '../../models/recipe.dart';
-import '../../models/comment.dart';
+import '../entities/recipe.dart';
+import '../entities/comment.dart';
 
 /// Interface for recipe management operations
 abstract class RecipeManager {

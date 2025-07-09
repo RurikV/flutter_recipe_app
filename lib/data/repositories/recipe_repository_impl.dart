@@ -1,9 +1,11 @@
 import '../../domain/repositories/recipe_repository.dart';
-import '../../models/recipe.dart';
-import '../../models/comment.dart';
+import '../../domain/entities/recipe.dart' as domain;
+import '../../domain/entities/comment.dart' as domain;
+import '../../../data/models/recipe.dart' as model;
 import '../../domain/services/api_service.dart';
 import '../../domain/services/database_service.dart';
 import '../../domain/services/connectivity_service.dart';
+import '../mappers/recipe_mapper.dart';
 
 class RecipeRepositoryImpl implements RecipeRepository {
   final ApiService _apiService;
@@ -11,9 +13,9 @@ class RecipeRepositoryImpl implements RecipeRepository {
   final DatabaseService _databaseService;
   final ConnectivityService _connectivityService;
 
-  // In-memory cache for recipes
-  final List<Recipe> _cachedRecipes = [];
-  final List<Recipe> _cachedFavoriteRecipes = [];
+  // In-memory cache for recipes (using data models internally)
+  final List<model.Recipe> _cachedRecipes = [];
+  final List<model.Recipe> _cachedFavoriteRecipes = [];
 
   RecipeRepositoryImpl({
     required ApiService apiService,
@@ -24,7 +26,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
         _connectivityService = connectivityService;
 
   @override
-  Future<List<Recipe>> getRecipes() async {
+  Future<List<domain.Recipe>> getRecipes() async {
     try {
       // Always try to get recipes from the API first
       final isConnected = await _connectivityService.isConnected();
@@ -134,7 +136,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
           }
 
           // Add ingredients and steps to each recipe and parse
-          final List<Recipe> recipes = [];
+          final List<model.Recipe> recipes = [];
           for (final recipeData in recipesData) {
             final recipeId = recipeData['id'].toString();
             if (ingredientsByRecipeId.containsKey(recipeId)) {
@@ -143,25 +145,26 @@ class RecipeRepositoryImpl implements RecipeRepository {
             if (stepsByRecipeId.containsKey(recipeId)) {
               recipeData['recipeStepLinks'] = stepsByRecipeId[recipeId];
             }
-            recipes.add(Recipe.fromJson(recipeData));
+            recipes.add(model.Recipe.fromJson(recipeData));
           }
 
           // Save recipes to the in-memory cache
           _cachedRecipes.clear();
           _cachedRecipes.addAll(recipes);
 
-          return recipes;
+          // Convert data models to domain entities before returning
+          return recipes.map((modelRecipe) => RecipeMapper.toDomain(modelRecipe)).toList();
         } catch (apiError) {
           // If API call fails, try to get recipes from the in-memory cache
           if (_cachedRecipes.isNotEmpty) {
-            return _cachedRecipes;
+            return _cachedRecipes.map((modelRecipe) => RecipeMapper.toDomain(modelRecipe)).toList();
           }
           // If cache is empty, rethrow the API error
           rethrow;
         }
       } else {
         // If no internet connection, get recipes from the in-memory cache
-        return _cachedRecipes;
+        return _cachedRecipes.map((modelRecipe) => RecipeMapper.toDomain(modelRecipe)).toList();
       }
     } catch (e) {
       // Handle any other errors
@@ -170,24 +173,27 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<List<Recipe>> getFavoriteRecipes() async {
+  Future<List<domain.Recipe>> getFavoriteRecipes() async {
     try {
       // Return recipes from the in-memory cache that are marked as favorites
-      return _cachedRecipes.where((recipe) => recipe.isFavorite).toList();
+      return _cachedRecipes
+          .where((recipe) => recipe.isFavorite)
+          .map((recipe) => RecipeMapper.toDomain(recipe))
+          .toList();
     } catch (e) {
       throw Exception('Failed to get favorite recipes: $e');
     }
   }
 
   @override
-  Future<Recipe?> getRecipeByUuid(String uuid) async {
+  Future<domain.Recipe?> getRecipeByUuid(String uuid) async {
     try {
       // First try to get from in-memory cache
       final cachedRecipe = _cachedRecipes.firstWhere(
         (recipe) => recipe.uuid == uuid,
         orElse: () => throw Exception('Recipe not found in cache'),
       );
-      return cachedRecipe;
+      return RecipeMapper.toDomain(cachedRecipe);
     } catch (cacheError) {
 
       // If not found locally and connected, try to get from API
@@ -288,11 +294,12 @@ class RecipeRepositoryImpl implements RecipeRepository {
           recipeData['recipeIngredients'] = recipeIngredients;
           recipeData['recipeStepLinks'] = recipeStepLinks;
 
-          // Create the recipe object
-          final recipe = Recipe.fromJson(recipeData);
+          // Create the recipe object using data model
+          final dataRecipe = model.Recipe.fromJson(recipeData);
+          final recipe = RecipeMapper.toDomain(dataRecipe);
 
           // Save to local database
-          await _databaseService.saveRecipe(recipe);
+          await _databaseService.saveRecipe(RecipeMapper.toModel(recipe));
 
           return recipe;
         } catch (e) {
@@ -306,23 +313,26 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<void> saveRecipe(Recipe recipe) async {
+  Future<void> saveRecipe(domain.Recipe recipe) async {
     try {
+      // Convert domain entity to data model for cache
+      final dataRecipe = RecipeMapper.toModel(recipe);
+
       // Update in-memory cache
       final index = _cachedRecipes.indexWhere((r) => r.uuid == recipe.uuid);
       if (index >= 0) {
-        _cachedRecipes[index] = recipe;
+        _cachedRecipes[index] = dataRecipe;
       } else {
-        _cachedRecipes.add(recipe);
+        _cachedRecipes.add(dataRecipe);
       }
 
       // Update favorites cache if needed
       if (recipe.isFavorite) {
         final favoriteIndex = _cachedFavoriteRecipes.indexWhere((r) => r.uuid == recipe.uuid);
         if (favoriteIndex >= 0) {
-          _cachedFavoriteRecipes[favoriteIndex] = recipe;
+          _cachedFavoriteRecipes[favoriteIndex] = dataRecipe;
         } else {
-          _cachedFavoriteRecipes.add(recipe);
+          _cachedFavoriteRecipes.add(dataRecipe);
         }
       } else {
         _cachedFavoriteRecipes.removeWhere((r) => r.uuid == recipe.uuid);
@@ -333,7 +343,8 @@ class RecipeRepositoryImpl implements RecipeRepository {
       if (isConnected) {
         try {
           // Prepare recipe data for API
-          final recipeJson = recipe.toJson();
+          final dataRecipe = RecipeMapper.toModel(recipe);
+          final recipeJson = dataRecipe.toJson();
           recipeJson.remove('uuid');
           recipeJson.remove('description');
           recipeJson.remove('instructions');
@@ -479,16 +490,36 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<void> updateRecipe(Recipe recipe) async {
+  Future<void> updateRecipe(domain.Recipe recipe) async {
     try {
-      await _databaseService.updateRecipe(recipe);
+      // Convert domain entity to data model for database
+      final dataRecipe = RecipeMapper.toModel(recipe);
+      await _databaseService.updateRecipe(dataRecipe);
+
+      // Update in-memory cache
+      final index = _cachedRecipes.indexWhere((r) => r.uuid == recipe.uuid);
+      if (index >= 0) {
+        _cachedRecipes[index] = dataRecipe;
+      }
+
+      // Update favorites cache if needed
+      if (recipe.isFavorite) {
+        final favoriteIndex = _cachedFavoriteRecipes.indexWhere((r) => r.uuid == recipe.uuid);
+        if (favoriteIndex >= 0) {
+          _cachedFavoriteRecipes[favoriteIndex] = dataRecipe;
+        } else {
+          _cachedFavoriteRecipes.add(dataRecipe);
+        }
+      } else {
+        _cachedFavoriteRecipes.removeWhere((r) => r.uuid == recipe.uuid);
+      }
 
       // If connected, also update in API
       final isConnected = await _connectivityService.isConnected();
       if (isConnected) {
         try {
           // Prepare recipe data for API
-          final recipeData = recipe.toJson();
+          final recipeData = dataRecipe.toJson();
           await _apiService.updateRecipeData(recipe.uuid, recipeData);
         } catch (e) {
           // API update failed, but local update succeeded
@@ -529,20 +560,8 @@ class RecipeRepositoryImpl implements RecipeRepository {
       final index = _cachedRecipes.indexWhere((r) => r.uuid == uuid);
       if (index >= 0) {
         final recipe = _cachedRecipes[index];
-        final updatedRecipe = Recipe(
-          uuid: recipe.uuid,
-          name: recipe.name,
-          images: recipe.images,
-          description: recipe.description,
-          instructions: recipe.instructions,
-          difficulty: recipe.difficulty,
-          duration: recipe.duration,
-          rating: recipe.rating,
-          tags: recipe.tags,
-          ingredients: recipe.ingredients,
-          steps: recipe.steps,
+        final model.Recipe updatedRecipe = recipe.copyWith(
           isFavorite: !recipe.isFavorite,
-          comments: recipe.comments,
         );
         _cachedRecipes[index] = updatedRecipe;
 
@@ -649,10 +668,13 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<void> addComment(String recipeUuid, Comment comment) async {
+  Future<void> addComment(String recipeUuid, domain.Comment comment) async {
     try {
+      // Convert domain entity to data model for database
+      final dataComment = CommentMapper.toModel(comment);
+
       // Save comment to local database
-      await _databaseService.addComment(recipeUuid, comment);
+      await _databaseService.addComment(recipeUuid, dataComment);
 
       // If connected, also add to API
       final isConnected = await _connectivityService.isConnected();
@@ -674,7 +696,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<List<Comment>> getComments(String recipeUuid) async {
+  Future<List<domain.Comment>> getComments(String recipeUuid) async {
     try {
       final isConnected = await _connectivityService.isConnected();
 
@@ -683,25 +705,28 @@ class RecipeRepositoryImpl implements RecipeRepository {
           // Get comments data from API
           final commentsData = await _apiService.getCommentsData(recipeUuid);
 
-          // Convert to Comment objects
-          final List<Comment> comments = [];
+          // Convert to domain Comment objects
+          final List<domain.Comment> comments = [];
           for (final commentData in commentsData) {
-            comments.add(Comment.fromJson(commentData));
+            comments.add(domain.Comment.fromJson(commentData));
           }
 
-          // Save comments to local database
+          // Save comments to local database (convert to data models)
           for (var comment in comments) {
-            await _databaseService.addComment(recipeUuid, comment);
+            final dataComment = CommentMapper.toModel(comment);
+            await _databaseService.addComment(recipeUuid, dataComment);
           }
 
           return comments;
         } catch (e) {
           // API call failed, use local data
-          return await _databaseService.getComments(recipeUuid);
+          final dataComments = await _databaseService.getComments(recipeUuid);
+          return dataComments.map((dataComment) => CommentMapper.toDomain(dataComment)).toList();
         }
       } else {
         // No internet connection, use local data
-        return await _databaseService.getComments(recipeUuid);
+        final dataComments = await _databaseService.getComments(recipeUuid);
+        return dataComments.map((dataComment) => CommentMapper.toDomain(dataComment)).toList();
       }
     } catch (e) {
       throw Exception('Failed to get comments: $e');

@@ -1,5 +1,5 @@
-import 'package:flutter_recipe_app/models/recipe.dart';
-import 'package:flutter_recipe_app/models/user.dart';
+import 'package:flutter_recipe_app/data/models/recipe.dart';
+import 'package:flutter_recipe_app/data/models/user.dart';
 import 'package:flutter_recipe_app/redux/app_state.dart';
 import 'package:flutter_recipe_app/redux/actions.dart';
 
@@ -18,7 +18,7 @@ AppState appReducer(AppState state, dynamic action) {
 // Recipes reducer
 List<Recipe> recipesReducer(List<Recipe> recipes, dynamic action) {
   if (action is RecipesLoadedAction) {
-    return action.recipes.cast<Recipe>();
+    return action.recipes;
   } else if (action is ToggleFavoriteAction) {
     return recipes.map((recipe) {
       if (recipe.uuid == action.recipeId) {
@@ -64,7 +64,7 @@ List<Recipe> recipesReducer(List<Recipe> recipes, dynamic action) {
 // Favorite recipes reducer
 List<Recipe> favoriteRecipesReducer(List<Recipe> favoriteRecipes, dynamic action) {
   if (action is FavoriteRecipesLoadedAction) {
-    return action.favoriteRecipes.cast<Recipe>();
+    return action.favoriteRecipes;
   } else if (action is ToggleFavoriteAction) {
     // Find the recipe in the recipes list
     final recipe = favoriteRecipes.firstWhere(
@@ -132,15 +132,22 @@ bool loadingReducer(bool isLoading, dynamic action) {
 // Error reducer
 String errorReducer(String error, dynamic action) {
   if (action is RecipesLoadErrorAction) {
+    print('[ERROR] Recipes Load Error: ${action.error}');
     return action.error;
   } else if (action is LoginErrorAction) {
+    print('[ERROR] Login Error: ${action.error}');
     return action.error;
   } else if (action is RegisterErrorAction) {
+    print('[ERROR] Registration Error: ${action.error}');
     return action.error;
   } else if (action is RecipesLoadedAction || 
              action is FavoriteRecipesLoadedAction ||
              action is LoginSuccessAction ||
              action is RegisterSuccessAction) {
+    // Clear error on successful actions
+    if (error.isNotEmpty) {
+      print('[INFO] Error cleared after successful action: ${action.runtimeType}');
+    }
     return '';
   }
   return error;

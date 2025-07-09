@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import '../l10n/app_localizations.dart';
-import '../../models/recipe.dart';
+import '../../../data/models/recipe.dart';
 import '../widgets/recipe/recipe_list.dart';
 import '../redux/app_state.dart';
 import '../redux/actions.dart';
@@ -55,6 +55,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       child: CircularProgressIndicator(),
                     );
                   } else if (viewModel.error.isNotEmpty) {
+                    // Log error to console when displaying to user
+                    print('[UI_ERROR] Displaying error in FavoritesScreen: ${viewModel.error}');
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,

@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/recipe.dart';
-import '../../models/ingredient.dart' as models;
-import '../../models/recipe_step.dart' as models;
-import '../../domain/entities/ingredient.dart';
-import '../../domain/entities/recipe_step.dart';
-import '../utils/entity_converters.dart';
+import '../domain/entities/recipe.dart' as domain;
+import '../domain/entities/ingredient.dart';
+import '../domain/entities/recipe_step.dart';
 import '../domain/usecases/recipe_manager.dart';
 import '../widgets/recipe/recipe_name_input.dart';
 import '../widgets/recipe/photo_upload_section.dart';
@@ -58,13 +55,17 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       _availableIngredients = await _recipeManager.getIngredients();
       _availableUnits = await _recipeManager.getUnits();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка загрузки данных: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка загрузки данных: $e')),
+        );
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -168,14 +169,12 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       });
 
       try {
-        // Convert domain entity Ingredient objects to model Ingredient objects
-        final List<models.Ingredient> typedIngredients = EntityConverters.entityToModelIngredients(List<Ingredient>.from(_ingredients));
-
-        // Convert domain entity RecipeStep objects to model RecipeStep objects
-        final List<models.RecipeStep> typedSteps = EntityConverters.entityToModelRecipeSteps(List<RecipeStep>.from(_steps));
+        // Use domain entities directly
+        final List<Ingredient> typedIngredients = List<Ingredient>.from(_ingredients);
+        final List<RecipeStep> typedSteps = List<RecipeStep>.from(_steps);
 
         // Create a new recipe with the current data
-        final recipe = Recipe(
+        final recipe = domain.Recipe(
           uuid: DateTime.now().millisecondsSinceEpoch.toString(), // Generate a unique ID
           name: _nameController.text,
           images: _imageUrlController.text.isEmpty 
