@@ -91,6 +91,7 @@ dev_dependencies:
     sdk: flutter
   golden_toolkit: ^0.15.0
   flutter_launcher_icons: ^0.13.1
+  mockito: ^5.4.4
 
 # Override dependencies to exclude problematic packages
 dependency_overrides:
@@ -112,8 +113,6 @@ dependency_overrides:
   json_serializable: ^6.7.1
   auto_route_generator: ^7.3.2
 
-  # Testing
-  mockito: ^5.4.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -162,7 +162,7 @@ class _BluetoothDevicesSectionState extends State<BluetoothDevicesSection> {
                         ? 'Сканирование...' 
                         : 'Нет доступных устройств',
                     style: TextStyle(
-                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
+                      color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
                     ),
                   ),
                 )

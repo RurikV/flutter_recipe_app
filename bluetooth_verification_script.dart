@@ -1,7 +1,3 @@
-import 'package:flutter/material.dart';
-import 'lib/services/bluetooth_service.dart';
-import 'lib/features/bluetooth/bluetooth.dart';
-
 /// Simple verification script to test Bluetooth functionality
 /// This script demonstrates the improved error handling and permission management
 void main() {
