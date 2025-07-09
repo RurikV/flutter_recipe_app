@@ -127,6 +127,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                   widget: GalleryScreen(
                     recipeUuid: _recipe.uuid,
                     recipeName: _recipe.name,
+                    objectDetectionService: _objectDetectionService!,
                   ),
                 ),
               );

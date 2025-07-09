@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:provider/provider.dart';
 import '../screens/home_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/registration_screen.dart';
@@ -12,6 +13,7 @@ import '../screens/gallery_screen.dart';
 import '../screens/profile_screen.dart';
 import '../redux/app_state.dart';
 import '../data/models/recipe.dart';
+import '../services/classification/object_detection_service.dart';
 
 part 'app_router.gr.dart';
 
@@ -169,6 +171,7 @@ class GalleryPage extends StatelessWidget {
     return GalleryScreen(
       recipeUuid: recipeUuid,
       recipeName: recipeName,
+      objectDetectionService: Provider.of<ObjectDetectionService>(context, listen: false),
     );
   }
 }

@@ -254,7 +254,6 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
       _detectCompleters[requestId] = completer;
 
       // Check if the path is a URL or a local file
-      Uint8List imageBytes;
       if (image.path.startsWith('http://') || image.path.startsWith('https://')) {
         // For URLs, we can't use File directly
         debugPrint('Image path is a URL, skipping object detection: ${image.path}');
@@ -262,21 +261,19 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
         // In a real implementation, you would download the image first
         return [];
       } else {
-        // For local files, use File
+        // For local files, verify file exists
         final File imageFile = File(image.path);
         if (!await imageFile.exists()) {
           throw Exception('Image file does not exist: ${image.path}');
         }
-        // Read the image bytes
-        imageBytes = await imageFile.readAsBytes();
       }
 
-      // Send the detection message to the isolate
+      // Send the detection message to the isolate with file path instead of bytes
       final message = IsolateMessage(
         IsolateMessageType.detect,
         {
           'requestId': requestId,
-          'imageBytes': imageBytes,
+          'imagePath': image.path,
         },
       );
 
@@ -389,11 +386,16 @@ Future<void> _handleDetectMessage(IsolateMessage message, SendPort sendPort) asy
   final String requestId = message.data['requestId'];
 
   try {
-    // Extract image data
-    final dynamic imageBytesRaw = message.data['imageBytes'];
-    final Uint8List imageBytes = imageBytesRaw is Uint8List
-        ? imageBytesRaw
-        : Uint8List.fromList(List<int>.from(imageBytesRaw));
+    // Extract image path and read file in isolate
+    final String imagePath = message.data['imagePath'];
+    final File imageFile = File(imagePath);
+
+    if (!await imageFile.exists()) {
+      throw Exception('Image file does not exist: $imagePath');
+    }
+
+    // Read the image bytes in the isolate
+    final Uint8List imageBytes = await imageFile.readAsBytes();
 
     // Decode the image
     final img.Image? image = img.decodeImage(imageBytes);
