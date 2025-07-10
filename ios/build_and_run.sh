@@ -38,6 +38,6 @@ fi
 
 # Launch the app on the simulator
 echo "Launching app on simulator..."
-xcrun simctl launch $SIMULATOR_ID com.example.flutterRecipeApp
+xcrun simctl launch $SIMULATOR_ID app.vercel.flutterRecipeApp
 
 echo "Done."

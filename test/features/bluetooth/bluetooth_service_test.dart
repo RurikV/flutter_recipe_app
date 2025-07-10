@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_recipe_app/services/bluetooth_service.dart';
+import 'package:recipe_master/services/bluetooth_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

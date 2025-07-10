@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_recipe_app/data/repositories/recipe_repository_impl.dart';
-import 'package:flutter_recipe_app/domain/services/api_service.dart';
-import 'package:flutter_recipe_app/domain/services/database_service.dart';
-import 'package:flutter_recipe_app/domain/services/connectivity_service.dart';
+import 'package:recipe_master/data/repositories/recipe_repository_impl.dart';
+import 'package:recipe_master/domain/services/api_service.dart';
+import 'package:recipe_master/domain/services/database_service.dart';
+import 'package:recipe_master/domain/services/connectivity_service.dart';
 import 'package:mockito/mockito.dart';
 
 // Mock classes

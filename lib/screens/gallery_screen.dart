@@ -4,8 +4,8 @@ import 'package:path/path.dart' as path;
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_recipe_app/services/classification/object_detection_service.dart';
-import 'package:flutter_recipe_app/data/models/recipe_image.dart' as model;
+import 'package:recipe_master/services/classification/object_detection_service.dart';
+import 'package:recipe_master/data/models/recipe_image.dart' as model;
 
 // Simple photo model for temporary use
 class SimplePhoto {

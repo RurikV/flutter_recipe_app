@@ -1,4 +1,4 @@
-package com.example.flutter_recipe_app
+package app.vercel.recipe_master
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine

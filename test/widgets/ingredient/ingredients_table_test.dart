@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_recipe_app/domain/entities/ingredient.dart';
-import 'package:flutter_recipe_app/widgets/ingredient/ingredients_table.dart';
+import 'package:recipe_master/domain/entities/ingredient.dart';
+import 'package:recipe_master/widgets/ingredient/ingredients_table.dart';
 
 void main() {
   group('IngredientsTable Widget Tests', () {

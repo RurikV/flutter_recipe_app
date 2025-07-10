@@ -1,14 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_recipe_app/domain/entities/recipe.dart';
-import 'package:flutter_recipe_app/domain/entities/recipe_step.dart';
-import 'package:flutter_recipe_app/domain/entities/ingredient.dart';
-import 'package:flutter_recipe_app/domain/entities/comment.dart';
-import 'package:flutter_recipe_app/data/models/recipe.dart' as data_model;
-import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
-import 'package:flutter_recipe_app/data/usecases/recipe_manager_impl.dart';
-import 'package:flutter_recipe_app/domain/repositories/recipe_repository.dart';
-import 'package:flutter_recipe_app/domain/services/api_service.dart';
-import 'package:flutter_recipe_app/domain/services/connectivity_service.dart';
+import 'package:recipe_master/domain/entities/recipe.dart';
+import 'package:recipe_master/domain/entities/recipe_step.dart';
+import 'package:recipe_master/domain/entities/ingredient.dart';
+import 'package:recipe_master/domain/entities/comment.dart';
+import 'package:recipe_master/data/models/recipe.dart' as data_model;
+import 'package:recipe_master/domain/usecases/recipe_manager.dart';
+import 'package:recipe_master/data/usecases/recipe_manager_impl.dart';
+import 'package:recipe_master/domain/repositories/recipe_repository.dart';
+import 'package:recipe_master/domain/services/api_service.dart';
+import 'package:recipe_master/domain/services/connectivity_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 // Mock implementation of ApiService for testing

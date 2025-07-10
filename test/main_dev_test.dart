@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_recipe_app/presentation/providers/language_provider.dart';
-import 'package:flutter_recipe_app/main.dart';
-import 'package:flutter_recipe_app/redux/app_state.dart';
-import 'package:flutter_recipe_app/redux/store.dart';
+import 'package:recipe_master/presentation/providers/language_provider.dart';
+import 'package:recipe_master/main.dart';
+import 'package:recipe_master/redux/app_state.dart';
+import 'package:recipe_master/redux/store.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 

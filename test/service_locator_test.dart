@@ -1,18 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:flutter_recipe_app/data/database/app_database.dart' as db;
-import 'package:flutter_recipe_app/services/classification/object_detection_service.dart';
-import 'package:flutter_recipe_app/domain/services/api_service.dart';
-import 'package:flutter_recipe_app/domain/services/database_service.dart';
-import 'package:flutter_recipe_app/data/models/recipe.dart' as app_model;
-import 'package:flutter_recipe_app/data/models/comment.dart' as app_model;
-import 'package:flutter_recipe_app/data/models/ingredient.dart' as app_model;
-import 'package:flutter_recipe_app/data/models/recipe_image.dart' as model;
-import 'package:flutter_recipe_app/domain/entities/recipe.dart';
-import 'package:flutter_recipe_app/domain/entities/comment.dart';
-import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
-import 'package:flutter_recipe_app/data/usecases/recipe_manager_impl.dart';
-import 'package:flutter_recipe_app/domain/repositories/recipe_repository.dart';
+import 'package:recipe_master/data/database/app_database.dart' as db;
+import 'package:recipe_master/services/classification/object_detection_service.dart';
+import 'package:recipe_master/domain/services/api_service.dart';
+import 'package:recipe_master/domain/services/database_service.dart';
+import 'package:recipe_master/data/models/recipe.dart' as app_model;
+import 'package:recipe_master/data/models/comment.dart' as app_model;
+import 'package:recipe_master/data/models/ingredient.dart' as app_model;
+import 'package:recipe_master/data/models/recipe_image.dart' as model;
+import 'package:recipe_master/domain/entities/recipe.dart';
+import 'package:recipe_master/domain/entities/comment.dart';
+import 'package:recipe_master/domain/usecases/recipe_manager.dart';
+import 'package:recipe_master/data/usecases/recipe_manager_impl.dart';
+import 'package:recipe_master/domain/repositories/recipe_repository.dart';
 
 final GetIt testGetIt = GetIt.instance;
 

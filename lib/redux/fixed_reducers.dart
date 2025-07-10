@@ -1,9 +1,9 @@
-import 'package:flutter_recipe_app/data/models/recipe.dart';
-import 'package:flutter_recipe_app/data/models/recipe_step.dart';
-import 'package:flutter_recipe_app/data/models/comment.dart';
-import 'package:flutter_recipe_app/data/models/user.dart';
-import 'package:flutter_recipe_app/redux/app_state.dart';
-import 'package:flutter_recipe_app/redux/actions.dart';
+import 'package:recipe_master/data/models/recipe.dart';
+import 'package:recipe_master/data/models/recipe_step.dart';
+import 'package:recipe_master/data/models/comment.dart';
+import 'package:recipe_master/data/models/user.dart';
+import 'package:recipe_master/redux/app_state.dart';
+import 'package:recipe_master/redux/actions.dart';
 
 // Main reducer that combines all reducers
 AppState appReducer(AppState state, dynamic action) {

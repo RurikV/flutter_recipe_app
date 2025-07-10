@@ -28,8 +28,8 @@ The Flutter Recipe App is a comprehensive recipe management application with the
 ### Clone the Repository
 
 ```bash
-git clone -b <latest-branch> https://github.com/RurikV/flutter_recipe_app
-cd flutter_recipe_app
+git clone -b <latest-branch> https://github.com/RurikV/recipe_master
+cd recipe_master
 ```
 
 ### Set Up Flutter Version Manager (FVM)

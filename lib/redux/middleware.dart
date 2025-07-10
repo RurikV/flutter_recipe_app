@@ -1,10 +1,10 @@
 import 'package:redux/redux.dart';
-import 'package:flutter_recipe_app/redux/app_state.dart';
-import 'package:flutter_recipe_app/redux/actions.dart';
-import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
-import 'package:flutter_recipe_app/domain/entities/comment.dart' as domain;
-import 'package:flutter_recipe_app/data/models/recipe.dart';
-import 'package:flutter_recipe_app/data/mappers/recipe_mapper.dart';
+import 'package:recipe_master/redux/app_state.dart';
+import 'package:recipe_master/redux/actions.dart';
+import 'package:recipe_master/domain/usecases/recipe_manager.dart';
+import 'package:recipe_master/domain/entities/comment.dart' as domain;
+import 'package:recipe_master/data/models/recipe.dart';
+import 'package:recipe_master/data/mappers/recipe_mapper.dart';
 import 'package:get_it/get_it.dart';
 
 // Helper method to create a default recipe

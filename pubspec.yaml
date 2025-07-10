@@ -1,4 +1,4 @@
-name: flutter_recipe_app
+name: recipe_master
 description: "A comprehensive recipe management app that helps you organize, create, and discover delicious recipes."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.

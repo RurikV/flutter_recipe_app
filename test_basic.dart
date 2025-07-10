@@ -1,6 +1,6 @@
-import 'package:flutter_recipe_app/domain/entities/recipe.dart';
-import 'package:flutter_recipe_app/domain/entities/recipe_step.dart';
-import 'package:flutter_recipe_app/domain/entities/ingredient.dart';
+import 'package:recipe_master/domain/entities/recipe.dart';
+import 'package:recipe_master/domain/entities/recipe_step.dart';
+import 'package:recipe_master/domain/entities/ingredient.dart';
 
 void main() {
   print('[DEBUG_LOG] Testing basic entity creation');
