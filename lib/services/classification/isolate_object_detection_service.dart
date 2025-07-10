@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import '../../../data/models/recipe_image.dart' as model;
 import 'object_detection_service.dart';
+import 'food_labels.dart';
 
 // Mock implementation of initTfliteFlutterPlugin for now
 Future<void> initTfliteFlutterPlugin() async {
@@ -77,11 +78,11 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
     }
   }
 
-  // Load the labels from the assets
+  // Load the labels from the centralized food labels
   Future<List<String>> _loadLabels() async {
     try {
-      final labelsData = await rootBundle.loadString(_labelsPath);
-      return labelsData.split('\n');
+      // Use centralized food-focused labels instead of external file
+      return FoodLabels.labels;
     } catch (e) {
       debugPrint('Error loading labels: $e');
       return [];

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/services/api_service.dart';
 import '../../data/services/api/api_service_impl.dart';
@@ -37,6 +38,28 @@ class AuthService {
     if (initializeUser) {
       _initializeUser();
     }
+  }
+
+  // Helper method to handle web-specific CORS errors
+  Exception _handleWebError(DioException e, String operation) {
+    if (kIsWeb && e.type == DioExceptionType.connectionError) {
+      final corsErrorMessage = '''
+$operation failed: Network connection failed on web platform.
+
+This is likely due to CORS (Cross-Origin Resource Sharing) restrictions.
+The API server at $baseUrl may not be configured to allow requests from web browsers.
+
+Possible solutions:
+1. Configure the API server to include proper CORS headers
+2. Use a proxy server for development
+3. Run the app on a mobile device or desktop where CORS doesn't apply
+
+Technical details: ${e.message}
+''';
+      print('CORS Error detected on web platform during $operation: $e');
+      return Exception(corsErrorMessage);
+    }
+    return Exception('$operation failed: ${e.message}');
   }
 
   // Initialize user from SharedPreferences if available
@@ -94,7 +117,7 @@ class AuthService {
       } else if (e.response != null) {
         throw Exception('Registration failed: ${e.response?.data['message'] ?? e.message}');
       } else {
-        throw Exception('Registration failed: ${e.message}');
+        throw _handleWebError(e, 'Registration');
       }
     }
   }
@@ -147,7 +170,7 @@ class AuthService {
             : e.message;
         throw Exception('Login failed: $errorMessage');
       } else {
-        throw Exception('Login failed: ${e.message}');
+        throw _handleWebError(e, 'Login');
       }
     }
   }
@@ -216,7 +239,7 @@ class AuthService {
             : e.message;
         throw Exception('Failed to get user profile: $errorMessage');
       } else {
-        throw Exception('Failed to get user profile: ${e.message}');
+        throw _handleWebError(e, 'Get user profile');
       }
     }
   }
