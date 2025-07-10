@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
@@ -117,13 +118,20 @@ class GalleryScreenState extends State<GalleryScreen> {
   }
 
   Future<String> _saveImageToStorage(XFile image) async {
-    final tempDir = await getTemporaryDirectory();
-    final tempFile = File('${tempDir.path}/${path.basename(image.path)}');
+    if (kIsWeb) {
+      // On web, we can use the image path directly
+      // No need for temporary directory operations
+      return image.path;
+    } else {
+      // On native platforms, copy to temporary directory
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/${path.basename(image.path)}');
 
-    // Copy the file instead of reading bytes and writing them
-    await File(image.path).copy(tempFile.path);
+      // Copy the file instead of reading bytes and writing them
+      await File(image.path).copy(tempFile.path);
 
-    return tempFile.path;
+      return tempFile.path;
+    }
   }
 
   Future<String> _detectObjectsInImage(String imagePath) async {
@@ -186,10 +194,18 @@ class GalleryScreenState extends State<GalleryScreen> {
                 children: [
                   Expanded(
                     flex: 3,
-                    child: Image.file(
-                      File(photo.imagePath),
-                      fit: BoxFit.cover,
-                    ),
+                    child: kIsWeb
+                        ? Image.network(
+                            photo.imagePath,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(Icons.error);
+                            },
+                          )
+                        : Image.file(
+                            File(photo.imagePath),
+                            fit: BoxFit.cover,
+                          ),
                   ),
                   Expanded(
                     flex: 1,
