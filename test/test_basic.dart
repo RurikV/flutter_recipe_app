@@ -10,8 +10,7 @@ void main() {
     final step = RecipeStep(
       id: 1,
       name: 'Test step',
-      description: 'Test description',
-      duration: '10',
+      duration: 10,
     );
     print('[DEBUG_LOG] RecipeStep created successfully: ${step.name}');
 
