@@ -6,11 +6,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../api/api_service.dart';
 import '../api/api_service_impl.dart';
 import '../../../data/models/user.dart';
+import '../../config/app_config.dart';
 
 class AuthService {
   final ApiService _apiService;
   final Dio _dio;
-  final String baseUrl = 'https://foodapi.dzolotov.pro';
+  final String baseUrl = AppConfig.baseUrl;
 
   // Key for storing the auth token in SharedPreferences
   static const String _tokenKey = 'auth_token';

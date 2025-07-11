@@ -4,6 +4,7 @@ import 'package:dio/io.dart' if (dart.library.html) 'package:dio/browser.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../../../../data/models/recipe.dart';
 import 'api_service.dart';
+import '../../config/app_config.dart';
 
 // Import HttpClient, X509Certificate, and IOHttpClientAdapter only for non-web platforms
 import 'dart:io' if (dart.library.html) 'web_http_client.dart';
@@ -14,7 +15,7 @@ import 'package:dio/io.dart' if (dart.library.html) 'web_http_client.dart' show 
 /// It provides methods for each API endpoint without combining data from multiple endpoints.
 class ApiServiceImpl implements ApiService {
   final Dio _dio;
-  final String baseUrl = 'https://foodapi.dzolotov.pro';
+  final String baseUrl = AppConfig.baseUrl;
   final int _maxRetries = 3;
 
   ApiServiceImpl() : _dio = Dio() {
