@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../domain/entities/recipe_step.dart';
+import '../../data/models/recipe_step.dart';
 
 class StepDialog extends StatefulWidget {
   final Function(RecipeStep) onSave;
@@ -31,18 +31,17 @@ class _StepDialogState extends State<StepDialog> {
 
     if (_isEditMode) {
       // Initialize with the existing step values
-      _descriptionController = TextEditingController(text: widget.step!.description);
-      _durationController = TextEditingController(text: widget.step!.duration);
+      _descriptionController = TextEditingController(text: widget.step!.name);
+
+      // Convert duration from int (minutes) to MM:SS format
+      final durationMinutes = widget.step!.duration;
+      final minutes = (durationMinutes ~/ 60).toString().padLeft(2, '0');
+      final seconds = (durationMinutes % 60).toString().padLeft(2, '0');
+      _durationController = TextEditingController(text: '$minutes:$seconds');
 
       // Parse the duration into minutes and seconds
-      final parts = widget.step!.duration.split(':');
-      if (parts.length == 2) {
-        _minutes = parts[0];
-        _seconds = parts[1];
-      } else {
-        _minutes = '00';
-        _seconds = '00';
-      }
+      _minutes = minutes;
+      _seconds = seconds;
     } else {
       // Initialize with default values
       _descriptionController = TextEditingController();
@@ -435,8 +434,7 @@ class _StepDialogState extends State<StepDialog> {
 
                       if (_formKey.currentState!.validate()) {
                         widget.onSave(
-                          RecipeStep(
-                            name: _descriptionController.text,
+                          RecipeStep.simple(
                             description: _descriptionController.text,
                             duration: _durationController.text,
                             isCompleted: _isEditMode ? widget.step!.isCompleted : false,

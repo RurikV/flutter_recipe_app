@@ -6,7 +6,7 @@ import '../../../data/models/recipe_step.dart' as app_model;
 import '../../../data/models/comment.dart' as app_model;
 import '../../../data/models/recipe_image.dart';
 import 'package:drift/drift.dart';
-import '../../../../domain/services/database_service.dart';
+import 'database_service.dart';
 import '../../../../services/service_locator.dart' as service_locator;
 
 /// Implementation of the DatabaseService interface

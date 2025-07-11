@@ -3,15 +3,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../data/models/recipe_image.dart' as model;
 import 'object_detection_service.dart';
+import 'food_labels.dart';
 
 /// SSD (Single Shot MultiBox Detector) implementation of the object detection service
 /// This is a simplified version that doesn't use TensorFlow Lite directly
 class SSDObjectDetectionService implements ObjectDetectionService {
   bool _isInitialized = false;
-  final List<String> _labels = [
-    'apple', 'banana', 'orange', 'broccoli', 'carrot', 
-    'hot dog', 'pizza', 'donut', 'cake', 'chair'
-  ];
+  final List<String> _labels = FoodLabels.labels;
   final Random _random = Random();
 
   @override

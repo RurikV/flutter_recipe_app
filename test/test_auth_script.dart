@@ -1,4 +1,4 @@
-import 'package:flutter_recipe_app/services/auth/auth_service.dart';
+import 'package:recipe_master/services/auth/auth_service.dart';
 
 void main() async {
   print('[DEBUG_LOG] Starting authentication test');

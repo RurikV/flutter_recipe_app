@@ -10,13 +10,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
-import 'package:flutter_recipe_app/data/models/recipe.dart';
-import 'package:flutter_recipe_app/data/models/recipe_step.dart';
-import 'package:flutter_recipe_app/domain/services/api_service.dart';
-import 'package:flutter_recipe_app/main.dart';
-import 'package:flutter_recipe_app/presentation/providers/language_provider.dart';
-import 'package:flutter_recipe_app/redux/app_state.dart';
-import 'package:flutter_recipe_app/redux/store.dart';
+import 'package:recipe_master/data/models/recipe.dart';
+import 'package:recipe_master/data/models/recipe_step.dart';
+import 'package:recipe_master/services/api/api_service.dart';
+import 'package:recipe_master/main.dart';
+import 'package:recipe_master/presentation/providers/language_provider.dart';
+import 'package:recipe_master/redux/app_state.dart';
+import 'package:recipe_master/redux/store.dart';
 
 // Use the MockApiService from service_locator_test.dart
 import 'service_locator_test.dart' as test_locator;

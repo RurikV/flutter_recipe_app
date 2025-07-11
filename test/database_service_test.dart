@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_recipe_app/data/models/recipe.dart' as app_model;
-import 'package:flutter_recipe_app/data/models/recipe_step.dart' as app_model;
-import 'package:flutter_recipe_app/data/models/ingredient.dart' as app_model;
-import 'package:flutter_recipe_app/data/models/comment.dart' as app_model;
+import 'package:recipe_master/data/models/recipe.dart' as app_model;
+import 'package:recipe_master/data/models/recipe_step.dart' as app_model;
+import 'package:recipe_master/data/models/ingredient.dart' as app_model;
+import 'package:recipe_master/data/models/comment.dart' as app_model;
 
 // Mock implementation for database service testing
 class MockDatabaseService {

@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:redux/redux.dart';
-import 'package:flutter_recipe_app/data/models/recipe.dart';
-import 'package:flutter_recipe_app/redux/app_state.dart';
-import 'package:flutter_recipe_app/redux/actions.dart';
-import 'package:flutter_recipe_app/redux/reducers.dart';
+import 'package:recipe_master/data/models/recipe.dart';
+import 'package:recipe_master/redux/app_state.dart';
+import 'package:recipe_master/redux/actions.dart';
+import 'package:recipe_master/redux/reducers.dart';
 
 // Mock recipe data for testing
 final List<Recipe> mockRecipes = [

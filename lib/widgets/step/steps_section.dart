@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/recipe_step.dart';
+import '../../data/models/recipe_step.dart';
 
 class StepsSection extends StatelessWidget {
   final List<RecipeStep> steps;
@@ -74,7 +74,7 @@ class StepsSection extends StatelessWidget {
                       ),
                     ),
                     title: Text(
-                      step.description,
+                      step.name,
                       style: const TextStyle(
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w400,
@@ -83,7 +83,7 @@ class StepsSection extends StatelessWidget {
                       ),
                     ),
                     subtitle: Text(
-                      'Время: ${step.duration}',
+                      'Время: ${step.duration} мин',
                       style: const TextStyle(
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w700,

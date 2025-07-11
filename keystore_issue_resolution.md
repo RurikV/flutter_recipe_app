@@ -7,18 +7,18 @@ When attempting to build an Android App Bundle (AAB) for the Flutter Recipe App,
 FAILURE: Build failed with an exception.
 * What went wrong:
 Execution failed for task ':app:validateSigningRelease'.
-> Keystore file '/Volumes/WD/Development/projects/flutter_recipe_app/android/debug.keystore' not found for signing config 'release'.
+> Keystore file '/Volumes/WD/Development/projects/recipe_master/android/debug.keystore' not found for signing config 'release'.
 ```
 
 ## Root Cause
-The build process was looking for a keystore file at `/Volumes/WD/Development/projects/flutter_recipe_app/android/debug.keystore`, but this file did not exist. The key.properties file was correctly configured to point to this location, but the actual keystore file had not been generated.
+The build process was looking for a keystore file at `/Volumes/WD/Development/projects/recipe_master/android/debug.keystore`, but this file did not exist. The key.properties file was correctly configured to point to this location, but the actual keystore file had not been generated.
 
 ## Resolution
 1. Verified the key.properties file configuration, which correctly specified the keystore location as `../debug.keystore` (relative to the app directory).
 2. Checked the android directory and found that there was a placeholder file (`debug.keystore.placeholder`) but no actual keystore file.
 3. Generated a debug keystore file in the correct location using the keytool command:
    ```
-   keytool -genkey -v -keystore /Volumes/WD/Development/projects/flutter_recipe_app/android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+   keytool -genkey -v -keystore /Volumes/WD/Development/projects/recipe_master/android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
    ```
 4. Successfully built the AAB file using `flutter build appbundle`, which created the file at `build/app/outputs/bundle/release/app-release.aab`.
 5. Updated the build instructions to include the full path to the keystore file and the -dname parameter to avoid interactive prompts.

@@ -3,7 +3,8 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart' if (dart.library.html) 'package:dio/browser.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../../../../data/models/recipe.dart';
-import '../../../../domain/services/api_service.dart';
+import 'api_service.dart';
+import '../../config/app_config.dart';
 
 // Import HttpClient, X509Certificate, and IOHttpClientAdapter only for non-web platforms
 import 'dart:io' if (dart.library.html) 'web_http_client.dart';
@@ -14,7 +15,7 @@ import 'package:dio/io.dart' if (dart.library.html) 'web_http_client.dart' show 
 /// It provides methods for each API endpoint without combining data from multiple endpoints.
 class ApiServiceImpl implements ApiService {
   final Dio _dio;
-  final String baseUrl = 'https://foodapi.dzolotov.pro';
+  final String baseUrl = AppConfig.baseUrl;
   final int _maxRetries = 3;
 
   ApiServiceImpl() : _dio = Dio() {
@@ -58,17 +59,41 @@ class ApiServiceImpl implements ApiService {
       print('API request successful');
       return result;
     } catch (e) {
+      // Check if this is a web-specific CORS error
+      if (kIsWeb && e is DioException && e.type == DioExceptionType.connectionError) {
+        final corsErrorMessage = '''
+$errorMessage: Network connection failed on web platform.
+
+This is likely due to CORS (Cross-Origin Resource Sharing) restrictions.
+The API server at $baseUrl may not be configured to allow requests from web browsers.
+
+Possible solutions:
+1. Configure the API server to include proper CORS headers
+2. Use a proxy server for development
+3. Run the app on a mobile device or desktop where CORS doesn't apply
+
+Technical details: ${e.message}
+''';
+        print('CORS Error detected on web platform: $e');
+        throw Exception(corsErrorMessage);
+      }
+
       if (retries < _maxRetries) {
-        // Exponential backoff: wait 2^retries seconds before retrying
-        final waitTime = Duration(seconds: 1 << retries);
-        print('API request failed: $e');
-        print('Retrying request after $waitTime (attempt ${retries + 1}/$_maxRetries)');
-        await Future.delayed(waitTime);
-        return _requestWithRetry(
-          request: request,
-          errorMessage: errorMessage,
-          retries: retries + 1,
-        );
+        // Don't retry CORS errors on web as they won't resolve
+        if (kIsWeb && e is DioException && e.type == DioExceptionType.connectionError) {
+          print('Skipping retry for CORS error on web platform');
+        } else {
+          // Exponential backoff: wait 2^retries seconds before retrying
+          final waitTime = Duration(seconds: 1 << retries);
+          print('API request failed: $e');
+          print('Retrying request after $waitTime (attempt ${retries + 1}/$_maxRetries)');
+          await Future.delayed(waitTime);
+          return _requestWithRetry(
+            request: request,
+            errorMessage: errorMessage,
+            retries: retries + 1,
+          );
+        }
       }
       print('API request failed after $_maxRetries attempts: $e');
       print('$errorMessage: $e');

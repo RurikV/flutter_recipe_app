@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../domain/entities/recipe.dart' as domain;
-import '../domain/entities/ingredient.dart';
-import '../domain/entities/recipe_step.dart';
-import '../domain/usecases/recipe_manager.dart';
+import '../data/models/recipe.dart' as model;
+import '../data/models/ingredient.dart';
+import '../data/models/recipe_step.dart';
+import '../data/usecases/recipe_manager.dart';
 import '../widgets/recipe/recipe_name_input.dart';
 import '../widgets/recipe/photo_upload_section.dart';
 import '../widgets/ingredient/ingredients_section.dart';
@@ -174,7 +174,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         final List<RecipeStep> typedSteps = List<RecipeStep>.from(_steps);
 
         // Create a new recipe with the current data
-        final recipe = domain.Recipe(
+        final recipe = model.Recipe(
           uuid: DateTime.now().millisecondsSinceEpoch.toString(), // Generate a unique ID
           name: _nameController.text,
           images: _imageUrlController.text.isEmpty 

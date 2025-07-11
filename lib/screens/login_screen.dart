@@ -50,6 +50,9 @@ class _LoginScreenState extends State<LoginScreen> {
       // Navigate to home screen
       context.router.navigate(const HomeRoute());
     } catch (e) {
+      // Log the exception to console as requested
+      print('[DEBUG_LOG] Login exception occurred: $e');
+      print('[DEBUG_LOG] Exception type: ${e.runtimeType}');
       setState(() {
         _errorMessage = e.toString();
       });

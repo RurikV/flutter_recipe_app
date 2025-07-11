@@ -1,4 +1,4 @@
-package com.example.flutter_recipe_app
+package app.vercel.recipe_master
 
 import android.Manifest
 import android.app.Activity
@@ -29,57 +29,57 @@ class BluetoothLeScannerPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,
     private lateinit var channel: MethodChannel
     private lateinit var context: Context
     private var activity: Activity? = null
-    
+
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothLeScanner: BluetoothLeScanner? = null
     private var scanning = false
     private val handler = Handler(Looper.getMainLooper())
-    
+
     // Stops scanning after 10 seconds
     private val SCAN_PERIOD: Long = 10000
-    
+
     // Request codes
     private val REQUEST_ENABLE_BT = 1
     private val REQUEST_FINE_LOCATION = 2
     private val REQUEST_BLUETOOTH_SCAN = 3
     private val REQUEST_BLUETOOTH_CONNECT = 4
-    
+
     // Discovered devices
     private val discoveredDevices = mutableMapOf<String, DeviceInfo>()
-    
+
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "com.recipe_app/bluetooth_le_scanner")
         channel.setMethodCallHandler(this)
         context = flutterPluginBinding.applicationContext
     }
-    
+
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
     }
-    
+
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
         binding.addRequestPermissionsResultListener(this)
-        
+
         // Initialize Bluetooth adapter
         val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager.adapter
         bluetoothLeScanner = bluetoothAdapter?.bluetoothLeScanner
     }
-    
+
     override fun onDetachedFromActivityForConfigChanges() {
         activity = null
     }
-    
+
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         activity = binding.activity
         binding.addRequestPermissionsResultListener(this)
     }
-    
+
     override fun onDetachedFromActivity() {
         activity = null
     }
-    
+
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "initialize" -> {
@@ -102,16 +102,16 @@ class BluetoothLeScannerPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,
             }
         }
     }
-    
+
     private fun initialize(result: Result) {
         if (bluetoothAdapter == null) {
             result.error("BLUETOOTH_UNAVAILABLE", "Bluetooth is not available on this device", null)
             return
         }
-        
+
         result.success(true)
     }
-    
+
     private fun startScan(result: Result) {
         activity?.let { activity ->
             // Check if Bluetooth is enabled
@@ -119,7 +119,7 @@ class BluetoothLeScannerPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,
                 result.error("BLUETOOTH_DISABLED", "Bluetooth is disabled", null)
                 return
             }
-            
+
             // Check for required permissions
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
@@ -127,7 +127,7 @@ class BluetoothLeScannerPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,
                     result.error("PERMISSION_DENIED", "Bluetooth scan permission not granted", null)
                     return
                 }
-                
+
                 if (ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), REQUEST_BLUETOOTH_CONNECT)
                     result.error("PERMISSION_DENIED", "Bluetooth connect permission not granted", null)
@@ -140,10 +140,10 @@ class BluetoothLeScannerPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,
                     return
                 }
             }
-            
+
             // Clear previously discovered devices
             discoveredDevices.clear()
-            
+
             // Start scanning
             if (!scanning) {
                 // Stop scanning after a predefined scan period
@@ -153,7 +153,7 @@ class BluetoothLeScannerPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,
                         bluetoothLeScanner?.stopScan(leScanCallback)
                     }
                 }, SCAN_PERIOD)
-                
+
                 scanning = true
                 bluetoothLeScanner?.startScan(leScanCallback)
                 result.success(true)
@@ -164,7 +164,7 @@ class BluetoothLeScannerPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,
             result.error("ACTIVITY_UNAVAILABLE", "Activity is not available", null)
         }
     }
-    
+
     private fun stopScan(result: Result) {
         if (scanning) {
             scanning = false
@@ -174,14 +174,14 @@ class BluetoothLeScannerPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,
             result.success(false)
         }
     }
-    
+
     private fun requestBluetoothEnable(result: Result) {
         activity?.let { activity ->
             if (bluetoothAdapter == null) {
                 result.error("BLUETOOTH_UNAVAILABLE", "Bluetooth is not available on this device", null)
                 return
             }
-            
+
             if (!bluetoothAdapter!!.isEnabled) {
                 val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -203,12 +203,12 @@ class BluetoothLeScannerPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,
             result.error("ACTIVITY_UNAVAILABLE", "Activity is not available", null)
         }
     }
-    
+
     // Device scan callback
     private val leScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
-            
+
             val device = result.device
             val deviceName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
@@ -219,20 +219,20 @@ class BluetoothLeScannerPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,
             } else {
                 device.name ?: "Unknown Device"
             }
-            
+
             val deviceInfo = DeviceInfo(
                 id = device.address,
                 name = deviceName,
                 rssi = result.rssi
             )
-            
+
             discoveredDevices[device.address] = deviceInfo
-            
+
             // Send the updated list of devices to Flutter
             sendDeviceList()
         }
     }
-    
+
     private fun sendDeviceList() {
         val devicesList = discoveredDevices.values.map {
             mapOf(
@@ -241,12 +241,12 @@ class BluetoothLeScannerPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,
                 "rssi" to it.rssi
             )
         }
-        
+
         handler.post {
             channel.invokeMethod("onScanResult", devicesList)
         }
     }
-    
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray): Boolean {
         when (requestCode) {
             REQUEST_FINE_LOCATION, REQUEST_BLUETOOTH_SCAN, REQUEST_BLUETOOTH_CONNECT -> {
@@ -265,7 +265,7 @@ class BluetoothLeScannerPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,
         }
         return false
     }
-    
+
     // Data class to hold device information
     data class DeviceInfo(
         val id: String,

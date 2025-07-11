@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/ingredient.dart';
+import '../../data/models/ingredient.dart';
 
 class IngredientsSection extends StatelessWidget {
   final List<Ingredient> ingredients;

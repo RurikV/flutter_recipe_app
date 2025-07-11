@@ -1,20 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_recipe_app/domain/entities/recipe.dart';
-import 'package:flutter_recipe_app/domain/entities/recipe_step.dart';
-import 'package:flutter_recipe_app/domain/entities/ingredient.dart';
-import 'package:flutter_recipe_app/domain/entities/comment.dart';
-import 'package:flutter_recipe_app/data/models/recipe.dart' as data_model;
-import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
-import 'package:flutter_recipe_app/data/usecases/recipe_manager_impl.dart';
-import 'package:flutter_recipe_app/domain/repositories/recipe_repository.dart';
-import 'package:flutter_recipe_app/domain/services/api_service.dart';
-import 'package:flutter_recipe_app/domain/services/connectivity_service.dart';
+import 'package:recipe_master/data/models/recipe.dart';
+import 'package:recipe_master/data/models/recipe_step.dart';
+import 'package:recipe_master/data/models/ingredient.dart';
+import 'package:recipe_master/data/models/comment.dart';
+import 'package:recipe_master/data/usecases/recipe_manager.dart';
+import 'package:recipe_master/data/usecases/recipe_manager_impl.dart';
+import 'package:recipe_master/data/repositories/recipe_repository.dart';
+import 'package:recipe_master/services/api/api_service.dart';
+import 'package:recipe_master/services/connectivity/connectivity_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 // Mock implementation of ApiService for testing
 class MockApiService implements ApiService {
   @override
-  Future<Map<String, dynamic>> createRecipe(data_model.Recipe recipe) async {
+  Future<Map<String, dynamic>> createRecipe(Recipe recipe) async {
     // Simulate successful recipe creation by returning a Map<String, dynamic>
     return {
       'id': 'mock-uuid',
@@ -61,9 +60,7 @@ class MockApiService implements ApiService {
         tags: ['mock', 'test'],
         ingredients: [],
         steps: [
-          RecipeStep(
-            id: 1,
-            name: 'Mock step 1',
+          RecipeStep.simple(
             description: 'Mock step 1 description',
             duration: '10',
           ),
@@ -185,7 +182,7 @@ class MockApiService implements ApiService {
   }
 
   @override
-  Future<Map<String, dynamic>> updateRecipe(String id, data_model.Recipe recipe) async {
+  Future<Map<String, dynamic>> updateRecipe(String id, Recipe recipe) async {
     // Mock implementation
     return {
       'id': id,
@@ -280,9 +277,7 @@ class MockDatabaseService {
         tags: ['mock', 'test'],
         ingredients: [],
         steps: [
-          RecipeStep(
-            id: 1,
-            name: 'Mock step 1',
+          RecipeStep.simple(
             description: 'Mock step 1 description',
             duration: '10',
           ),
@@ -296,9 +291,9 @@ class MockDatabaseService {
   Future<List<Ingredient>> getAllIngredients() async {
     // Mock implementation
     return [
-      Ingredient(name: 'Ingredient 1', quantity: '100', unit: 'g'),
-      Ingredient(name: 'Ingredient 2', quantity: '200', unit: 'ml'),
-      Ingredient(name: 'Ingredient 3', quantity: '3', unit: 'pcs'),
+      Ingredient.simple(name: 'Ingredient 1', quantity: '100', unit: 'g'),
+      Ingredient.simple(name: 'Ingredient 2', quantity: '200', unit: 'ml'),
+      Ingredient.simple(name: 'Ingredient 3', quantity: '3', unit: 'pcs'),
     ];
   }
 
@@ -317,9 +312,7 @@ class MockDatabaseService {
         tags: ['mock', 'test', 'favorite'],
         ingredients: [],
         steps: [
-          RecipeStep(
-            id: 1,
-            name: 'Mock step 1',
+          RecipeStep.simple(
             description: 'Mock step 1 description',
             duration: '10',
           ),
@@ -438,11 +431,7 @@ class MockDatabaseService {
       // Find the step with the given ID and update its completion status
       for (int i = 0; i < updatedSteps.length; i++) {
         if (updatedSteps[i].id == stepId) {
-          updatedSteps[i] = RecipeStep(
-            id: updatedSteps[i].id,
-            name: updatedSteps[i].name,
-            description: updatedSteps[i].description,
-            duration: updatedSteps[i].duration,
+          updatedSteps[i] = updatedSteps[i].copyWith(
             isCompleted: isCompleted,
           );
           break;
@@ -505,9 +494,7 @@ class MockRecipeRepository implements RecipeRepository {
         tags: ['mock', 'test'],
         ingredients: [],
         steps: [
-          RecipeStep(
-            id: 1,
-            name: 'Mock step 1',
+          RecipeStep.simple(
             description: 'Mock step 1 description',
             duration: '10',
           ),
@@ -534,9 +521,7 @@ class MockRecipeRepository implements RecipeRepository {
         tags: ['mock', 'test', 'favorite'],
         ingredients: [],
         steps: [
-          RecipeStep(
-            id: 1,
-            name: 'Mock step 1',
+          RecipeStep.simple(
             description: 'Mock step 1 description',
             duration: '10',
           ),
@@ -592,20 +577,8 @@ class MockRecipeRepository implements RecipeRepository {
     final index = _recipes.indexWhere((r) => r.uuid == uuid);
     if (index != -1) {
       final recipe = _recipes[index];
-      _recipes[index] = Recipe(
-        uuid: recipe.uuid,
-        name: recipe.name,
-        images: recipe.images,
-        description: recipe.description,
-        instructions: recipe.instructions,
-        difficulty: recipe.difficulty,
-        duration: recipe.duration,
-        rating: recipe.rating,
-        tags: recipe.tags,
-        ingredients: recipe.ingredients,
-        steps: recipe.steps,
+      _recipes[index] = recipe.copyWith(
         isFavorite: !recipe.isFavorite,
-        comments: recipe.comments,
       );
     }
   }
@@ -629,19 +602,7 @@ class MockRecipeRepository implements RecipeRepository {
     if (index != -1) {
       final recipe = _recipes[index];
       final updatedComments = List<Comment>.from(recipe.comments)..add(comment);
-      _recipes[index] = Recipe(
-        uuid: recipe.uuid,
-        name: recipe.name,
-        images: recipe.images,
-        description: recipe.description,
-        instructions: recipe.instructions,
-        difficulty: recipe.difficulty,
-        duration: recipe.duration,
-        rating: recipe.rating,
-        tags: recipe.tags,
-        ingredients: recipe.ingredients,
-        steps: recipe.steps,
-        isFavorite: recipe.isFavorite,
+      _recipes[index] = recipe.copyWith(
         comments: updatedComments,
       );
     }
@@ -745,16 +706,14 @@ void main() {
         rating: 0,
         tags: ['test', 'recipe'],
         ingredients: [
-          Ingredient(
+          Ingredient.simple(
             name: 'Test ingredient',
             quantity: '100',
             unit: 'g',
           ),
         ],
         steps: [
-          RecipeStep(
-            id: 1,
-            name: 'Test step 1',
+          RecipeStep.simple(
             description: 'Test step 1 description',
             duration: '10',
           ),
@@ -783,16 +742,14 @@ void main() {
         rating: 0,
         tags: ['test', 'recipe', 'offline'],
         ingredients: [
-          Ingredient(
+          Ingredient.simple(
             name: 'Test ingredient',
             quantity: '100',
             unit: 'g',
           ),
         ],
         steps: [
-          RecipeStep(
-            id: 1,
-            name: 'Test step 1',
+          RecipeStep.simple(
             description: 'Test step 1 description',
             duration: '10',
           ),
@@ -950,27 +907,23 @@ void main() {
         rating: 4,
         tags: ['test', 'add-get-test'],
         ingredients: [
-          Ingredient(
+          Ingredient.simple(
             name: 'Test ingredient 1',
             quantity: '200',
             unit: 'g',
           ),
-          Ingredient(
+          Ingredient.simple(
             name: 'Test ingredient 2',
             quantity: '100',
             unit: 'ml',
           ),
         ],
         steps: [
-          RecipeStep(
-            id: 1,
-            name: 'Test step 1 for add/get test',
+          RecipeStep.simple(
             description: 'Test step 1 description for add/get test',
             duration: '15',
           ),
-          RecipeStep(
-            id: 2,
-            name: 'Test step 2 for add/get test',
+          RecipeStep.simple(
             description: 'Test step 2 description for add/get test',
             duration: '10',
           ),

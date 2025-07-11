@@ -1,18 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:flutter_recipe_app/data/database/app_database.dart' as db;
-import 'package:flutter_recipe_app/services/classification/object_detection_service.dart';
-import 'package:flutter_recipe_app/domain/services/api_service.dart';
-import 'package:flutter_recipe_app/domain/services/database_service.dart';
-import 'package:flutter_recipe_app/data/models/recipe.dart' as app_model;
-import 'package:flutter_recipe_app/data/models/comment.dart' as app_model;
-import 'package:flutter_recipe_app/data/models/ingredient.dart' as app_model;
-import 'package:flutter_recipe_app/data/models/recipe_image.dart' as model;
-import 'package:flutter_recipe_app/domain/entities/recipe.dart';
-import 'package:flutter_recipe_app/domain/entities/comment.dart';
-import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
-import 'package:flutter_recipe_app/data/usecases/recipe_manager_impl.dart';
-import 'package:flutter_recipe_app/domain/repositories/recipe_repository.dart';
+import 'package:recipe_master/data/database/app_database.dart' as db;
+import 'package:recipe_master/services/classification/object_detection_service.dart';
+import 'package:recipe_master/services/api/api_service.dart';
+import 'package:recipe_master/services/database/database_service.dart';
+import 'package:recipe_master/data/models/recipe.dart' as app_model;
+import 'package:recipe_master/data/models/comment.dart' as app_model;
+import 'package:recipe_master/data/models/ingredient.dart' as app_model;
+import 'package:recipe_master/data/models/recipe_image.dart' as model;
+import 'package:recipe_master/data/usecases/recipe_manager.dart';
+import 'package:recipe_master/data/usecases/recipe_manager_impl.dart';
+import 'package:recipe_master/data/repositories/recipe_repository.dart';
 
 final GetIt testGetIt = GetIt.instance;
 
@@ -345,30 +343,30 @@ class MockDatabaseService implements DatabaseService {
 // Mock implementation of RecipeRepository for testing
 class MockRecipeRepository implements RecipeRepository {
   @override
-  Future<List<Recipe>> getRecipes() async {
+  Future<List<app_model.Recipe>> getRecipes() async {
     // Return an empty list for testing
     return [];
   }
 
   @override
-  Future<List<Recipe>> getFavoriteRecipes() async {
+  Future<List<app_model.Recipe>> getFavoriteRecipes() async {
     // Return an empty list for testing
     return [];
   }
 
   @override
-  Future<Recipe?> getRecipeByUuid(String uuid) async {
+  Future<app_model.Recipe?> getRecipeByUuid(String uuid) async {
     // Return null for testing
     return null;
   }
 
   @override
-  Future<void> saveRecipe(Recipe recipe) async {
+  Future<void> saveRecipe(app_model.Recipe recipe) async {
     // Do nothing for testing
   }
 
   @override
-  Future<void> updateRecipe(Recipe recipe) async {
+  Future<void> updateRecipe(app_model.Recipe recipe) async {
     // Do nothing for testing
   }
 
@@ -395,12 +393,12 @@ class MockRecipeRepository implements RecipeRepository {
   }
 
   @override
-  Future<void> addComment(String recipeUuid, Comment comment) async {
+  Future<void> addComment(String recipeUuid, app_model.Comment comment) async {
     // Do nothing for testing
   }
 
   @override
-  Future<List<Comment>> getComments(String recipeUuid) async {
+  Future<List<app_model.Comment>> getComments(String recipeUuid) async {
     // Return an empty list for testing
     return [];
   }

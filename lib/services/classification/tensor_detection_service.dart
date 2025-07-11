@@ -3,17 +3,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../data/models/recipe_image.dart' as model;
 import 'object_detection_service.dart';
+import 'food_labels.dart';
 
 /// A tensor-based implementation of the object detection service
 /// This is a mock implementation that doesn't use actual tensor operations
 class TensorDetectionService implements ObjectDetectionService {
   bool _isInitialized = false;
-  final List<String> _mockLabels = [
-    'apple', 'banana', 'orange', 'strawberry', 'blueberry',
-    'carrot', 'broccoli', 'potato', 'tomato', 'onion',
-    'chicken', 'beef', 'pork', 'fish', 'shrimp',
-    'pasta', 'rice', 'bread', 'cake', 'cookie'
-  ];
+  final List<String> _mockLabels = FoodLabels.labels;
   final Random _random = Random();
 
   @override
