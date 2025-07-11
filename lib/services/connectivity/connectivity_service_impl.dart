@@ -1,5 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
-import '../../../../domain/services/connectivity_service.dart';
+import 'connectivity_service.dart';
 
 /// Implementation of the ConnectivityService interface
 class ConnectivityServiceImpl implements ConnectivityService {

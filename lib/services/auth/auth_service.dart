@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../domain/services/api_service.dart';
-import '../../data/services/api/api_service_impl.dart';
+import '../api/api_service.dart';
+import '../api/api_service_impl.dart';
 import '../../../data/models/user.dart';
 
 class AuthService {

@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/material.dart';
 import 'package:recipe_master/screens/gallery_screen.dart';
 import 'package:recipe_master/services/classification/object_detection_service.dart';
 import 'package:recipe_master/data/models/recipe_image.dart' as model;

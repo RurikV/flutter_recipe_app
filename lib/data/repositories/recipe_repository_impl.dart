@@ -2,9 +2,9 @@ import '../../domain/repositories/recipe_repository.dart';
 import '../../domain/entities/recipe.dart' as domain;
 import '../../domain/entities/comment.dart' as domain;
 import '../../../data/models/recipe.dart' as model;
-import '../../domain/services/api_service.dart';
-import '../../domain/services/database_service.dart';
-import '../../domain/services/connectivity_service.dart';
+import '../../services/api/api_service.dart';
+import '../../services/database/database_service.dart';
+import '../../services/connectivity/connectivity_service.dart';
 import '../mappers/recipe_mapper.dart';
 
 class RecipeRepositoryImpl implements RecipeRepository {

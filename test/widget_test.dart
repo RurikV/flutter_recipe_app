@@ -12,7 +12,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'package:recipe_master/data/models/recipe.dart';
 import 'package:recipe_master/data/models/recipe_step.dart';
-import 'package:recipe_master/domain/services/api_service.dart';
+import 'package:recipe_master/services/api/api_service.dart';
 import 'package:recipe_master/main.dart';
 import 'package:recipe_master/presentation/providers/language_provider.dart';
 import 'package:recipe_master/redux/app_state.dart';

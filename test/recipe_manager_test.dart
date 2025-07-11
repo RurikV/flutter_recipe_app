@@ -7,8 +7,8 @@ import 'package:recipe_master/data/models/recipe.dart' as data_model;
 import 'package:recipe_master/domain/usecases/recipe_manager.dart';
 import 'package:recipe_master/data/usecases/recipe_manager_impl.dart';
 import 'package:recipe_master/domain/repositories/recipe_repository.dart';
-import 'package:recipe_master/domain/services/api_service.dart';
-import 'package:recipe_master/domain/services/connectivity_service.dart';
+import 'package:recipe_master/services/api/api_service.dart';
+import 'package:recipe_master/services/connectivity/connectivity_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 // Mock implementation of ApiService for testing
