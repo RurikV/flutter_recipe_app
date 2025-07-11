@@ -54,12 +54,43 @@ Possible solutions:
 2. Use a proxy server for development
 3. Run the app on a mobile device or desktop where CORS doesn't apply
 
-Technical details: ${e.message}
+Technical details: ${e.message ?? 'No additional error details available'}
 ''';
       print('CORS Error detected on web platform during $operation: $e');
       return Exception(corsErrorMessage);
     }
-    return Exception('$operation failed: ${e.message}');
+
+    // Provide more detailed error information when available
+    String errorDetails = '';
+    if (e.message != null && e.message!.isNotEmpty) {
+      errorDetails = e.message!;
+    } else {
+      // Provide fallback error information based on exception type
+      switch (e.type) {
+        case DioExceptionType.connectionTimeout:
+          errorDetails = 'Connection timeout - server took too long to respond';
+          break;
+        case DioExceptionType.sendTimeout:
+          errorDetails = 'Send timeout - request took too long to send';
+          break;
+        case DioExceptionType.receiveTimeout:
+          errorDetails = 'Receive timeout - server response took too long';
+          break;
+        case DioExceptionType.badCertificate:
+          errorDetails = 'SSL certificate error';
+          break;
+        case DioExceptionType.connectionError:
+          errorDetails = 'Network connection error - please check your internet connection';
+          break;
+        case DioExceptionType.unknown:
+          errorDetails = 'Unknown network error occurred';
+          break;
+        default:
+          errorDetails = 'Network request failed';
+      }
+    }
+
+    return Exception('$operation failed: $errorDetails');
   }
 
   // Initialize user from SharedPreferences if available
