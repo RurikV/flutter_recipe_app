@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:recipe_master/data/entities/ingredient.dart';
+import 'package:recipe_master/data/models/ingredient.dart';
 import 'package:recipe_master/widgets/ingredient/ingredient_dialog.dart';
 
 void main() {
