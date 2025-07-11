@@ -8,8 +8,6 @@ import 'package:recipe_master/data/models/recipe.dart' as app_model;
 import 'package:recipe_master/data/models/comment.dart' as app_model;
 import 'package:recipe_master/data/models/ingredient.dart' as app_model;
 import 'package:recipe_master/data/models/recipe_image.dart' as model;
-import 'package:recipe_master/data/entities/recipe.dart';
-import 'package:recipe_master/data/entities/comment.dart';
 import 'package:recipe_master/data/usecases/recipe_manager.dart';
 import 'package:recipe_master/data/usecases/recipe_manager_impl.dart';
 import 'package:recipe_master/data/repositories/recipe_repository.dart';

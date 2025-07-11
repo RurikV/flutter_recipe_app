@@ -3,7 +3,6 @@ import '../models/recipe.dart';
 import '../models/comment.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_step.dart';
-import '../models/recipe_image.dart';
 import '../repositories/recipe_repository.dart';
 
 /// Implementation of the RecipeManager interface

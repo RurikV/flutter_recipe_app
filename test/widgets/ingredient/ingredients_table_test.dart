@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:recipe_master/data/entities/ingredient.dart';
+import 'package:recipe_master/data/models/ingredient.dart';
 import 'package:recipe_master/widgets/ingredient/ingredients_table.dart';
 
 void main() {
@@ -23,9 +23,9 @@ void main() {
     testWidgets('displays ingredients in a table', (WidgetTester tester) async {
       // Create test ingredients
       final ingredients = [
-        Ingredient(name: 'Flour', quantity: '200', unit: 'g'),
-        Ingredient(name: 'Sugar', quantity: '100', unit: 'g'),
-        Ingredient(name: 'Eggs', quantity: '2', unit: ''),
+        Ingredient.simple(name: 'Flour', quantity: '200', unit: 'g'),
+        Ingredient.simple(name: 'Sugar', quantity: '100', unit: 'g'),
+        Ingredient.simple(name: 'Eggs', quantity: '2', unit: ''),
       ];
 
       // Build the widget with the test ingredients

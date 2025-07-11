@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/entities/recipe_step.dart';
+import '../../data/models/recipe_step.dart';
 import 'recipe_steps_header.dart';
 import 'recipe_step_item.dart';
 

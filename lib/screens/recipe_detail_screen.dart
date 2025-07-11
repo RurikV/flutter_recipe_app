@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:provider/provider.dart';
-import '../../../data/models/recipe.dart';
-import '../../../data/models/comment.dart' as data_model;
-import '../../../data/models/recipe_step.dart';
+import '../data/models/recipe.dart';
+import '../data/models/comment.dart' as data_model;
+import '../data/models/recipe_step.dart';
 import '../data/usecases/recipe_manager.dart';
 import '../services/classification/object_detection_service.dart';
-import '../utils/entity_converters.dart';
 import '../widgets/recipe/recipe_header.dart';
 import '../widgets/recipe/duration_display.dart';
 import '../widgets/recipe/recipe_image_gallery.dart';
@@ -179,12 +178,12 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
 
                     // Ingredients table
                     IngredientsTable(
-                      ingredients: EntityConverters.modelToEntityIngredients(_recipe.ingredients),
+                      ingredients: _recipe.ingredients,
                     ),
 
                     // Recipe steps list
                     RecipeStepsList(
-                      steps: EntityConverters.modelToEntityRecipeSteps(_recipe.steps),
+                      steps: _recipe.steps,
                       isCookingMode: _isCookingMode,
                       recipeId: _recipe.uuid,
                       onStepStatusChanged: _updateStepStatus,
