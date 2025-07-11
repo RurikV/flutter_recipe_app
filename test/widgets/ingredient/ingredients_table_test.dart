@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:recipe_master/domain/entities/ingredient.dart';
+import 'package:recipe_master/data/entities/ingredient.dart';
 import 'package:recipe_master/widgets/ingredient/ingredients_table.dart';
 
 void main() {
@@ -39,7 +39,7 @@ void main() {
 
       // Verify that the table is displayed
       expect(find.byType(Table), findsOneWidget);
-      
+
       // Verify that each ingredient is displayed
       for (final ingredient in ingredients) {
         expect(find.text(ingredient.name), findsOneWidget);

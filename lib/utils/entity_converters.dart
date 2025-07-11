@@ -1,7 +1,7 @@
-import '../../../data/models/ingredient.dart' as model;
-import '../../../data/models/recipe_step.dart' as model;
-import '../../domain/entities/ingredient.dart' as entity;
-import '../../domain/entities/recipe_step.dart' as entity;
+import '../data/models/ingredient.dart' as model;
+import '../data/models/recipe_step.dart' as model;
+import '../data/entities/ingredient.dart' as entity;
+import '../data/entities/recipe_step.dart' as entity;
 
 /// Utility class to convert between model and domain entity types
 class EntityConverters {

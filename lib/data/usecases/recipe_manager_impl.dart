@@ -1,9 +1,10 @@
-import '../../domain/usecases/recipe_manager.dart';
-import '../../domain/entities/recipe.dart';
-import '../../domain/entities/comment.dart';
-import '../../domain/entities/ingredient.dart';
-import '../../domain/entities/recipe_step.dart';
-import '../../domain/repositories/recipe_repository.dart';
+import 'recipe_manager.dart';
+import '../models/recipe.dart';
+import '../models/comment.dart';
+import '../models/ingredient.dart';
+import '../models/recipe_step.dart';
+import '../models/recipe_image.dart';
+import '../repositories/recipe_repository.dart';
 
 /// Implementation of the RecipeManager interface
 class RecipeManagerImpl implements RecipeManager {
@@ -170,8 +171,8 @@ class RecipeManagerImpl implements RecipeManager {
       updatedSteps[stepIndex] = RecipeStep(
         id: recipe.steps[stepIndex].id,
         name: recipe.steps[stepIndex].name,
-        description: recipe.steps[stepIndex].description,
         duration: recipe.steps[stepIndex].duration,
+        stepLinks: recipe.steps[stepIndex].stepLinks,
         isCompleted: isCompleted,
       );
 
@@ -211,59 +212,49 @@ class RecipeManagerImpl implements RecipeManager {
     Recipe(
       uuid: '1',
       name: 'Спагетти Карбонара',
-      images: 'https://images.unsplash.com/photo-1588013273468-315fd88ea34c', // Ensure this is a direct image URL
+      images: 'https://images.unsplash.com/photo-1588013273468-315fd88ea34c',
       description: 'Классическое итальянское блюдо из спагетти с соусом на основе яиц, сыра, гуанчиале и черного перца.',
       instructions: '...',
       difficulty: 2,
-      duration: '30 минут', // Added duration
+      duration: '30 минут',
       rating: 5,
       tags: ['Итальянская кухня', 'Паста', 'Ужин'],
       ingredients: [
-        Ingredient(name: 'Спагетти', quantity: '400', unit: 'г'),
-        Ingredient(name: 'Гуанчиале', quantity: '150', unit: 'г'),
-        Ingredient(name: 'Яйца', quantity: '4', unit: 'шт'),
-        Ingredient(name: 'Сыр пармезан', quantity: '50', unit: 'г'),
-        Ingredient(name: 'Черный перец', quantity: '1', unit: 'ч. ложка'),
-        Ingredient(name: 'Соль', quantity: '1', unit: 'по вкусу'),
+        Ingredient.simple(name: 'Спагетти', quantity: '400', unit: 'г'),
+        Ingredient.simple(name: 'Гуанчиале', quantity: '150', unit: 'г'),
+        Ingredient.simple(name: 'Яйца', quantity: '4', unit: 'шт'),
+        Ingredient.simple(name: 'Сыр пармезан', quantity: '50', unit: 'г'),
+        Ingredient.simple(name: 'Черный перец', quantity: '1', unit: 'ч. ложка'),
+        Ingredient.simple(name: 'Соль', quantity: '1', unit: 'по вкусу'),
       ],
       steps: [
-        RecipeStep(
-          id: 1,
-          name: 'Отварите спагетти в подсоленной воде до состояния аль денте.',
+        RecipeStep.simple(
           description: 'Отварите спагетти в подсоленной воде до состояния аль денте.',
           duration: '10',
         ),
-        RecipeStep(
-          id: 2,
-          name: 'Нарежьте гуанчиале небольшими кубиками и обжарьте на сковороде до золотистого цвета.',
+        RecipeStep.simple(
           description: 'Нарежьте гуанчиале небольшими кубиками и обжарьте на сковороде до золотистого цвета.',
           duration: '5',
         ),
-        RecipeStep(
-          id: 3,
-          name: 'Смешайте яйца, тертый пармезан и черный перец в миске.',
+        RecipeStep.simple(
           description: 'Смешайте яйца, тертый пармезан и черный перец в миске.',
           duration: '3',
         ),
-        RecipeStep(
-          id: 4,
-          name: 'Добавьте горячие спагетти к гуанчиале, перемешайте и снимите с огня.',
+        RecipeStep.simple(
           description: 'Добавьте горячие спагетти к гуанчиале, перемешайте и снимите с огня.',
           duration: '2',
         ),
-        RecipeStep(
-          id: 5,
-          name: 'Влейте яичную смесь и быстро перемешайте, чтобы получился кремовый соус.',
+        RecipeStep.simple(
           description: 'Влейте яичную смесь и быстро перемешайте, чтобы получился кремовый соус.',
           duration: '1',
         ),
-        RecipeStep(
-          id: 6,
-          name: 'Подавайте сразу же, посыпав дополнительным пармезаном и черным перцем.',
+        RecipeStep.simple(
           description: 'Подавайте сразу же, посыпав дополнительным пармезаном и черным перцем.',
           duration: '1',
         ),
       ],
+      isFavorite: false,
+      comments: [],
     ),
     Recipe(
       uuid: '2',
@@ -272,9 +263,13 @@ class RecipeManagerImpl implements RecipeManager {
       description: 'Традиционный восточноевропейский суп на основе свеклы, который придает ему характерный красный цвет.',
       instructions: '...',
       difficulty: 3,
-      duration: '1 час 15 минут', // Added duration
+      duration: '1 час 15 минут',
       rating: 5,
       tags: ['Русская кухня', 'Суп', 'Обед'],
+      ingredients: [],
+      steps: [],
+      isFavorite: false,
+      comments: [],
     ),
     Recipe(
       uuid: '3',
@@ -283,9 +278,13 @@ class RecipeManagerImpl implements RecipeManager {
       description: 'Свежий салат из помидоров, огурцов, болгарского перца, красного лука, оливок и сыра фета с оливковым маслом.',
       instructions: '...',
       difficulty: 1,
-      duration: '15 минут', // Added duration
+      duration: '15 минут',
       rating: 4,
       tags: ['Греческая кухня', 'Салат', 'Вегетарианское'],
+      ingredients: [],
+      steps: [],
+      isFavorite: false,
+      comments: [],
     ),
     Recipe(
       uuid: '4',
@@ -294,9 +293,13 @@ class RecipeManagerImpl implements RecipeManager {
       description: 'Популярные роллы с лососем, сливочным сыром, авокадо и огурцом.',
       instructions: '...',
       difficulty: 4,
-      duration: '45 минут', // Added duration
+      duration: '45 минут',
       rating: 5,
       tags: ['Японская кухня', 'Суши', 'Рыба'],
+      ingredients: [],
+      steps: [],
+      isFavorite: false,
+      comments: [],
     ),
     Recipe(
       uuid: '5',
@@ -305,9 +308,13 @@ class RecipeManagerImpl implements RecipeManager {
       description: 'Классический итальянский десерт на основе маскарпоне, кофе и печенья савоярди.',
       instructions: '...',
       difficulty: 3,
-      duration: '30 минут', // Added duration
+      duration: '30 минут',
       rating: 5,
       tags: ['Итальянская кухня', 'Десерт', 'Кофе'],
+      ingredients: [],
+      steps: [],
+      isFavorite: false,
+      comments: [],
     ),
   ];
 }

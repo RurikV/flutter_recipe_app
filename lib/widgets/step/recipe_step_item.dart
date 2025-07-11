@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/recipe_step.dart';
+import '../../data/entities/recipe_step.dart';
 import 'step_number.dart';
 import 'step_description.dart';
 import 'step_actions.dart';

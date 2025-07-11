@@ -10,7 +10,7 @@ import 'package:recipe_master/data/models/measure_unit.dart';
 import 'package:recipe_master/screens/recipe_detail_screen.dart';
 import 'package:recipe_master/redux/app_state.dart';
 import 'package:recipe_master/redux/store.dart';
-import 'package:recipe_master/domain/usecases/recipe_manager.dart';
+import 'package:recipe_master/data/usecases/recipe_manager.dart';
 import 'package:recipe_master/data/usecases/recipe_manager_impl.dart';
 import 'package:recipe_master/services/classification/object_detection_service.dart';
 import '../service_locator_test.dart' as test_locator;

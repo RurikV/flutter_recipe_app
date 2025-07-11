@@ -1,11 +1,11 @@
-import '../../domain/entities/recipe.dart' as domain;
-import '../../domain/entities/ingredient.dart' as domain;
-import '../../domain/entities/recipe_step.dart' as domain;
-import '../../domain/entities/comment.dart' as domain;
-import '../../data/models/recipe.dart' as model;
-import '../../data/models/ingredient.dart' as model;
-import '../../data/models/recipe_step.dart' as model;
-import '../../data/models/comment.dart' as model;
+import '../entities/recipe.dart' as domain;
+import '../entities/ingredient.dart' as domain;
+import '../entities/recipe_step.dart' as domain;
+import '../entities/comment.dart' as domain;
+import '../models/recipe.dart' as model;
+import '../models/ingredient.dart' as model;
+import '../models/recipe_step.dart' as model;
+import '../models/comment.dart' as model;
 
 class RecipeMapper {
   /// Convert domain Recipe to data model Recipe

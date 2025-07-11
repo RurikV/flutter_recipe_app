@@ -8,11 +8,11 @@ import 'package:recipe_master/data/models/recipe.dart' as app_model;
 import 'package:recipe_master/data/models/comment.dart' as app_model;
 import 'package:recipe_master/data/models/ingredient.dart' as app_model;
 import 'package:recipe_master/data/models/recipe_image.dart' as model;
-import 'package:recipe_master/domain/entities/recipe.dart';
-import 'package:recipe_master/domain/entities/comment.dart';
-import 'package:recipe_master/domain/usecases/recipe_manager.dart';
+import 'package:recipe_master/data/entities/recipe.dart';
+import 'package:recipe_master/data/entities/comment.dart';
+import 'package:recipe_master/data/usecases/recipe_manager.dart';
 import 'package:recipe_master/data/usecases/recipe_manager_impl.dart';
-import 'package:recipe_master/domain/repositories/recipe_repository.dart';
+import 'package:recipe_master/data/repositories/recipe_repository.dart';
 
 final GetIt testGetIt = GetIt.instance;
 
@@ -345,30 +345,30 @@ class MockDatabaseService implements DatabaseService {
 // Mock implementation of RecipeRepository for testing
 class MockRecipeRepository implements RecipeRepository {
   @override
-  Future<List<Recipe>> getRecipes() async {
+  Future<List<app_model.Recipe>> getRecipes() async {
     // Return an empty list for testing
     return [];
   }
 
   @override
-  Future<List<Recipe>> getFavoriteRecipes() async {
+  Future<List<app_model.Recipe>> getFavoriteRecipes() async {
     // Return an empty list for testing
     return [];
   }
 
   @override
-  Future<Recipe?> getRecipeByUuid(String uuid) async {
+  Future<app_model.Recipe?> getRecipeByUuid(String uuid) async {
     // Return null for testing
     return null;
   }
 
   @override
-  Future<void> saveRecipe(Recipe recipe) async {
+  Future<void> saveRecipe(app_model.Recipe recipe) async {
     // Do nothing for testing
   }
 
   @override
-  Future<void> updateRecipe(Recipe recipe) async {
+  Future<void> updateRecipe(app_model.Recipe recipe) async {
     // Do nothing for testing
   }
 
@@ -395,12 +395,12 @@ class MockRecipeRepository implements RecipeRepository {
   }
 
   @override
-  Future<void> addComment(String recipeUuid, Comment comment) async {
+  Future<void> addComment(String recipeUuid, app_model.Comment comment) async {
     // Do nothing for testing
   }
 
   @override
-  Future<List<Comment>> getComments(String recipeUuid) async {
+  Future<List<app_model.Comment>> getComments(String recipeUuid) async {
     // Return an empty list for testing
     return [];
   }

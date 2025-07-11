@@ -3,9 +3,8 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:provider/provider.dart';
 import '../../../data/models/recipe.dart';
 import '../../../data/models/comment.dart' as data_model;
-import '../domain/entities/comment.dart' as domain;
 import '../../../data/models/recipe_step.dart';
-import '../domain/usecases/recipe_manager.dart';
+import '../data/usecases/recipe_manager.dart';
 import '../services/classification/object_detection_service.dart';
 import '../utils/entity_converters.dart';
 import '../widgets/recipe/recipe_header.dart';
@@ -62,27 +61,19 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     final commentId = DateTime.now().millisecondsSinceEpoch.toString();
     final commentDate = DateTime.now().toString().substring(0, 10); // Format: YYYY-MM-DD
 
-    // Create domain Comment for RecipeManager
-    final domainComment = domain.Comment(
+    // Create model Comment for RecipeManager
+    final modelComment = data_model.Comment(
       id: commentId,
       authorName: 'User', // In a real app, this would be the current user's name
       text: commentText,
       date: commentDate,
     );
 
-    final success = await _recipeManager.addComment(_recipe.uuid, domainComment);
+    final success = await _recipeManager.addComment(_recipe.uuid, modelComment);
     if (success && mounted) {
       setState(() {
-        // Create data model Comment for Recipe state update
-        final dataComment = data_model.Comment(
-          id: commentId,
-          authorName: 'User',
-          text: commentText,
-          date: commentDate,
-        );
-
         // Update the local recipe object with the new comment
-        final updatedComments = List<data_model.Comment>.from(_recipe.comments)..add(dataComment);
+        final updatedComments = List<data_model.Comment>.from(_recipe.comments)..add(modelComment);
         _recipe = _recipe.copyWith(comments: updatedComments);
       });
     }

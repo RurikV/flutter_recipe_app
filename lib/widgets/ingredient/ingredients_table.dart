@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/ingredient.dart';
+import '../../data/entities/ingredient.dart';
 
 /// A widget that displays a table of ingredients
 class IngredientsTable extends StatelessWidget {

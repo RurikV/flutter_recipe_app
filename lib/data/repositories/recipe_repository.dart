@@ -1,5 +1,5 @@
-import '../entities/recipe.dart';
-import '../entities/comment.dart';
+import '../models/recipe.dart';
+import '../models/comment.dart';
 
 /// Repository interface for recipe-related operations
 abstract class RecipeRepository {

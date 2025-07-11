@@ -8,7 +8,7 @@ import 'package:recipe_master/data/models/recipe.dart';
 import 'package:recipe_master/screens/recipe_detail_screen.dart';
 import 'package:recipe_master/redux/app_state.dart';
 import 'package:recipe_master/redux/store.dart';
-import 'package:recipe_master/domain/usecases/recipe_manager.dart';
+import 'package:recipe_master/data/usecases/recipe_manager.dart';
 import 'package:recipe_master/services/classification/object_detection_service.dart';
 
 // Import the mock classes directly

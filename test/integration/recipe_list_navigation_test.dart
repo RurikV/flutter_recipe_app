@@ -11,7 +11,7 @@ import 'package:recipe_master/redux/app_state.dart';
 import 'package:recipe_master/redux/reducers.dart';
 import 'package:recipe_master/l10n/app_localizations.dart';
 import 'package:recipe_master/widgets/recipe/duration_display.dart';
-import 'package:recipe_master/domain/usecases/recipe_manager.dart';
+import 'package:recipe_master/data/usecases/recipe_manager.dart';
 import 'package:recipe_master/services/classification/object_detection_service.dart';
 import '../service_locator_test.dart' as test_locator;
 import 'package:recipe_master/data/usecases/recipe_manager_impl.dart';

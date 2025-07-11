@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:recipe_master/domain/entities/recipe.dart';
-import 'package:recipe_master/domain/entities/recipe_step.dart';
-import 'package:recipe_master/domain/entities/ingredient.dart';
-import 'package:recipe_master/domain/entities/comment.dart';
+import 'package:recipe_master/data/entities/recipe.dart';
+import 'package:recipe_master/data/entities/recipe_step.dart';
+import 'package:recipe_master/data/entities/ingredient.dart';
+import 'package:recipe_master/data/entities/comment.dart';
 import 'package:recipe_master/data/models/recipe.dart' as data_model;
-import 'package:recipe_master/domain/usecases/recipe_manager.dart';
+import 'package:recipe_master/data/usecases/recipe_manager.dart';
 import 'package:recipe_master/data/usecases/recipe_manager_impl.dart';
-import 'package:recipe_master/domain/repositories/recipe_repository.dart';
+import 'package:recipe_master/data/repositories/recipe_repository.dart';
 import 'package:recipe_master/services/api/api_service.dart';
 import 'package:recipe_master/services/connectivity/connectivity_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';

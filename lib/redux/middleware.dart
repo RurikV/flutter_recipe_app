@@ -1,10 +1,9 @@
 import 'package:redux/redux.dart';
 import 'package:recipe_master/redux/app_state.dart';
 import 'package:recipe_master/redux/actions.dart';
-import 'package:recipe_master/domain/usecases/recipe_manager.dart';
-import 'package:recipe_master/domain/entities/comment.dart' as domain;
+import 'package:recipe_master/data/usecases/recipe_manager.dart';
+import 'package:recipe_master/data/models/comment.dart' as model;
 import 'package:recipe_master/data/models/recipe.dart';
-import 'package:recipe_master/data/mappers/recipe_mapper.dart';
 import 'package:get_it/get_it.dart';
 
 // Helper method to create a default recipe
@@ -48,9 +47,8 @@ Middleware<AppState> _createLoadRecipesMiddleware() {
 
       try {
         final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
-        final domainRecipes = await recipeManager.getRecipes();
-        final dataModelRecipes = domainRecipes.map((domainRecipe) => RecipeMapper.toModel(domainRecipe)).toList();
-        store.dispatch(RecipesLoadedAction(dataModelRecipes));
+        final recipes = await recipeManager.getRecipes();
+        store.dispatch(RecipesLoadedAction(recipes));
 
         // After recipes are loaded successfully, automatically load favorites
         // This ensures the cache is populated before getFavoriteRecipes() is called
@@ -72,9 +70,8 @@ Middleware<AppState> _createLoadFavoriteRecipesMiddleware() {
 
       try {
         final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
-        final domainFavoriteRecipes = await recipeManager.getFavoriteRecipes();
-        final dataModelFavoriteRecipes = domainFavoriteRecipes.map((domainRecipe) => RecipeMapper.toModel(domainRecipe)).toList();
-        store.dispatch(FavoriteRecipesLoadedAction(dataModelFavoriteRecipes));
+        final favoriteRecipes = await recipeManager.getFavoriteRecipes();
+        store.dispatch(FavoriteRecipesLoadedAction(favoriteRecipes));
       } catch (e) {
         // Handle error if needed
         print('Error loading favorite recipes: $e');
@@ -124,7 +121,7 @@ Middleware<AppState> _createToggleFavoriteMiddleware() {
 Middleware<AppState> _createAddCommentMiddleware() {
   return (Store<AppState> store, dynamic action, NextDispatcher next) async {
     if (action is AddCommentAction) {
-      final comment = domain.Comment(
+      final comment = model.Comment(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         authorName: 'User', // In a real app, this would be the current user's name
         text: action.commentText,
