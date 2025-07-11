@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'lib/services/classification/ssd_object_detection_service.dart';
-import 'lib/services/classification/tensor_detection_service.dart';
-import 'lib/services/classification/isolate_object_detection_service.dart';
-import 'lib/services/classification/food_labels.dart';
-import 'lib/data/models/recipe_image.dart' as model;
+import 'package:recipe_master/services/classification/ssd_object_detection_service.dart';
+import 'package:recipe_master/services/classification/tensor_detection_service.dart';
+import 'package:recipe_master/services/classification/isolate_object_detection_service.dart';
+import 'package:recipe_master/services/classification/food_labels.dart';
+import 'package:recipe_master/data/models/recipe_image.dart' as model;
 
 void main() {
   group('Food Labels Integration Tests', () {

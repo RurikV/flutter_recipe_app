@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
-import 'lib/services/auth/auth_service.dart';
+import 'package:recipe_master/services/auth/auth_service.dart';
 
 // Create a Dio instance that simulates the null error scenario
 Dio createNullErrorDio() {
@@ -22,21 +22,21 @@ Dio createNullErrorDio() {
 
 void main() async {
   TestWidgetsFlutterBinding.ensureInitialized();
-  
+
   print('[DEBUG_LOG] Testing null error message fix');
-  
+
   try {
     final mockDio = createNullErrorDio();
     final authService = AuthService(dio: mockDio, initializeUser: false);
-    
+
     print('[DEBUG_LOG] Attempting login that should trigger null error scenario');
     await authService.login('user1', 'user1');
-    
+
     print('[DEBUG_LOG] ERROR: Login should have failed but succeeded');
   } catch (e) {
     print('[DEBUG_LOG] Login failed with exception: $e');
     print('[DEBUG_LOG] Exception type: ${e.runtimeType}');
-    
+
     // Check if we still get the "Login failed: null" error
     if (e.toString().contains('Login failed: null')) {
       print('[DEBUG_LOG] FAILURE: Still getting null error message!');

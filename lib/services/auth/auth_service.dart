@@ -259,7 +259,7 @@ Technical details: ${e.message ?? 'No additional error details available'}
       if (e.toString().contains('Invalid credentials')) {
         rethrow;
       }
-      throw Exception('Login failed: ${e?.toString() ?? 'Unknown error'}');
+      throw Exception('Login failed: ${e.toString()}');
     }
   }
 

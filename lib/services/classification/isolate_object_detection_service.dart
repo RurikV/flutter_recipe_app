@@ -58,7 +58,6 @@ class IsolateMessage {
 /// Implementation of the object detection service using an isolate
 class IsolateObjectDetectionService implements ObjectDetectionService {
   static const String _modelPath = 'assets/models/ssd_mobilenet.tflite';
-  static const String _labelsPath = 'assets/models/ssd_mobilenet_labels.txt';
 
   Isolate? _isolate;
   ReceivePort? _receivePort;

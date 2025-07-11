@@ -1,8 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
-import 'lib/screens/gallery_screen.dart';
-import 'lib/services/classification/object_detection_service.dart';
-import 'lib/data/models/recipe_image.dart' as model;
+import 'package:flutter/material.dart';
+import 'package:recipe_master/screens/gallery_screen.dart';
+import 'package:recipe_master/services/classification/object_detection_service.dart';
+import 'package:recipe_master/data/models/recipe_image.dart' as model;
 
 // Mock ObjectDetectionService for testing
 class MockObjectDetectionService implements ObjectDetectionService {
@@ -54,7 +55,7 @@ void main() {
     test('MockObjectDetectionService works correctly', () async {
       await mockService.initialize();
       expect(mockService.isInitialized, true);
-      
+
       final image = model.RecipeImage(path: '/test/path');
       final results = await mockService.detectObjects(image);
       expect(results.length, 1);
