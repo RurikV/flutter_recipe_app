@@ -1,0 +1,336 @@
+openapi: 3.0.0
+info:
+  title: foodapi
+  description: Food API
+  version: 0.2.0
+servers:
+  - url: https://foodapi.vercel.app
+  - url: http://localhost:3000
+paths:
+  /recipe:
+    post:
+      tags:
+        - Recipe
+      operationId: createRecipe
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Recipe'
+      responses:
+        '200':
+          description: Returns created object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '400':
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '409':
+          description: Object already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      tags:
+        - Recipe
+      operationId: getRecipes
+      parameters:
+        - name: count
+          in: query
+          required: false
+          allowEmptyValue: false
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          required: false
+          allowEmptyValue: false
+          schema:
+            type: integer
+        - name: pageBy
+          in: query
+          required: false
+          allowEmptyValue: false
+          schema:
+            type: string
+        - name: pageAfter
+          in: query
+          required: false
+          allowEmptyValue: false
+          schema:
+            type: string
+        - name: pagePrior
+          in: query
+          required: false
+          allowEmptyValue: false
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          required: false
+          allowEmptyValue: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Returns a list of objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recipe'
+        '400':
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /recipe/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        explode: false
+        allowReserved: false
+    get:
+      tags:
+        - Recipe
+      operationId: getRecipe
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns a single object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '404':
+          description: No object found.
+    delete:
+      tags:
+        - Recipe
+      operationId: deleteRecipe
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Object successfully deleted.
+        '404':
+          description: No object found.
+    put:
+      tags:
+        - Recipe
+      operationId: updateRecipe
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Recipe'
+      responses:
+        '200':
+          description: Returns updated object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '400':
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: No object found.
+        '409':
+          description: Object already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /user:
+    post:
+      tags:
+        - User
+      operationId: register
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: User is created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+        '409':
+          description: User is already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - User
+      operationId: auth
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: User is logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '403':
+          description: User credentials are invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /user/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        explode: false
+        allowReserved: false
+    get:
+      tags:
+        - UserInfo
+      operationId: getUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+components:
+  schemas:
+    Recipe:
+      title: Recipe
+      type: object
+      properties:
+        id:
+          title: id
+          type: integer
+          description: |
+            This is the primary identifier for this object.
+          nullable: false
+        name:
+          title: name
+          type: string
+          nullable: false
+        duration:
+          title: duration
+          type: integer
+          nullable: false
+        photo:
+          title: photo
+          type: string
+          nullable: false
+      description: ''
+    User:
+      title: User
+      type: object
+      properties:
+        id:
+          title: id
+          type: integer
+          description: |
+            This is the primary identifier for this object.
+          nullable: false
+        login:
+          title: login
+          type: string
+          nullable: false
+        password:
+          title: password
+          type: string
+          nullable: false
+        token:
+          title: token
+          type: string
+          nullable: false
+        avatar:
+          title: avatar
+          type: string
+          nullable: false
+      description: ''
+    Status:
+      type: object
+      properties:
+        status:
+          type: string
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+    Token:
+      type: object
+      properties:
+        token:
+          type: string
