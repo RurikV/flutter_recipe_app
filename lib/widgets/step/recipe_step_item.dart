@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/recipe_step.dart';
+import '../../data/models/recipe_step.dart';
 import 'step_number.dart';
 import 'step_description.dart';
 import 'step_actions.dart';
@@ -44,14 +44,14 @@ class RecipeStepItem extends StatelessWidget {
 
               // Step description
               StepDescription(
-                description: step.description,
+                description: step.name,
                 isCompleted: step.isCompleted,
                 isCookingMode: isCookingMode,
               ),
 
               // Step duration and checkbox
               StepActions(
-                duration: step.duration,
+                duration: step.duration.toString(),
                 isCompleted: step.isCompleted,
                 isCookingMode: isCookingMode,
                 onChanged: (value) {

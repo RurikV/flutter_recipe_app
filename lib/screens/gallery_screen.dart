@@ -1,13 +1,12 @@
-import 'dart:typed_data';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:get_it/get_it.dart';
-import 'package:flutter_recipe_app/services/classification/object_detection_service.dart';
-import 'package:flutter_recipe_app/models/recipe_image.dart' as model;
+import 'package:recipe_master/services/classification/object_detection_service.dart';
+import 'package:recipe_master/data/models/recipe_image.dart' as model;
 
 // Simple photo model for temporary use
 class SimplePhoto {
@@ -15,25 +14,27 @@ class SimplePhoto {
   final String recipeUuid;
   final String photoName;
   final String detectedInfo;
-  final Uint8List pict;
+  final String imagePath;
 
   SimplePhoto({
     required this.id,
     required this.recipeUuid,
     required this.photoName,
     required this.detectedInfo,
-    required this.pict,
+    required this.imagePath,
   });
 }
 
 class GalleryScreen extends StatefulWidget {
   final String recipeUuid;
   final String recipeName;
+  final ObjectDetectionService objectDetectionService;
 
   const GalleryScreen({
     super.key,
     required this.recipeUuid,
     required this.recipeName,
+    required this.objectDetectionService,
   });
 
   @override
@@ -41,7 +42,6 @@ class GalleryScreen extends StatefulWidget {
 }
 
 class GalleryScreenState extends State<GalleryScreen> {
-  final GetIt _getIt = GetIt.instance;
   late final ObjectDetectionService _objectDetectionService;
   final List<SimplePhoto> _photos = [];
   bool _isLoading = false;
@@ -50,8 +50,10 @@ class GalleryScreenState extends State<GalleryScreen> {
   @override
   void initState() {
     super.initState();
-    // Get the object detection service from GetIt
-    _objectDetectionService = _getIt<ObjectDetectionService>();
+    // Use the injected object detection service
+    _objectDetectionService = widget.objectDetectionService;
+    // Initialize the service
+    _objectDetectionService.initialize();
     // No need to load photos as we're not using the database
   }
 
@@ -81,44 +83,18 @@ class GalleryScreenState extends State<GalleryScreen> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: source,
-        maxHeight: 800,
-        maxWidth: 800,
-      );
-
+      final XFile? image = await _selectImage(source);
       if (image == null) return;
 
       setState(() {
         _isLoading = true;
       });
 
-      // Read image as bytes
-      final Uint8List imageBytes = await image.readAsBytes();
+      final String savedImagePath = await _saveImageToStorage(image);
+      final String detectedInfo = await _detectObjectsInImage(savedImagePath);
 
-      // Save image to a temporary file
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/${path.basename(image.path)}');
-      await tempFile.writeAsBytes(imageBytes);
+      final photo = _createPhotoModel(image, savedImagePath, detectedInfo);
 
-      // Detect objects in the image
-      final recipeImage = model.RecipeImage(path: tempFile.path);
-      final serviceDetectedObjects = await _objectDetectionService.detectObjects(recipeImage);
-
-      // Convert detected objects to a string representation
-      final detectedInfo = _formatDetectedObjects(serviceDetectedObjects);
-
-      // Create a simple photo object
-      final photo = SimplePhoto(
-        id: _nextPhotoId++,
-        recipeUuid: widget.recipeUuid,
-        photoName: image.name,
-        detectedInfo: detectedInfo,
-        pict: imageBytes,
-      );
-
-      // Add to our local list
       setState(() {
         _photos.add(photo);
         _isLoading = false;
@@ -130,6 +106,48 @@ class GalleryScreenState extends State<GalleryScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<XFile?> _selectImage(ImageSource source) async {
+    final ImagePicker picker = ImagePicker();
+    return await picker.pickImage(
+      source: source,
+      maxHeight: 800,
+      maxWidth: 800,
+    );
+  }
+
+  Future<String> _saveImageToStorage(XFile image) async {
+    if (kIsWeb) {
+      // On web, we can use the image path directly
+      // No need for temporary directory operations
+      return image.path;
+    } else {
+      // On native platforms, copy to temporary directory
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/${path.basename(image.path)}');
+
+      // Copy the file instead of reading bytes and writing them
+      await File(image.path).copy(tempFile.path);
+
+      return tempFile.path;
+    }
+  }
+
+  Future<String> _detectObjectsInImage(String imagePath) async {
+    final recipeImage = model.RecipeImage(path: imagePath);
+    final serviceDetectedObjects = await _objectDetectionService.detectObjects(recipeImage);
+    return _formatDetectedObjects(serviceDetectedObjects);
+  }
+
+  SimplePhoto _createPhotoModel(XFile image, String imagePath, String detectedInfo) {
+    return SimplePhoto(
+      id: _nextPhotoId++,
+      recipeUuid: widget.recipeUuid,
+      photoName: image.name,
+      detectedInfo: detectedInfo,
+      imagePath: imagePath,
+    );
   }
 
   void _deletePhoto(int photoId) {
@@ -176,10 +194,18 @@ class GalleryScreenState extends State<GalleryScreen> {
                 children: [
                   Expanded(
                     flex: 3,
-                    child: Image.memory(
-                      photo.pict,
-                      fit: BoxFit.cover,
-                    ),
+                    child: kIsWeb
+                        ? Image.network(
+                            photo.imagePath,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(Icons.error);
+                            },
+                          )
+                        : Image.file(
+                            File(photo.imagePath),
+                            fit: BoxFit.cover,
+                          ),
                   ),
                   Expanded(
                     flex: 1,

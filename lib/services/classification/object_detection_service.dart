@@ -1,4 +1,4 @@
-import '../../models/recipe_image.dart' as model;
+import '../../../data/models/recipe_image.dart' as model;
 
 /// Base class for object detection services
 abstract class ObjectDetectionService {

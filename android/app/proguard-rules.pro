@@ -5,7 +5,7 @@
 -keep class io.flutter.** { *; }
 
 # Keep application-specific classes
--keep class com.example.flutter_recipe_app.** { *; }
+-keep class app.vercel.recipe_master.** { *; }
 
 # Keep basic Android classes
 -keep class android.** { *; }

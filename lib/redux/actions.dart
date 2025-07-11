@@ -1,3 +1,5 @@
+import '../data/models/recipe.dart';
+
 // Authentication actions
 class LoginAction {
   final String username;
@@ -46,7 +48,7 @@ class CheckAuthStatusAction {}
 class LoadRecipesAction {}
 
 class RecipesLoadedAction {
-  final List<dynamic> recipes;
+  final List<Recipe> recipes;
 
   RecipesLoadedAction(this.recipes);
 }
@@ -60,7 +62,7 @@ class RecipesLoadErrorAction {
 class LoadFavoriteRecipesAction {}
 
 class FavoriteRecipesLoadedAction {
-  final List<dynamic> favoriteRecipes;
+  final List<Recipe> favoriteRecipes;
 
   FavoriteRecipesLoadedAction(this.favoriteRecipes);
 }

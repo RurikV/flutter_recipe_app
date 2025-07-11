@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
-import '../../models/recipe_image.dart';
+import '../../../data/models/recipe_image.dart';
 import '../../services/image_picker/image_service.dart';
 import '../../services/classification/object_detection_service.dart';
 
@@ -222,23 +223,70 @@ class _RecipeImageGalleryState extends State<RecipeImageGallery> {
         },
       );
     } else {
-      // For local files, use Image.file
-      return Image.file(
-        File(path),
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
+      // For local files, check if we're on web
+      if (kIsWeb) {
+        // On web, Image.file is not supported, so we'll show a placeholder
+        // or try to treat the path as a network URL if it's a blob URL
+        if (path.startsWith('blob:')) {
+          return Image.network(
+            path,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                color: Colors.grey[300],
+                child: const Center(
+                  child: Icon(
+                    Icons.image_not_supported,
+                    size: 40,
+                    color: Colors.grey,
+                  ),
+                ),
+              );
+            },
+          );
+        } else {
+          // For other local paths on web, show a placeholder
           return Container(
             color: Colors.grey[300],
             child: const Center(
-              child: Icon(
-                Icons.image_not_supported,
-                size: 40,
-                color: Colors.grey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.web,
+                    size: 40,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Local files not supported on web',
+                    style: TextStyle(color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           );
-        },
-      );
+        }
+      } else {
+        // For mobile platforms, use Image.file
+        return Image.file(
+          File(path),
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.grey[300],
+              child: const Center(
+                child: Icon(
+                  Icons.image_not_supported,
+                  size: 40,
+                  color: Colors.grey,
+                ),
+              ),
+            );
+          },
+        );
+      }
     }
   }
 
@@ -314,10 +362,6 @@ class ObjectDetectionPainter extends CustomPainter {
       ..color = Colors.red
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
-
-    final textPaint = Paint()
-      ..color = Colors.black
-      ..style = PaintingStyle.fill;
 
     for (final object in detectedObjects) {
       // Convert normalized coordinates to actual pixel values

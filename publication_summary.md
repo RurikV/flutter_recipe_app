@@ -13,7 +13,7 @@
 - Created placeholder and instructions for generating a proper keystore file
 
 ### 3. Updated Application ID
-- Changed the application ID from `com.example.flutter_recipe_app` to `com.recipeapp.flutter_recipe_app`
+- Changed the application ID from `app.vercel.recipe_master` to `com.recipeapp.recipe_master`
 - Updated both the namespace and applicationId in `android/app/build.gradle.kts`
 
 ### 4. Fixed AndroidManifest.xml

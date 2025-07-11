@@ -5,24 +5,29 @@ PODS:
   - Flutter (1.0.0)
   - image_picker_ios (0.0.1):
     - Flutter
+  - integration_test (0.0.1):
+    - Flutter
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
   - ReachabilitySwift (5.2.4)
   - rive_common (0.0.1):
     - Flutter
-  - sqlite3 (3.50.1):
-    - sqlite3/common (= 3.50.1)
-  - sqlite3/common (3.50.1)
-  - sqlite3/dbstatvtab (3.50.1):
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - sqlite3 (3.50.2):
+    - sqlite3/common (= 3.50.2)
+  - sqlite3/common (3.50.2)
+  - sqlite3/dbstatvtab (3.50.2):
     - sqlite3/common
-  - sqlite3/fts5 (3.50.1):
+  - sqlite3/fts5 (3.50.2):
     - sqlite3/common
-  - sqlite3/math (3.50.1):
+  - sqlite3/math (3.50.2):
     - sqlite3/common
-  - sqlite3/perf-threadsafe (3.50.1):
+  - sqlite3/perf-threadsafe (3.50.2):
     - sqlite3/common
-  - sqlite3/rtree (3.50.1):
+  - sqlite3/rtree (3.50.2):
     - sqlite3/common
   - sqlite3_flutter_libs (0.0.1):
     - Flutter
@@ -60,8 +65,10 @@ DEPENDENCIES:
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - Flutter (from `Flutter`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - rive_common (from `.symlinks/plugins/rive_common/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqlite3_flutter_libs (from `.symlinks/plugins/sqlite3_flutter_libs/darwin`)
   - tflite_flutter (from `.symlinks/plugins/tflite_flutter/ios`)
 
@@ -79,10 +86,14 @@ EXTERNAL SOURCES:
     :path: Flutter
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   rive_common:
     :path: ".symlinks/plugins/rive_common/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   sqlite3_flutter_libs:
     :path: ".symlinks/plugins/sqlite3_flutter_libs/darwin"
   tflite_flutter:
@@ -92,15 +103,17 @@ SPEC CHECKSUMS:
   connectivity_plus: 481668c94744c30c53b8895afb39159d1e619bdf
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   ReachabilitySwift: 32793e867593cfc1177f5d16491e3a197d2fccda
   rive_common: daeaa675f575d0a2ce65a2c90d4838d75327047b
-  sqlite3: 1d85290c3321153511f6e900ede7a1608718bbd5
+  shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
+  sqlite3: 3e82a2daae39ba3b41ae6ee84a130494585460fc
   sqlite3_flutter_libs: e7fc8c9ea2200ff3271f08f127842131746b70e2
   TensorFlowLiteC: 20785a69299185a379ba9852b6625f00afd7984a
   TensorFlowLiteSwift: 3a4928286e9e35bdd3e17970f48e53c80d25e793
   tflite_flutter: 64b192e11352fe36943ab6656e1d49207f1a5595
 
-PODFILE CHECKSUM: 5e0e9f2fee1f11c074f9073d04e95fd3dc2dd6fe
+PODFILE CHECKSUM: 4305caec6b40dde0ae97be1573c53de1882a07e5
 
 COCOAPODS: 1.16.2

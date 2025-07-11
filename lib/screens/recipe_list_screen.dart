@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import '../l10n/app_localizations.dart';
-import '../../models/recipe.dart';
+import '../../../data/models/recipe.dart';
 import '../utils/page_transition.dart';
 import '../widgets/recipe/recipe_list.dart';
 import '../widgets/navigation/auth_bottom_navigation_bar.dart';
@@ -28,21 +28,14 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
         .dispatch(LoadRecipesAction());
   }
 
-  void _loadFavorites() {
-    // Dispatch action to load favorite recipes
-    StoreProvider.of<AppState>(context, listen: false)
-        .dispatch(LoadFavoriteRecipesAction());
-  }
-
   @override
   void initState() {
     super.initState();
-    // Load both recipes and favorites when the screen is first displayed
+    // Load recipes when the screen is first displayed (favorites will be loaded automatically after recipes complete)
     // Only if loadRecipesOnInit is true (default)
     if (widget.loadRecipesOnInit) {
       Future.microtask(() {
         _loadRecipes();
-        _loadFavorites();
       });
     }
   }

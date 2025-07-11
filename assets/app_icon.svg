@@ -1,0 +1,41 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="#FF6B35" stroke="#E55A2B" stroke-width="8"/>
+  
+  <!-- Chef hat -->
+  <ellipse cx="256" cy="180" rx="80" ry="60" fill="#FFFFFF"/>
+  <rect x="176" y="180" width="160" height="40" fill="#FFFFFF"/>
+  <rect x="176" y="220" width="160" height="8" fill="#E0E0E0"/>
+  
+  <!-- Chef hat details -->
+  <circle cx="220" cy="150" r="15" fill="#F5F5F5"/>
+  <circle cx="256" cy="140" r="18" fill="#F5F5F5"/>
+  <circle cx="292" cy="150" r="15" fill="#F5F5F5"/>
+  
+  <!-- Cooking pot -->
+  <ellipse cx="256" cy="320" rx="90" ry="80" fill="#4A4A4A"/>
+  <ellipse cx="256" cy="310" rx="90" ry="15" fill="#5A5A5A"/>
+  
+  <!-- Pot handles -->
+  <ellipse cx="180" cy="320" rx="12" ry="8" fill="#3A3A3A"/>
+  <ellipse cx="332" cy="320" rx="12" ry="8" fill="#3A3A3A"/>
+  
+  <!-- Steam -->
+  <path d="M 230 280 Q 235 260 230 240 Q 225 220 230 200" stroke="#E0E0E0" stroke-width="4" fill="none" opacity="0.7"/>
+  <path d="M 256 275 Q 261 255 256 235 Q 251 215 256 195" stroke="#E0E0E0" stroke-width="4" fill="none" opacity="0.7"/>
+  <path d="M 282 280 Q 287 260 282 240 Q 277 220 282 200" stroke="#E0E0E0" stroke-width="4" fill="none" opacity="0.7"/>
+  
+  <!-- Food items in pot -->
+  <circle cx="240" cy="330" r="8" fill="#FF4444"/>
+  <circle cx="272" cy="325" r="6" fill="#44FF44"/>
+  <circle cx="260" cy="340" r="7" fill="#FFAA44"/>
+  
+  <!-- Utensils -->
+  <rect x="320" y="280" width="6" height="80" fill="#8B4513" rx="3"/>
+  <ellipse cx="323" cy="275" rx="8" ry="12" fill="#C0C0C0"/>
+  
+  <rect x="340" y="285" width="4" height="75" fill="#8B4513" rx="2"/>
+  <rect x="338" y="280" width="8" height="8" fill="#C0C0C0" rx="1"/>
+  <rect x="340" y="278" width="4" height="4" fill="#C0C0C0"/>
+  <rect x="342" y="276" width="2" height="2" fill="#C0C0C0"/>
+</svg>

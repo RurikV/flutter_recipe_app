@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:provider/provider.dart';
-import '../../models/recipe.dart';
-import '../../models/comment.dart';
-import '../../models/recipe_step.dart';
-import '../domain/usecases/recipe_manager.dart';
+import '../data/models/recipe.dart';
+import '../data/models/comment.dart' as data_model;
+import '../data/models/recipe_step.dart';
+import '../data/usecases/recipe_manager.dart';
 import '../services/classification/object_detection_service.dart';
-import '../utils/entity_converters.dart';
 import '../widgets/recipe/recipe_header.dart';
 import '../widgets/recipe/duration_display.dart';
 import '../widgets/recipe/recipe_image_gallery.dart';
@@ -58,18 +57,22 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   void _addComment(String commentText) async {
     if (commentText.isEmpty) return;
 
-    final comment = Comment(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+    final commentId = DateTime.now().millisecondsSinceEpoch.toString();
+    final commentDate = DateTime.now().toString().substring(0, 10); // Format: YYYY-MM-DD
+
+    // Create model Comment for RecipeManager
+    final modelComment = data_model.Comment(
+      id: commentId,
       authorName: 'User', // In a real app, this would be the current user's name
       text: commentText,
-      date: DateTime.now().toString().substring(0, 10), // Format: YYYY-MM-DD
+      date: commentDate,
     );
 
-    final success = await _recipeManager.addComment(_recipe.uuid, comment);
+    final success = await _recipeManager.addComment(_recipe.uuid, modelComment);
     if (success && mounted) {
       setState(() {
         // Update the local recipe object with the new comment
-        final updatedComments = List<Comment>.from(_recipe.comments)..add(comment);
+        final updatedComments = List<data_model.Comment>.from(_recipe.comments)..add(modelComment);
         _recipe = _recipe.copyWith(comments: updatedComments);
       });
     }
@@ -114,6 +117,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                   widget: GalleryScreen(
                     recipeUuid: _recipe.uuid,
                     recipeName: _recipe.name,
+                    objectDetectionService: _objectDetectionService!,
                   ),
                 ),
               );
@@ -174,12 +178,12 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
 
                     // Ingredients table
                     IngredientsTable(
-                      ingredients: EntityConverters.modelToEntityIngredients(_recipe.ingredients),
+                      ingredients: _recipe.ingredients,
                     ),
 
                     // Recipe steps list
                     RecipeStepsList(
-                      steps: EntityConverters.modelToEntityRecipeSteps(_recipe.steps),
+                      steps: _recipe.steps,
                       isCookingMode: _isCookingMode,
                       recipeId: _recipe.uuid,
                       onStepStatusChanged: _updateStepStatus,

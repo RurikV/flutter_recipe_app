@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../domain/entities/ingredient.dart';
+import '../../data/models/ingredient.dart';
 
 class IngredientDialog extends StatefulWidget {
   final List<String> availableIngredients;
@@ -339,7 +339,7 @@ class _IngredientDialogState extends State<IngredientDialog> {
                       // Validate the form
                       if (_formKey.currentState!.validate()) {
                         // Create a new ingredient only if validation passes
-                        final ingredient = Ingredient(
+                        final ingredient = Ingredient.simple(
                           name: _selectedIngredient,
                           quantity: _quantityController.text.isNotEmpty ? _quantityController.text : '1',
                           unit: _selectedUnit,

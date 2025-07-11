@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../models/recipe.dart';
+import '../../../../data/models/recipe.dart';
 import '../../screens/recipe_detail_screen.dart';
 import '../../utils/page_transition.dart';
 import 'bookmark_indicator.dart';
