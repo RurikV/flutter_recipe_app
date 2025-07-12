@@ -48,7 +48,9 @@ router.put('/', validateUser, async (req, res) => {
       const user = await User.authenticate(login, password);
       res.json({ token: user.token });
     } catch (authError) {
-      res.status(403).json({ error: 'Invalid credentials' });
+      res.status(403).json({ 
+        error: 'Invalid credentials. If you are trying to register a new user, use POST /user instead of PUT /user.' 
+      });
     }
   } catch (error) {
     console.error('Error authenticating user:', error);
