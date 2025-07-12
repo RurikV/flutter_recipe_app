@@ -202,126 +202,128 @@ class RecipeRepositoryImpl implements RecipeRepository {
 
   @override
   Future<model.Recipe?> getRecipeByUuid(String uuid) async {
+    print('[DEBUG_LOG] RecipeRepositoryImpl: getRecipeByUuid called with UUID: $uuid');
+
     try {
+      print('[DEBUG_LOG] RecipeRepositoryImpl: Checking in-memory cache for recipe $uuid');
+      print('[DEBUG_LOG] RecipeRepositoryImpl: Cache contains ${_cachedRecipes.length} recipes');
+
       // First try to get from in-memory cache
       final cachedRecipe = _cachedRecipes.firstWhere(
         (recipe) => recipe.uuid == uuid,
         orElse: () => throw Exception('Recipe not found in cache'),
       );
-      return cachedRecipe;
+
+      print('[DEBUG_LOG] RecipeRepositoryImpl: Found recipe in cache:');
+      print('[DEBUG_LOG] - UUID: ${cachedRecipe.uuid}');
+      print('[DEBUG_LOG] - Name: ${cachedRecipe.name}');
+      print('[DEBUG_LOG] - Ingredients count: ${cachedRecipe.ingredients.length}');
+      print('[DEBUG_LOG] - Steps count: ${cachedRecipe.steps.length}');
+
+      // Check if the cached recipe has complete data (ingredients and steps)
+      if (cachedRecipe.ingredients.isNotEmpty && cachedRecipe.steps.isNotEmpty) {
+        print('[DEBUG_LOG] RecipeRepositoryImpl: Cached recipe has complete data, returning it');
+        return cachedRecipe;
+      } else {
+        print('[DEBUG_LOG] RecipeRepositoryImpl: Cached recipe is incomplete, fetching from API...');
+        // Throw exception to trigger API fetch
+        throw Exception('Cached recipe is incomplete');
+      }
     } catch (cacheError) {
+      print('[DEBUG_LOG] RecipeRepositoryImpl: Recipe not found in cache: $cacheError');
 
       // If not found locally and connected, try to get from API
+      print('[DEBUG_LOG] RecipeRepositoryImpl: Checking connectivity...');
       final isConnected = await _connectivityService.isConnected();
+      print('[DEBUG_LOG] RecipeRepositoryImpl: Connected: $isConnected');
+
       if (isConnected) {
         try {
-          // Get recipe from API by combining data from multiple endpoints
-          // Step 1: Get basic recipe data
+          print('[DEBUG_LOG] RecipeRepositoryImpl: Calling API service to get recipe data for UUID: $uuid');
+
+          // Get complete recipe data from the optimized API endpoint
+          // The API now returns complete recipe data with ingredients and steps
           final recipeData = await _apiService.getRecipeData(uuid);
 
-          // Step 2: Get all recipe ingredients
-          final allRecipeIngredients = await _apiService.getRecipeIngredientsData();
+          print('[DEBUG_LOG] RecipeRepositoryImpl: API returned recipe data:');
+          print('[DEBUG_LOG] - Raw API response keys: ${recipeData.keys.toList()}');
+          print('[DEBUG_LOG] - Recipe name: ${recipeData['name']}');
+          print('[DEBUG_LOG] - Recipe duration: ${recipeData['duration']}');
+          print('[DEBUG_LOG] - Has recipeIngredients: ${recipeData.containsKey('recipeIngredients')}');
+          print('[DEBUG_LOG] - Has recipeStepLinks: ${recipeData.containsKey('recipeStepLinks')}');
 
-          // Filter ingredients for this recipe
-          final recipeIngredients = allRecipeIngredients.where((ingredient) {
-            return ingredient['recipe'] != null && 
-                   ingredient['recipe']['id'].toString() == uuid;
-          }).toList();
-
-          // Step 3: Get all ingredients
-          final allIngredientDetails = await _apiService.getIngredientsData();
-
-          // Create a map of ingredient ID to ingredient details
-          final Map<int, Map<String, dynamic>> ingredientDetailsById = {};
-          for (final ingredient in allIngredientDetails) {
-            if (ingredient['id'] != null) {
-              ingredientDetailsById[ingredient['id'] as int] = ingredient;
+          if (recipeData.containsKey('recipeIngredients')) {
+            final ingredients = recipeData['recipeIngredients'] as List?;
+            print('[DEBUG_LOG] - Ingredients count from API: ${ingredients?.length ?? 0}');
+            if (ingredients != null && ingredients.isNotEmpty) {
+              print('[DEBUG_LOG] - First ingredient from API: ${ingredients[0]}');
             }
           }
 
-          // Step 4: Get all measure units
-          final allMeasureUnits = await _apiService.getMeasureUnitsData();
-
-          // Create a map of measure unit ID to measure unit details
-          final Map<int, Map<String, dynamic>> measureUnitsById = {};
-          for (final unit in allMeasureUnits) {
-            if (unit['id'] != null) {
-              measureUnitsById[unit['id'] as int] = unit;
+          if (recipeData.containsKey('recipeStepLinks')) {
+            final steps = recipeData['recipeStepLinks'] as List?;
+            print('[DEBUG_LOG] - Steps count from API: ${steps?.length ?? 0}');
+            if (steps != null && steps.isNotEmpty) {
+              print('[DEBUG_LOG] - First step from API: ${steps[0]}');
             }
           }
 
-          // Enhance recipe ingredients with full ingredient details and measure unit details
-          for (final recipeIngredient in recipeIngredients) {
-            if (recipeIngredient['ingredient'] != null && recipeIngredient['ingredient']['id'] != null) {
-              final ingredientId = recipeIngredient['ingredient']['id'] as int;
-              if (ingredientDetailsById.containsKey(ingredientId)) {
-                // Add full ingredient details
-                final ingredientDetails = ingredientDetailsById[ingredientId]!;
-                recipeIngredient['ingredient'] = ingredientDetails;
-
-                // Add full measure unit details if available
-                if (ingredientDetails['measureUnit'] != null && ingredientDetails['measureUnit']['id'] != null) {
-                  final measureUnitId = ingredientDetails['measureUnit']['id'] as int;
-                  if (measureUnitsById.containsKey(measureUnitId)) {
-                    ingredientDetails['measureUnit'] = measureUnitsById[measureUnitId]!;
-                  }
-                }
-              }
-            }
-          }
-
-          // Step 5: Get all recipe step links
-          final allRecipeStepLinks = await _apiService.getRecipeStepLinksData();
-
-          // Filter step links for this recipe
-          final recipeStepLinks = allRecipeStepLinks.where((stepLink) {
-            return stepLink['recipe'] != null && 
-                   stepLink['recipe']['id'].toString() == uuid;
-          }).toList();
-
-          // Step 6: Get all recipe steps
-          final allRecipeSteps = await _apiService.getRecipeStepsData();
-
-          // Create a map of step ID to step details
-          final Map<int, Map<String, dynamic>> stepDetailsById = {};
-          for (final step in allRecipeSteps) {
-            if (step['id'] != null) {
-              stepDetailsById[step['id'] as int] = step;
-            }
-          }
-
-          // Enhance step links with full step details
-          for (final stepLink in recipeStepLinks) {
-            if (stepLink['step'] != null && stepLink['step']['id'] != null) {
-              final stepId = stepLink['step']['id'] as int;
-              if (stepDetailsById.containsKey(stepId)) {
-                // Add full step details
-                final stepDetails = stepDetailsById[stepId]!;
-                stepLink['step'] = stepDetails;
-              }
-            }
-          }
-
-          // Sort step links by number
-          recipeStepLinks.sort((a, b) => (a['number'] as int).compareTo(b['number'] as int));
-
-          // Add ingredients and steps to recipe data
-          recipeData['recipeIngredients'] = recipeIngredients;
-          recipeData['recipeStepLinks'] = recipeStepLinks;
+          print('[DEBUG_LOG] RecipeRepositoryImpl: Parsing API data with Recipe.fromJson...');
 
           // Create the recipe object using data model
           final dataRecipe = model.Recipe.fromJson(recipeData);
 
+          print('[DEBUG_LOG] RecipeRepositoryImpl: Recipe parsed successfully:');
+          print('[DEBUG_LOG] - Parsed UUID: ${dataRecipe.uuid}');
+          print('[DEBUG_LOG] - Parsed name: ${dataRecipe.name}');
+          print('[DEBUG_LOG] - Parsed ingredients count: ${dataRecipe.ingredients.length}');
+          print('[DEBUG_LOG] - Parsed steps count: ${dataRecipe.steps.length}');
+
+          if (dataRecipe.ingredients.isNotEmpty) {
+            print('[DEBUG_LOG] RecipeRepositoryImpl: Parsed ingredients:');
+            for (int i = 0; i < dataRecipe.ingredients.length; i++) {
+              final ingredient = dataRecipe.ingredients[i];
+              print('[DEBUG_LOG]   ${i + 1}. ${ingredient.name} - ${ingredient.quantity} ${ingredient.unit}');
+            }
+          } else {
+            print('[DEBUG_LOG] RecipeRepositoryImpl: ⚠️ NO INGREDIENTS after parsing!');
+          }
+
+          if (dataRecipe.steps.isNotEmpty) {
+            print('[DEBUG_LOG] RecipeRepositoryImpl: Parsed steps:');
+            for (int i = 0; i < dataRecipe.steps.length; i++) {
+              final step = dataRecipe.steps[i];
+              print('[DEBUG_LOG]   ${i + 1}. ${step.name} (${step.duration} min)');
+            }
+          } else {
+            print('[DEBUG_LOG] RecipeRepositoryImpl: ⚠️ NO STEPS after parsing!');
+          }
+
+          print('[DEBUG_LOG] RecipeRepositoryImpl: Saving recipe to local database...');
           // Save to local database
           await _databaseService.saveRecipe(dataRecipe);
+          print('[DEBUG_LOG] RecipeRepositoryImpl: Recipe saved to local database');
+
+          print('[DEBUG_LOG] RecipeRepositoryImpl: Updating in-memory cache with complete recipe data...');
+          // Update in-memory cache with complete recipe data
+          final index = _cachedRecipes.indexWhere((r) => r.uuid == dataRecipe.uuid);
+          if (index >= 0) {
+            _cachedRecipes[index] = dataRecipe;
+            print('[DEBUG_LOG] RecipeRepositoryImpl: Updated existing recipe in cache');
+          } else {
+            _cachedRecipes.add(dataRecipe);
+            print('[DEBUG_LOG] RecipeRepositoryImpl: Added new recipe to cache');
+          }
 
           return dataRecipe;
         } catch (e) {
-          print('Failed to get recipe from API: $e');
+          print('[DEBUG_LOG] RecipeRepositoryImpl: ❌ Failed to get recipe from API: $e');
+          print('[DEBUG_LOG] RecipeRepositoryImpl: API error stack trace: ${StackTrace.current}');
           return null;
         }
       }
 
+      print('[DEBUG_LOG] RecipeRepositoryImpl: No connectivity, returning null');
       return null;
     }
   }

@@ -24,10 +24,13 @@ void main() {
     late RecipeManager recipeManager;
     late ObjectDetectionService objectDetectionService;
 
+    late test_locator.MockRecipeRepository mockRecipeRepository;
+
     setUp(() {
       // Create instance directly
+      mockRecipeRepository = test_locator.MockRecipeRepository();
       recipeManager = RecipeManagerImpl(
-        recipeRepository: test_locator.MockRecipeRepository(),
+        recipeRepository: mockRecipeRepository,
       );
       objectDetectionService = test_locator.MockObjectDetectionService();
     });
@@ -104,6 +107,9 @@ void main() {
       // They would be used in a more complex test that verifies the relationships
       // between recipes, ingredients, and steps
 
+      // Add the recipe to the mock repository so it can be found by getRecipeByUuid
+      mockRecipeRepository.addRecipe(recipe);
+
       // Create a Redux store for testing
       final Store<AppState> store = createStore();
 
@@ -122,6 +128,9 @@ void main() {
           ),
         ),
       );
+
+      // Wait for any loading to complete
+      await tester.pumpAndSettle();
 
       // Verify that the recipe name is displayed
       expect(find.text('Spaghetti Carbonara'), findsOneWidget);

@@ -121,17 +121,51 @@ Technical details: ${e.message}
 
   @override
   Future<Map<String, dynamic>> getRecipeData(String id) async {
-    print('ApiService.getRecipeData() called for id: $id with baseUrl: $baseUrl');
+    print('[DEBUG_LOG] ApiService.getRecipeData() called for id: $id with baseUrl: $baseUrl');
     return _requestWithRetry(
       request: () async {
-        print('Making GET request to $baseUrl/recipe/$id');
+        print('[DEBUG_LOG] ApiService: Making GET request to $baseUrl/recipe/$id');
         final response = await _dio.get('/recipe/$id');
         if (response.statusCode != 200) {
-          print('Failed to load recipe: ${response.statusCode}');
+          print('[DEBUG_LOG] ApiService: Failed to load recipe: ${response.statusCode}');
           throw Exception('Failed to load recipe: ${response.statusCode}');
         }
-        print('Successfully received response from $baseUrl/recipe/$id');
-        return response.data as Map<String, dynamic>;
+        print('[DEBUG_LOG] ApiService: Successfully received response from $baseUrl/recipe/$id');
+
+        final recipeData = response.data as Map<String, dynamic>;
+        print('[DEBUG_LOG] ApiService: Raw API response:');
+        print('[DEBUG_LOG] - Response keys: ${recipeData.keys.toList()}');
+        print('[DEBUG_LOG] - Recipe name: ${recipeData['name']}');
+        print('[DEBUG_LOG] - Recipe ID: ${recipeData['id']}');
+        print('[DEBUG_LOG] - Recipe duration: ${recipeData['duration']}');
+        print('[DEBUG_LOG] - Has recipeIngredients: ${recipeData.containsKey('recipeIngredients')}');
+        print('[DEBUG_LOG] - Has recipeStepLinks: ${recipeData.containsKey('recipeStepLinks')}');
+
+        if (recipeData.containsKey('recipeIngredients')) {
+          final ingredients = recipeData['recipeIngredients'] as List?;
+          print('[DEBUG_LOG] - Ingredients count from API: ${ingredients?.length ?? 0}');
+          if (ingredients != null && ingredients.isNotEmpty) {
+            print('[DEBUG_LOG] - First ingredient from API: ${ingredients[0]}');
+          } else {
+            print('[DEBUG_LOG] - ⚠️ API returned empty ingredients list!');
+          }
+        } else {
+          print('[DEBUG_LOG] - ⚠️ API response missing recipeIngredients field!');
+        }
+
+        if (recipeData.containsKey('recipeStepLinks')) {
+          final steps = recipeData['recipeStepLinks'] as List?;
+          print('[DEBUG_LOG] - Steps count from API: ${steps?.length ?? 0}');
+          if (steps != null && steps.isNotEmpty) {
+            print('[DEBUG_LOG] - First step from API: ${steps[0]}');
+          } else {
+            print('[DEBUG_LOG] - ⚠️ API returned empty steps list!');
+          }
+        } else {
+          print('[DEBUG_LOG] - ⚠️ API response missing recipeStepLinks field!');
+        }
+
+        return recipeData;
       },
       errorMessage: 'Failed to load recipe',
     );

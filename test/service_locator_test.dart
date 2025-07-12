@@ -342,22 +342,30 @@ class MockDatabaseService implements DatabaseService {
 
 // Mock implementation of RecipeRepository for testing
 class MockRecipeRepository implements RecipeRepository {
+  // Store recipes for testing
+  final Map<String, app_model.Recipe> _recipes = {};
+
+  // Method to add a recipe for testing
+  void addRecipe(app_model.Recipe recipe) {
+    _recipes[recipe.uuid] = recipe;
+  }
+
   @override
   Future<List<app_model.Recipe>> getRecipes() async {
-    // Return an empty list for testing
-    return [];
+    // Return stored recipes for testing
+    return _recipes.values.toList();
   }
 
   @override
   Future<List<app_model.Recipe>> getFavoriteRecipes() async {
-    // Return an empty list for testing
-    return [];
+    // Return favorite recipes for testing
+    return _recipes.values.where((recipe) => recipe.isFavorite).toList();
   }
 
   @override
   Future<app_model.Recipe?> getRecipeByUuid(String uuid) async {
-    // Return null for testing
-    return null;
+    // Return the stored recipe for testing
+    return _recipes[uuid];
   }
 
   @override

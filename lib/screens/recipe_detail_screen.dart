@@ -31,6 +31,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   late final RecipeManager _recipeManager;
   late Recipe _recipe;
   bool _isCookingMode = false;
+  bool _isLoading = true;
   ObjectDetectionService? _objectDetectionService;
 
 
@@ -45,6 +46,79 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       _objectDetectionService = null;
     }
     _recipe = widget.recipe;
+    _loadRecipeDetails();
+  }
+
+  Future<void> _loadRecipeDetails() async {
+    print('[DEBUG_LOG] RecipeDetailScreen: Starting to load recipe details for UUID: ${_recipe.uuid}');
+    print('[DEBUG_LOG] RecipeDetailScreen: Initial recipe data:');
+    print('[DEBUG_LOG] - Name: ${_recipe.name}');
+    print('[DEBUG_LOG] - Ingredients count: ${_recipe.ingredients.length}');
+    print('[DEBUG_LOG] - Steps count: ${_recipe.steps.length}');
+
+    try {
+      print('[DEBUG_LOG] RecipeDetailScreen: Calling _recipeManager.getRecipeByUuid(${_recipe.uuid})');
+
+      // Fetch detailed recipe information from the API
+      final detailedRecipe = await _recipeManager.getRecipeByUuid(_recipe.uuid);
+
+      print('[DEBUG_LOG] RecipeDetailScreen: API call completed');
+
+      if (detailedRecipe != null) {
+        print('[DEBUG_LOG] RecipeDetailScreen: Detailed recipe received:');
+        print('[DEBUG_LOG] - UUID: ${detailedRecipe.uuid}');
+        print('[DEBUG_LOG] - Name: ${detailedRecipe.name}');
+        print('[DEBUG_LOG] - Duration: ${detailedRecipe.duration}');
+        print('[DEBUG_LOG] - Ingredients count: ${detailedRecipe.ingredients.length}');
+        print('[DEBUG_LOG] - Steps count: ${detailedRecipe.steps.length}');
+
+        if (detailedRecipe.ingredients.isNotEmpty) {
+          print('[DEBUG_LOG] RecipeDetailScreen: Ingredients details:');
+          for (int i = 0; i < detailedRecipe.ingredients.length; i++) {
+            final ingredient = detailedRecipe.ingredients[i];
+            print('[DEBUG_LOG]   ${i + 1}. ${ingredient.name} - ${ingredient.quantity} ${ingredient.unit}');
+          }
+        } else {
+          print('[DEBUG_LOG] RecipeDetailScreen: ⚠️ NO INGREDIENTS FOUND in detailed recipe!');
+        }
+
+        if (detailedRecipe.steps.isNotEmpty) {
+          print('[DEBUG_LOG] RecipeDetailScreen: Steps details:');
+          for (int i = 0; i < detailedRecipe.steps.length; i++) {
+            final step = detailedRecipe.steps[i];
+            print('[DEBUG_LOG]   ${i + 1}. ${step.name} (${step.duration} min)');
+          }
+        } else {
+          print('[DEBUG_LOG] RecipeDetailScreen: ⚠️ NO STEPS FOUND in detailed recipe!');
+        }
+
+        if (mounted) {
+          print('[DEBUG_LOG] RecipeDetailScreen: Updating state with detailed recipe');
+          setState(() {
+            _recipe = detailedRecipe;
+            _isLoading = false;
+          });
+          print('[DEBUG_LOG] RecipeDetailScreen: State updated successfully');
+        } else {
+          print('[DEBUG_LOG] RecipeDetailScreen: Widget not mounted, skipping state update');
+        }
+      } else {
+        print('[DEBUG_LOG] RecipeDetailScreen: ❌ Detailed recipe is NULL!');
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('[DEBUG_LOG] RecipeDetailScreen: ❌ Error loading recipe details: $e');
+      print('[DEBUG_LOG] RecipeDetailScreen: Error stack trace: ${StackTrace.current}');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   void _toggleFavorite() {
@@ -131,17 +205,21 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
           ),
         ],
       ),
-      body: OrientationBuilder(
-        builder: (context, orientation) {
-          return Center(
-            child: SizedBox(
-              width: orientation == Orientation.landscape
-                  ? MediaQuery.of(context).size.width * 0.5
-                  : MediaQuery.of(context).size.width,
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : OrientationBuilder(
+              builder: (context, orientation) {
+                return Center(
+                  child: SizedBox(
+                    width: orientation == Orientation.landscape
+                        ? MediaQuery.of(context).size.width * 0.5
+                        : MediaQuery.of(context).size.width,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                     // Recipe header with name and favorite button
                     StoreConnector<AppState, bool>(
                       converter: (store) {
@@ -213,13 +291,13 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                       comments: _recipe.comments,
                       onAddComment: _addComment,
                     ),
-                  ],
-                ),
-              ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

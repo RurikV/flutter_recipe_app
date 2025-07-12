@@ -37,39 +37,104 @@ class Recipe {
   // Find recipe by ID with related data
   static async findById(id) {
     const db = getDb();
-    return new Promise((resolve, reject) => {
-      const sql = `
-        SELECT r.*,
-               GROUP_CONCAT(DISTINCT ri.id) as recipe_ingredient_ids,
-               GROUP_CONCAT(DISTINCT rsl.id) as recipe_step_link_ids,
-               GROUP_CONCAT(DISTINCT f.id) as favorite_ids,
-               GROUP_CONCAT(DISTINCT c.id) as comment_ids
-        FROM recipes r
-        LEFT JOIN recipe_ingredients ri ON r.id = ri.recipe_id
-        LEFT JOIN recipe_step_links rsl ON r.id = rsl.recipe_id
-        LEFT JOIN favorites f ON r.id = f.recipe_id
-        LEFT JOIN comments c ON r.id = c.recipe_id
-        WHERE r.id = ?
-        GROUP BY r.id
-      `;
-      db.get(sql, [id], (err, row) => {
-        if (err) {
-          reject(err);
-        } else if (row) {
-          const recipe = new Recipe(row);
-          recipe.recipeIngredients = row.recipe_ingredient_ids ? 
-            row.recipe_ingredient_ids.split(',').map(id => ({ id: parseInt(id) })) : [];
-          recipe.recipeStepLinks = row.recipe_step_link_ids ? 
-            row.recipe_step_link_ids.split(',').map(id => ({ id: parseInt(id) })) : [];
-          recipe.favoriteRecipes = row.favorite_ids ? 
-            row.favorite_ids.split(',').map(id => ({ id: parseInt(id) })) : [];
-          recipe.comments = row.comment_ids ? 
-            row.comment_ids.split(',').map(id => ({ id: parseInt(id) })) : [];
-          resolve(recipe);
-        } else {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // First get the recipe
+        const recipeQuery = 'SELECT * FROM recipes WHERE id = ?';
+        const recipe = await new Promise((res, rej) => {
+          db.get(recipeQuery, [id], (err, row) => {
+            if (err) rej(err);
+            else res(row);
+          });
+        });
+
+        if (!recipe) {
           resolve(null);
+          return;
         }
-      });
+
+        // Get ingredients with full data
+        const ingredientsQuery = `
+          SELECT ri.count, i.name, mu.one, mu.few, mu.many
+          FROM recipe_ingredients ri
+          JOIN ingredients i ON ri.ingredient_id = i.id
+          LEFT JOIN measure_units mu ON i.measureUnit_id = mu.id
+          WHERE ri.recipe_id = ?
+        `;
+        const ingredients = await new Promise((res, rej) => {
+          db.all(ingredientsQuery, [id], (err, rows) => {
+            if (err) rej(err);
+            else res(rows || []);
+          });
+        });
+
+        // Get recipe steps with full data
+        const stepsQuery = `
+          SELECT rs.name, rs.duration, rsl.number
+          FROM recipe_step_links rsl
+          JOIN recipe_steps rs ON rsl.step_id = rs.id
+          WHERE rsl.recipe_id = ?
+          ORDER BY rsl.number
+        `;
+        const steps = await new Promise((res, rej) => {
+          db.all(stepsQuery, [id], (err, rows) => {
+            if (err) rej(err);
+            else res(rows || []);
+          });
+        });
+
+        // Get comments
+        const commentsQuery = `
+          SELECT c.*, u.login as author_name
+          FROM comments c
+          LEFT JOIN users u ON c.user_id = u.id
+          WHERE c.recipe_id = ?
+          ORDER BY c.datetime DESC
+        `;
+        const comments = await new Promise((res, rej) => {
+          db.all(commentsQuery, [id], (err, rows) => {
+            if (err) rej(err);
+            else res(rows || []);
+          });
+        });
+
+        // Create recipe object
+        const recipeObj = new Recipe(recipe);
+
+        // Add ingredients with proper structure
+        recipeObj.recipeIngredients = ingredients.map(ing => ({
+          count: ing.count,
+          ingredient: {
+            name: ing.name,
+            measureUnit: ing.one ? {
+              one: ing.one,
+              few: ing.few,
+              many: ing.many
+            } : null
+          }
+        }));
+
+        // Add steps with proper structure
+        recipeObj.recipeStepLinks = steps.map(step => ({
+          step: {
+            name: step.name,
+            duration: step.duration
+          },
+          number: step.number
+        }));
+
+        // Add comments
+        recipeObj.comments = comments.map(comment => ({
+          id: comment.id,
+          text: comment.text,
+          authorName: comment.author_name || 'Unknown',
+          date: comment.datetime
+        }));
+
+        resolve(recipeObj);
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 
@@ -107,7 +172,7 @@ class Recipe {
           }
           return `${field} ASC`;
         });
-      
+
       if (sortClauses.length > 0) {
         sql += ' ORDER BY ' + sortClauses.join(', ');
       }
@@ -134,7 +199,7 @@ class Recipe {
   async update(updateData) {
     const db = getDb();
     const { name, duration, photo } = updateData;
-    
+
     return new Promise((resolve, reject) => {
       const sql = 'UPDATE recipes SET name = ?, duration = ?, photo = ? WHERE id = ?';
       db.run(sql, [name, duration, photo, this.id], (err) => {
@@ -171,12 +236,12 @@ class Recipe {
     return new Promise((resolve, reject) => {
       let sql = 'SELECT COUNT(*) as count FROM recipes WHERE name = ?';
       let params = [name];
-      
+
       if (excludeId) {
         sql += ' AND id != ?';
         params.push(excludeId);
       }
-      
+
       db.get(sql, params, (err, row) => {
         if (err) {
           reject(err);

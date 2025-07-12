@@ -9,6 +9,9 @@ abstract class RecipeManager {
   /// Get favorite recipes
   Future<List<Recipe>> getFavoriteRecipes();
 
+  /// Get recipe by UUID with detailed information
+  Future<Recipe?> getRecipeByUuid(String uuid);
+
   /// Get available ingredients
   Future<List<String>> getIngredients();
 
