@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:provider/provider.dart';
+import 'package:auto_route/auto_route.dart';
 import '../l10n/app_localizations.dart';
 import '../presentation/providers/language_provider.dart';
 import '../redux/app_state.dart';
@@ -9,7 +10,7 @@ import '../redux/actions.dart';
 import '../services/auth/auth_service.dart';
 import '../features/bluetooth/bluetooth.dart';
 import '../data/models/user.dart';
-import 'login_screen.dart';
+import '../routing/app_router.dart';
 
 /// A stateless widget representing the profile screen.
 class ProfileScreen extends StatelessWidget {
@@ -26,10 +27,8 @@ class ProfileScreen extends StatelessWidget {
         StoreProvider.of<AppState>(context, listen: false)
             .dispatch(LogoutAction());
 
-        // Navigate to login screen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-        );
+        // Navigate to login screen using auto_route
+        context.router.navigate(const LoginRoute());
       }
     } catch (e) {
       if (context.mounted) {
