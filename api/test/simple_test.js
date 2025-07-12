@@ -6,15 +6,15 @@ try {
   require('express');
   console.log('✓ Express imported successfully');
 
-  require('./config/database');
+  require('../config/database');
   console.log('✓ Database config imported successfully');
 
-  require('./models');
+  require('../models');
   console.log('✓ Models imported successfully');
 
   // Test database initialization
   console.log('\n2. Testing database initialization...');
-  const db = require('./config/database');
+  const db = require('../config/database');
 
   db.init().then(() => {
     console.log('✓ Database initialized successfully');

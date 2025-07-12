@@ -1,5 +1,5 @@
-const { init } = require('./config/database');
-const Recipe = require('./models/Recipe');
+const { init } = require('../config/database');
+const Recipe = require('../models/Recipe');
 
 async function testLocalApiResponse() {
   console.log('🔍 Testing actual local API response structure...\n');

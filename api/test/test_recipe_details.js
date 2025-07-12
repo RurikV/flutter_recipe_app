@@ -1,5 +1,5 @@
-const { init } = require('./config/database');
-const Recipe = require('./models/Recipe');
+const { init } = require('../config/database');
+const Recipe = require('../models/Recipe');
 
 async function testRecipeDetails() {
   console.log('🧪 Testing Recipe.findById with ingredients and steps...\n');
