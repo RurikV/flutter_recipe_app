@@ -62,6 +62,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       // Navigate to home screen
       context.router.navigate(const HomeRoute());
     } catch (e) {
+      print('[DEBUG_LOG] Registration error occurred: $e');
+      print('[DEBUG_LOG] Exception type: ${e.runtimeType}');
       setState(() {
         _errorMessage = e.toString();
       });
