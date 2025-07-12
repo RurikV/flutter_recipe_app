@@ -164,8 +164,8 @@ void main() {
       // Verify that ingredients are displayed
       expect(find.text('Test ingredient 1'), findsOneWidget, reason: 'First ingredient should be displayed');
       expect(find.text('Test ingredient 2'), findsOneWidget, reason: 'Second ingredient should be displayed');
-      expect(find.text('200'), findsOneWidget, reason: 'First ingredient quantity should be displayed');
-      expect(find.text('100'), findsOneWidget, reason: 'Second ingredient quantity should be displayed');
+      expect(find.text('200 g'), findsOneWidget, reason: 'First ingredient quantity should be displayed');
+      expect(find.text('100 ml'), findsOneWidget, reason: 'Second ingredient quantity should be displayed');
 
       // Verify that steps are displayed
       expect(find.text('Test step 1'), findsOneWidget, reason: 'First step should be displayed');

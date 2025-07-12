@@ -10,7 +10,24 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+
+// Enhanced CORS configuration for Flutter web apps
+app.use(cors({
+  origin: '*', // Allow all origins for development
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'Cache-Control',
+    'X-HTTP-Method-Override'
+  ],
+  credentials: false, // Set to true if you need to send cookies
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+}));
+
 app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -74,10 +91,14 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Food API Server running on port ${PORT}`);
-  console.log(`Documentation available at http://localhost:${PORT}/api-docs`);
-});
+// For Vercel serverless deployment, we export the app instead of calling listen()
+// The server will be started automatically by Vercel
+if (process.env.NODE_ENV !== 'production') {
+  // Only start the server in development mode
+  app.listen(PORT, () => {
+    console.log(`Food API Server running on port ${PORT}`);
+    console.log(`Documentation available at http://localhost:${PORT}/api-docs`);
+  });
+}
 
 module.exports = app;
