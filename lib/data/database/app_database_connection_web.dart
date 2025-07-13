@@ -1,14 +1,7 @@
 import 'package:drift/drift.dart';
-import 'package:drift/wasm.dart';
 
-// Web-specific database connection using WASM
+// Stub implementation - SQLite database removed for performance optimization
+// App now uses API with caching instead of local database
 QueryExecutor createConnection() {
-  return LazyDatabase(() async {
-    // Use WASM database which is more efficient than SQL.js
-    return WasmDatabase.open(
-      databaseName: 'recipes_db',
-      sqlite3Uri: Uri.parse('sqlite3.wasm'),
-      driftWorkerUri: Uri.parse('drift_worker.dart.js'),
-    );
-  });
+  throw UnsupportedError('Local database has been removed. App now uses API with caching.');
 }

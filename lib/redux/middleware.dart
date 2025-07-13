@@ -29,6 +29,7 @@ List<Middleware<AppState>> createMiddleware() {
   final toggleFavorite = _createToggleFavoriteMiddleware();
   final addComment = _createAddCommentMiddleware();
   final updateStepStatus = _createUpdateStepStatusMiddleware();
+  final deleteRecipe = _createDeleteRecipeMiddleware();
 
   return [
     loadRecipes,
@@ -36,6 +37,7 @@ List<Middleware<AppState>> createMiddleware() {
     toggleFavorite,
     addComment,
     updateStepStatus,
+    deleteRecipe,
   ];
 }
 
@@ -159,6 +161,34 @@ Middleware<AppState> _createUpdateStepStatusMiddleware() {
           action.stepIndex,
           action.isCompleted,
         ));
+      }
+    } else {
+      next(action);
+    }
+  };
+}
+
+// Middleware for deleting recipes
+Middleware<AppState> _createDeleteRecipeMiddleware() {
+  return (Store<AppState> store, dynamic action, NextDispatcher next) async {
+    if (action is DeleteRecipeAction) {
+      next(action); // Let the reducer know we're processing
+
+      try {
+        final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
+        final success = await recipeManager.deleteRecipe(action.recipeId);
+
+        if (success) {
+          // Dispatch action to update state
+          store.dispatch(RecipeDeletedAction(action.recipeId));
+
+          // Reload recipes to ensure the list is updated
+          store.dispatch(LoadRecipesAction());
+        } else {
+          store.dispatch(RecipeDeleteErrorAction('Failed to delete recipe'));
+        }
+      } catch (e) {
+        store.dispatch(RecipeDeleteErrorAction('Error deleting recipe: $e'));
       }
     } else {
       next(action);

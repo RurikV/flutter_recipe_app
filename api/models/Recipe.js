@@ -1,5 +1,9 @@
 const { getDb } = require('../config/database');
 
+// Simple in-memory cache for recipes
+const recipeCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 class Recipe {
   constructor(data) {
     this.id = data.id;
@@ -28,7 +32,23 @@ class Recipe {
         throw error;
       }
 
-      return new Recipe(data);
+      const newRecipe = new Recipe(data);
+
+      // Invalidate all recipe list caches since a new recipe was added
+      for (const key of recipeCache.keys()) {
+        if (key.startsWith('recipes_')) {
+          recipeCache.delete(key);
+        }
+      }
+
+      // Optionally cache the new recipe immediately for future individual lookups
+      const cacheKey = `recipe_${newRecipe.id}`;
+      recipeCache.set(cacheKey, {
+        data: newRecipe,
+        timestamp: Date.now()
+      });
+
+      return newRecipe;
     } catch (error) {
       throw error;
     }
@@ -36,75 +56,89 @@ class Recipe {
 
   // Find recipe by ID with related data
   static async findById(id) {
+    // Check cache first
+    const cacheKey = `recipe_${id}`;
+    const cached = recipeCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return cached.data;
+    }
+
     const supabase = getDb();
 
     try {
-      // First get the recipe
-      const { data: recipe, error: recipeError } = await supabase
-        .from('recipes')
-        .select('*')
-        .eq('id', id)
-        .single();
+      // Execute all queries concurrently for better performance
+      const [
+        { data: recipe, error: recipeError },
+        { data: ingredients, error: ingredientsError },
+        { data: steps, error: stepsError },
+        { data: comments, error: commentsError }
+      ] = await Promise.all([
+        // Get the recipe
+        supabase
+          .from('recipes')
+          .select('*')
+          .eq('id', id)
+          .single(),
 
+        // Get ingredients with full data using joins
+        supabase
+          .from('recipe_ingredients')
+          .select(`
+            count,
+            ingredients (
+              name,
+              measure_units (
+                one,
+                few,
+                many
+              )
+            )
+          `)
+          .eq('recipe_id', id),
+
+        // Get recipe steps with full data using joins
+        supabase
+          .from('recipe_step_links')
+          .select(`
+            number,
+            recipe_steps (
+              name,
+              duration
+            )
+          `)
+          .eq('recipe_id', id)
+          .order('number'),
+
+        // Get comments with user info (limit to 50 most recent for performance)
+        supabase
+          .from('comments')
+          .select(`
+            id,
+            text,
+            datetime,
+            users (
+              login
+            )
+          `)
+          .eq('recipe_id', id)
+          .order('datetime', { ascending: false })
+          .limit(50)
+      ]);
+
+      // Check for errors
       if (recipeError) {
         if (recipeError.code === 'PGRST116') { // No rows returned
           return null;
         }
         throw recipeError;
       }
+      if (ingredientsError) throw ingredientsError;
+      if (stepsError) throw stepsError;
+      if (commentsError) throw commentsError;
 
       if (!recipe) {
         return null;
       }
-
-      // Get ingredients with full data using joins
-      const { data: ingredients, error: ingredientsError } = await supabase
-        .from('recipe_ingredients')
-        .select(`
-          count,
-          ingredients (
-            name,
-            measure_units (
-              one,
-              few,
-              many
-            )
-          )
-        `)
-        .eq('recipe_id', id);
-
-      if (ingredientsError) throw ingredientsError;
-
-      // Get recipe steps with full data using joins
-      const { data: steps, error: stepsError } = await supabase
-        .from('recipe_step_links')
-        .select(`
-          number,
-          recipe_steps (
-            name,
-            duration
-          )
-        `)
-        .eq('recipe_id', id)
-        .order('number');
-
-      if (stepsError) throw stepsError;
-
-      // Get comments with user info
-      const { data: comments, error: commentsError } = await supabase
-        .from('comments')
-        .select(`
-          id,
-          text,
-          datetime,
-          users (
-            login
-          )
-        `)
-        .eq('recipe_id', id)
-        .order('datetime', { ascending: false });
-
-      if (commentsError) throw commentsError;
 
       // Create recipe object
       const recipeObj = new Recipe(recipe);
@@ -139,6 +173,12 @@ class Recipe {
         date: comment.datetime
       }));
 
+      // Cache the result
+      recipeCache.set(cacheKey, {
+        data: recipeObj,
+        timestamp: Date.now()
+      });
+
       return recipeObj;
     } catch (error) {
       throw error;
@@ -147,8 +187,17 @@ class Recipe {
 
   // Find all recipes with pagination and sorting
   static async findAll(options = {}) {
+    // Reduce default count for better mobile performance
+    const { count = 20, offset = 0, sortBy = [], pageBy, pageAfter, pagePrior } = options;
+
+    // Create cache key based on options
+    const cacheKey = `recipes_${JSON.stringify({ count, offset, sortBy, pageBy, pageAfter, pagePrior })}`;
+    const cached = recipeCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return cached.data;
+    }
+
     const supabase = getDb();
-    const { count = 50, offset = 0, sortBy = [], pageBy, pageAfter, pagePrior } = options;
 
     try {
       let query = supabase.from('recipes').select('*');
@@ -185,6 +234,13 @@ class Recipe {
       }
 
       const recipes = (data || []).map(row => new Recipe(row));
+
+      // Cache the result
+      recipeCache.set(cacheKey, {
+        data: recipes,
+        timestamp: Date.now()
+      });
+
       return recipes;
     } catch (error) {
       throw error;
@@ -208,6 +264,9 @@ class Recipe {
         throw error;
       }
 
+      // Invalidate cache for this recipe and recipe lists
+      this._invalidateCache();
+
       this.name = name;
       this.duration = duration;
       this.photo = photo;
@@ -230,6 +289,9 @@ class Recipe {
       if (error) {
         throw error;
       }
+
+      // Invalidate cache for this recipe and recipe lists
+      this._invalidateCache();
     } catch (error) {
       throw error;
     }
@@ -258,6 +320,20 @@ class Recipe {
       return count > 0;
     } catch (error) {
       throw error;
+    }
+  }
+
+  // Helper method to invalidate cache
+  _invalidateCache() {
+    // Remove specific recipe from cache
+    const recipeKey = `recipe_${this.id}`;
+    recipeCache.delete(recipeKey);
+
+    // Remove all recipe list caches (they contain outdated data)
+    for (const key of recipeCache.keys()) {
+      if (key.startsWith('recipes_')) {
+        recipeCache.delete(key);
+      }
     }
   }
 

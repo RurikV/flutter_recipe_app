@@ -109,3 +109,21 @@ class StepStatusUpdatedAction {
 
   StepStatusUpdatedAction(this.recipeId, this.stepIndex, this.isCompleted);
 }
+
+class DeleteRecipeAction {
+  final String recipeId;
+
+  DeleteRecipeAction(this.recipeId);
+}
+
+class RecipeDeletedAction {
+  final String recipeId;
+
+  RecipeDeletedAction(this.recipeId);
+}
+
+class RecipeDeleteErrorAction {
+  final String error;
+
+  RecipeDeleteErrorAction(this.error);
+}

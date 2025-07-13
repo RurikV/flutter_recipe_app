@@ -30,4 +30,7 @@ abstract class RecipeManager {
   /// Update step completion status
   Future<bool> updateStepStatus(String recipeId, int stepIndex, bool isCompleted);
 
+  /// Delete a recipe
+  Future<bool> deleteRecipe(String recipeId);
+
 }

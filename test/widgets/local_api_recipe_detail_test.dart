@@ -109,10 +109,10 @@ class LocalApiMockRecipeManager implements RecipeManager {
 
     // Parse using Recipe.fromJson to simulate real data flow
     final recipe = Recipe.fromJson(localApiResponse);
-    
+
     print('[DEBUG_LOG] Parsed recipe ingredients count: ${recipe.ingredients.length}');
     print('[DEBUG_LOG] Parsed recipe steps count: ${recipe.steps.length}');
-    
+
     return recipe;
   }
 
@@ -145,6 +145,11 @@ class LocalApiMockRecipeManager implements RecipeManager {
   Future<bool> updateStepStatus(String recipeId, int stepIndex, bool isCompleted) async {
     return true;
   }
+
+  @override
+  Future<bool> deleteRecipe(String recipeId) async {
+    return true;
+  }
 }
 
 // Mock ObjectDetectionService
@@ -171,7 +176,7 @@ void main() {
   group('Local API Recipe Detail Widget Tests', () {
     testWidgets('RecipeDetailScreen should display ingredients and steps from local API', (WidgetTester tester) async {
       print('[DEBUG_LOG] Starting RecipeDetailScreen test with local API simulation');
-      
+
       // Create a basic recipe that will be enhanced by the mock manager
       final initialRecipe = Recipe(
         uuid: '123',
@@ -248,7 +253,7 @@ void main() {
 
     testWidgets('IngredientsTable widget should display local API ingredients correctly', (WidgetTester tester) async {
       print('[DEBUG_LOG] Testing IngredientsTable widget directly');
-      
+
       // Create ingredients that match local API structure
       final ingredients = [
         Ingredient.simple(
@@ -280,10 +285,10 @@ void main() {
       await tester.pumpAndSettle();
 
       print('[DEBUG_LOG] Checking IngredientsTable content');
-      
+
       // Verify ingredients header
       expect(find.text('Ингредиенты'), findsOneWidget);
-      
+
       // Verify all ingredients are displayed
       expect(find.text('Сливочный сыр'), findsOneWidget);
       expect(find.text('1 ст. ложка'), findsOneWidget);
@@ -297,7 +302,7 @@ void main() {
 
     testWidgets('RecipeStepsList widget should display local API steps correctly', (WidgetTester tester) async {
       print('[DEBUG_LOG] Testing RecipeStepsList widget directly');
-      
+
       // Create steps that match local API structure
       final steps = [
         RecipeStep(
@@ -339,7 +344,7 @@ void main() {
       await tester.pumpAndSettle();
 
       print('[DEBUG_LOG] Checking RecipeStepsList content');
-      
+
       // Verify all steps are displayed
       expect(find.textContaining('Подготовить ингредиенты'), findsOneWidget);
       expect(find.textContaining('Смешать сухие ингредиенты'), findsOneWidget);
@@ -351,7 +356,7 @@ void main() {
 
     testWidgets('Recipe.fromJson should correctly parse local API response structure', (WidgetTester tester) async {
       print('[DEBUG_LOG] Testing Recipe.fromJson with local API structure');
-      
+
       // Test the exact structure that local API returns
       final localApiResponse = {
         'id': 456,

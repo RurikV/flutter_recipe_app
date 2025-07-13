@@ -170,6 +170,74 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     }
   }
 
+  Future<void> _deleteRecipe() async {
+    // Show confirmation dialog
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Recipe'),
+          content: Text('Are you sure you want to delete "${_recipe.name}"? This action cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    // If user confirmed deletion
+    if (confirmed == true) {
+      try {
+        // Show loading indicator
+        if (mounted) {
+          setState(() {
+            _isLoading = true;
+          });
+        }
+
+        // Dispatch delete action to Redux store
+        final store = StoreProvider.of<AppState>(context);
+        store.dispatch(DeleteRecipeAction(_recipe.uuid));
+
+        // Show success message and navigate back
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Recipe "${_recipe.name}" deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Navigate back to the previous screen
+          Navigator.of(context).pop();
+        }
+      } catch (e) {
+        // Handle any errors
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error deleting recipe: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -202,6 +270,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
             onPressed: () {
               // Share functionality would go here
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            tooltip: 'Delete Recipe',
+            onPressed: _deleteRecipe,
           ),
         ],
       ),

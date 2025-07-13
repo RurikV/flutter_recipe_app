@@ -252,6 +252,18 @@ class RecipeManagerImpl implements RecipeManager {
     }
   }
 
+  @override
+  Future<bool> deleteRecipe(String recipeId) async {
+    try {
+      // Use the repository to delete the recipe
+      await _recipeRepository.deleteRecipe(recipeId);
+      return true;
+    } catch (e) {
+      print('Error in deleteRecipe: $e');
+      return false;
+    }
+  }
+
   // Method to get dummy recipes for testing or initial data
   static List<Recipe> getDummyRecipes() {
     return _dummyRecipes;

@@ -1,15 +1,24 @@
 import 'dart:async';
+import 'dart:io' if (dart.library.html) 'web_http_client.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart' if (dart.library.html) 'package:dio/browser.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:dio/io.dart' if (dart.library.html) 'web_http_client.dart' show IOHttpClientAdapter;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import '../../../../../data/models/recipe.dart';
 import 'api_service.dart';
 import '../../config/app_config.dart';
 
-// Import HttpClient, X509Certificate, and IOHttpClientAdapter only for non-web platforms
-import 'dart:io' if (dart.library.html) 'web_http_client.dart';
-// Import IOHttpClientAdapter explicitly for non-web platforms
-import 'package:dio/io.dart' if (dart.library.html) 'web_http_client.dart' show IOHttpClientAdapter;
+// Cache entry class for storing cached API responses
+class CacheEntry {
+  final dynamic data;
+  final DateTime timestamp;
+
+  CacheEntry(this.data, this.timestamp);
+
+  bool isExpired(Duration ttl) {
+    return DateTime.now().difference(timestamp) > ttl;
+  }
+}
 
 /// ApiServiceImpl handles direct API calls to the backend.
 /// It provides methods for each API endpoint without combining data from multiple endpoints.
@@ -17,6 +26,10 @@ class ApiServiceImpl implements ApiService {
   final Dio _dio;
   final String baseUrl = AppConfig.baseUrl;
   final int _maxRetries = 3;
+
+  // Simple in-memory cache for API responses
+  final Map<String, CacheEntry> _cache = {};
+  static const Duration _cacheTTL = Duration(minutes: 5);
 
   ApiServiceImpl() : _dio = Dio() {
     _dio.options.baseUrl = baseUrl;
@@ -103,77 +116,83 @@ Technical details: ${e.message}
 
   @override
   Future<List<dynamic>> getRecipesData() async {
-    print('ApiService.getRecipesData() called with baseUrl: $baseUrl');
-    return _requestWithRetry(
+    const cacheKey = 'recipes_list';
+
+    // Check cache first
+    final cached = _cache[cacheKey];
+    if (cached != null && !cached.isExpired(_cacheTTL)) {
+      if (kDebugMode) print('ApiService: Returning cached recipes');
+      return cached.data as List<dynamic>;
+    }
+
+    if (kDebugMode) print('ApiService.getRecipesData() called with baseUrl: $baseUrl');
+    final result = await _requestWithRetry(
       request: () async {
-        print('Making GET request to $baseUrl/recipe');
-        final response = await _dio.get('/recipe');
+        // Add pagination parameter for better performance
+        final response = await _dio.get('/recipe?count=20');
         if (response.statusCode != 200) {
-          print('Failed to load recipes: ${response.statusCode}');
           throw Exception('Failed to load recipes: ${response.statusCode}');
         }
-        print('Successfully received response from $baseUrl/recipe');
+        if (kDebugMode) print('Successfully received ${(response.data as List).length} recipes');
         return response.data as List<dynamic>;
       },
       errorMessage: 'Failed to load recipes',
     );
+
+    // Cache the result
+    _cache[cacheKey] = CacheEntry(result, DateTime.now());
+    return result;
   }
 
   @override
   Future<Map<String, dynamic>> getRecipeData(String id) async {
-    print('[DEBUG_LOG] ApiService.getRecipeData() called for id: $id with baseUrl: $baseUrl');
-    return _requestWithRetry(
+    final cacheKey = 'recipe_$id';
+
+    // Check cache first
+    final cached = _cache[cacheKey];
+    if (cached != null && !cached.isExpired(_cacheTTL)) {
+      if (kDebugMode) print('ApiService: Returning cached recipe $id');
+      return cached.data as Map<String, dynamic>;
+    }
+
+    if (kDebugMode) print('ApiService.getRecipeData() called for id: $id');
+    final result = await _requestWithRetry(
       request: () async {
-        print('[DEBUG_LOG] ApiService: Making GET request to $baseUrl/recipe/$id');
         final response = await _dio.get('/recipe/$id');
         if (response.statusCode != 200) {
-          print('[DEBUG_LOG] ApiService: Failed to load recipe: ${response.statusCode}');
           throw Exception('Failed to load recipe: ${response.statusCode}');
         }
-        print('[DEBUG_LOG] ApiService: Successfully received response from $baseUrl/recipe/$id');
 
         final recipeData = response.data as Map<String, dynamic>;
-        print('[DEBUG_LOG] ApiService: Raw API response:');
-        print('[DEBUG_LOG] - Response keys: ${recipeData.keys.toList()}');
-        print('[DEBUG_LOG] - Recipe name: ${recipeData['name']}');
-        print('[DEBUG_LOG] - Recipe ID: ${recipeData['id']}');
-        print('[DEBUG_LOG] - Recipe duration: ${recipeData['duration']}');
-        print('[DEBUG_LOG] - Has recipeIngredients: ${recipeData.containsKey('recipeIngredients')}');
-        print('[DEBUG_LOG] - Has recipeStepLinks: ${recipeData.containsKey('recipeStepLinks')}');
-
-        if (recipeData.containsKey('recipeIngredients')) {
+        if (kDebugMode) {
+          print('ApiService: Recipe loaded - ${recipeData['name']}');
           final ingredients = recipeData['recipeIngredients'] as List?;
-          print('[DEBUG_LOG] - Ingredients count from API: ${ingredients?.length ?? 0}');
-          if (ingredients != null && ingredients.isNotEmpty) {
-            print('[DEBUG_LOG] - First ingredient from API: ${ingredients[0]}');
-          } else {
-            print('[DEBUG_LOG] - ⚠️ API returned empty ingredients list!');
-          }
-        } else {
-          print('[DEBUG_LOG] - ⚠️ API response missing recipeIngredients field!');
-        }
-
-        if (recipeData.containsKey('recipeStepLinks')) {
           final steps = recipeData['recipeStepLinks'] as List?;
-          print('[DEBUG_LOG] - Steps count from API: ${steps?.length ?? 0}');
-          if (steps != null && steps.isNotEmpty) {
-            print('[DEBUG_LOG] - First step from API: ${steps[0]}');
-          } else {
-            print('[DEBUG_LOG] - ⚠️ API returned empty steps list!');
-          }
-        } else {
-          print('[DEBUG_LOG] - ⚠️ API response missing recipeStepLinks field!');
+          print('ApiService: Ingredients: ${ingredients?.length ?? 0}, Steps: ${steps?.length ?? 0}');
         }
 
         return recipeData;
       },
       errorMessage: 'Failed to load recipe',
     );
+
+    // Cache the result
+    _cache[cacheKey] = CacheEntry(result, DateTime.now());
+    return result;
   }
 
   @override
   Future<List<dynamic>> getIngredientsData() async {
-    return _requestWithRetry(
+    const cacheKey = 'ingredients_list';
+
+    // Check cache first
+    final cached = _cache[cacheKey];
+    if (cached != null && !cached.isExpired(_cacheTTL)) {
+      if (kDebugMode) print('ApiService: Returning cached ingredients');
+      return cached.data as List<dynamic>;
+    }
+
+    final result = await _requestWithRetry(
       request: () async {
         final response = await _dio.get('/ingredient');
         if (response.statusCode != 200) {
@@ -183,6 +202,10 @@ Technical details: ${e.message}
       },
       errorMessage: 'Failed to load ingredients',
     );
+
+    // Cache the result
+    _cache[cacheKey] = CacheEntry(result, DateTime.now());
+    return result;
   }
 
   @override
@@ -275,7 +298,7 @@ Technical details: ${e.message}
 
   @override
   Future<Map<String, dynamic>> createRecipe(Recipe recipe) async {
-    return _requestWithRetry(
+    final result = await _requestWithRetry(
       request: () async {
         // Convert Recipe to API format
         final recipeData = {
@@ -283,7 +306,7 @@ Technical details: ${e.message}
           'description': recipe.description,
           'instructions': recipe.instructions,
           'difficulty': recipe.difficulty,
-          'duration': recipe.duration,
+          'duration': _parseDurationToInt(recipe.duration),
           'rating': recipe.rating,
         };
 
@@ -295,11 +318,62 @@ Technical details: ${e.message}
       },
       errorMessage: 'Failed to create recipe',
     );
+
+    // Invalidate cache after successful recipe creation so new recipe appears instantly
+    _invalidateRecipesCaches();
+
+    return result;
+  }
+
+  // Helper method to parse duration string to integer (in minutes)
+  int _parseDurationToInt(String duration) {
+    if (duration.isEmpty) return 0;
+
+    // Try to parse as integer first (if it's already a number)
+    final intValue = int.tryParse(duration);
+    if (intValue != null) return intValue;
+
+    // Extract numbers from the string
+    final RegExp numberRegex = RegExp(r'\d+');
+    final match = numberRegex.firstMatch(duration);
+    if (match == null) return 0;
+
+    final number = int.tryParse(match.group(0)!) ?? 0;
+
+    // Convert to minutes based on unit
+    final lowerDuration = duration.toLowerCase();
+    if (lowerDuration.contains('hour') || lowerDuration.contains('hr')) {
+      return number * 60; // Convert hours to minutes
+    } else if (lowerDuration.contains('second') || lowerDuration.contains('sec')) {
+      return (number / 60).round(); // Convert seconds to minutes
+    } else {
+      // Default to minutes or no unit specified
+      return number;
+    }
+  }
+
+  // Helper method to invalidate recipes-related caches
+  void _invalidateRecipesCaches() {
+    // Remove recipes list cache
+    _cache.remove('recipes_list');
+
+    // Remove all individual recipe caches
+    final keysToRemove = <String>[];
+    for (final key in _cache.keys) {
+      if (key.startsWith('recipe_')) {
+        keysToRemove.add(key);
+      }
+    }
+    for (final key in keysToRemove) {
+      _cache.remove(key);
+    }
+
+    if (kDebugMode) print('ApiService: Invalidated recipes caches after recipe creation');
   }
 
   @override
   Future<Map<String, dynamic>> updateRecipe(String id, Recipe recipe) async {
-    return _requestWithRetry(
+    final result = await _requestWithRetry(
       request: () async {
         // Convert Recipe to API format
         final recipeData = {
@@ -307,7 +381,7 @@ Technical details: ${e.message}
           'description': recipe.description,
           'instructions': recipe.instructions,
           'difficulty': recipe.difficulty,
-          'duration': recipe.duration,
+          'duration': _parseDurationToInt(recipe.duration),
           'rating': recipe.rating,
         };
 
@@ -319,6 +393,11 @@ Technical details: ${e.message}
       },
       errorMessage: 'Failed to update recipe',
     );
+
+    // Invalidate cache after successful recipe update so changes appear instantly
+    _invalidateRecipesCaches();
+
+    return result;
   }
 
   @override
@@ -326,19 +405,28 @@ Technical details: ${e.message}
     await _requestWithRetry(
       request: () async {
         final response = await _dio.delete('/recipe/$id');
-        if (response.statusCode != 204) {
+        if (response.statusCode != 200) {
           throw Exception('Failed to delete recipe: ${response.statusCode}');
         }
       },
       errorMessage: 'Failed to delete recipe',
     );
+
+    // Invalidate cache after successful recipe deletion so changes appear instantly
+    _invalidateRecipesCaches();
   }
 
   @override
   Future<Map<String, dynamic>> createRecipeData(Map<String, dynamic> recipeData) async {
-    return _requestWithRetry(
+    // Parse duration if it exists and is a string
+    final processedData = Map<String, dynamic>.from(recipeData);
+    if (processedData.containsKey('duration') && processedData['duration'] is String) {
+      processedData['duration'] = _parseDurationToInt(processedData['duration'] as String);
+    }
+
+    final result = await _requestWithRetry(
       request: () async {
-        final response = await _dio.post('/recipe', data: recipeData);
+        final response = await _dio.post('/recipe', data: processedData);
         if (response.statusCode != 201 && response.statusCode != 200) {
           throw Exception('Failed to create recipe data: ${response.statusCode}');
         }
@@ -346,6 +434,11 @@ Technical details: ${e.message}
       },
       errorMessage: 'Failed to create recipe data',
     );
+
+    // Invalidate cache after successful recipe creation so new recipe appears instantly
+    _invalidateRecipesCaches();
+
+    return result;
   }
 
   @override
@@ -406,9 +499,15 @@ Technical details: ${e.message}
 
   @override
   Future<Map<String, dynamic>> updateRecipeData(String id, Map<String, dynamic> recipeData) async {
+    // Parse duration if it exists and is a string
+    final processedData = Map<String, dynamic>.from(recipeData);
+    if (processedData.containsKey('duration') && processedData['duration'] is String) {
+      processedData['duration'] = _parseDurationToInt(processedData['duration'] as String);
+    }
+
     return _requestWithRetry(
       request: () async {
-        final response = await _dio.put('/recipe/$id', data: recipeData);
+        final response = await _dio.put('/recipe/$id', data: processedData);
         if (response.statusCode != 200) {
           throw Exception('Failed to update recipe data: ${response.statusCode}');
         }

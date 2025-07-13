@@ -57,6 +57,9 @@ List<Recipe> recipesReducer(List<Recipe> recipes, dynamic action) {
       }
       return recipe;
     }).toList();
+  } else if (action is RecipeDeletedAction) {
+    // Remove the deleted recipe from the list
+    return recipes.where((recipe) => recipe.uuid != action.recipeId).toList();
   }
   return recipes;
 }
@@ -155,6 +158,9 @@ List<Recipe> favoriteRecipesReducer(List<Recipe> favoriteRecipes, dynamic action
       // Remove from favorites
       return favoriteRecipes.where((recipe) => recipe.uuid != action.recipeId).toList();
     }
+  } else if (action is RecipeDeletedAction) {
+    // Remove the deleted recipe from favorites if it was there
+    return favoriteRecipes.where((recipe) => recipe.uuid != action.recipeId).toList();
   }
   return favoriteRecipes;
 }
