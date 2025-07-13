@@ -16,7 +16,7 @@ A comprehensive REST API for the Flutter Recipe App, providing endpoints for man
 
 - **Runtime**: Node.js
 - **Framework**: Express.js
-- **Database**: SQLite3
+- **Database**: Supabase
 - **Authentication**: JWT (JSON Web Tokens)
 - **Validation**: Express Validator
 - **Documentation**: Swagger/OpenAPI 3.0
