@@ -9,7 +9,7 @@ void main() async {
   try {
     final authService = AuthService(initializeUser: false);
     print('[DEBUG_LOG] Attempting to login with user1/user1');
-    final user = await authService.login('user1', 'user1');
+    final user = await authService.login('user1', 'password123');
     print('[DEBUG_LOG] Login successful: ${user.login}');
   } catch (e) {
     print('[DEBUG_LOG] Login failed with exception: $e');

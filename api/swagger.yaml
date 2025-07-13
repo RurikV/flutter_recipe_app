@@ -4,7 +4,7 @@ info:
   description: Food API
   version: 0.2.0
 servers:
-  - url: https://foodapi.vercel.app
+  - url: https://foodapi-otus.vercel.app
   - url: http://localhost:3000
 paths:
   /recipe:

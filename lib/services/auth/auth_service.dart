@@ -160,8 +160,27 @@ Technical details: ${e.message ?? 'No additional error details available'}
 
       if (e.response != null && e.response?.statusCode == 409) {
         throw Exception('User already exists');
+      } else if (e.response != null && e.response?.statusCode == 500) {
+        // Handle 500 Internal Server Error specifically
+        String errorMessage = 'Registration failed due to server error. ';
+        if (baseUrl.contains('vercel.app')) {
+          errorMessage += 'The production server is experiencing database issues. Please try again later or contact support.';
+        } else {
+          errorMessage += 'Please check server logs and try again.';
+        }
+        throw Exception(errorMessage);
       } else if (e.response != null) {
-        throw Exception('Registration failed: ${e.response?.data['message'] ?? e.message}');
+        // Handle other HTTP errors
+        final errorData = e.response?.data;
+        String errorMessage = 'Registration failed';
+
+        if (errorData is Map && errorData.containsKey('error')) {
+          errorMessage += ': ${errorData['error']}';
+        } else if (e.message != null && e.message!.isNotEmpty) {
+          errorMessage += ': ${e.message}';
+        }
+
+        throw Exception(errorMessage);
       } else {
         throw _handleWebError(e, 'Registration');
       }

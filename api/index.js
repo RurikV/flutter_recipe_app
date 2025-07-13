@@ -93,12 +93,15 @@ app.use((req, res) => {
 
 // For Vercel serverless deployment, we export the app instead of calling listen()
 // The server will be started automatically by Vercel
-if (process.env.NODE_ENV !== 'production') {
-  // Only start the server in development mode
+// Only start the server if we're not running under Vercel (dev or production)
+if (!process.env.VERCEL && !process.env.VERCEL_ENV && !process.env.NOW_REGION && process.env.NODE_ENV !== 'vercel') {
+  // Only start the server when running locally (not under Vercel)
   app.listen(PORT, () => {
     console.log(`Food API Server running on port ${PORT}`);
     console.log(`Documentation available at http://localhost:${PORT}/api-docs`);
   });
+} else {
+  console.log('Running under Vercel - server will be started automatically');
 }
 
 module.exports = app;

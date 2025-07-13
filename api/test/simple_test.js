@@ -1,3 +1,4 @@
+require('dotenv').config();
 console.log('Starting simple API test...');
 
 try {
@@ -26,7 +27,7 @@ try {
     console.log('1. The API is ready for deployment to Vercel');
     console.log('2. Set environment variables in Vercel dashboard');
     console.log('3. Deploy using: vercel --prod');
-    console.log('4. The API will be available at: https://foodapi.vercel.app');
+    console.log('4. The API will be available at: https://foodapi-otus.vercel.app');
 
     process.exit(0);
   }).catch(err => {

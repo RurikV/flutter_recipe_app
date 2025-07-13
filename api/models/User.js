@@ -16,80 +16,109 @@ class User {
 
   // Create a new user
   static async create(userData) {
-    const db = getDb();
+    const supabase = getDb();
     const { login, password, avatar = '' } = userData;
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    return new Promise((resolve, reject) => {
-      const sql = 'INSERT INTO users (login, password, avatar) VALUES (?, ?, ?)';
-      db.run(sql, [login, hashedPassword, avatar], function(err) {
-        if (err) {
-          if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-            reject(new Error('User already exists'));
-          } else {
-            reject(err);
-          }
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .insert([{ login, password: hashedPassword, avatar }])
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === '23505') { // PostgreSQL unique constraint violation
+          throw new Error('User already exists');
         } else {
-          resolve(new User({
-            id: this.lastID,
-            login,
-            password: hashedPassword,
-            avatar
-          }));
+          throw error;
         }
-      });
-    });
+      }
+
+      return new User(data);
+    } catch (error) {
+      throw error;
+    }
   }
 
   // Find user by login
   static async findByLogin(login) {
-    const db = getDb();
-    return new Promise((resolve, reject) => {
-      const sql = 'SELECT * FROM users WHERE login = ?';
-      db.get(sql, [login], (err, row) => {
-        if (err) {
-          reject(err);
-        } else if (row) {
-          resolve(new User(row));
-        } else {
-          resolve(null);
+    const supabase = getDb();
+
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('login', login)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') { // No rows returned
+          return null;
         }
-      });
-    });
+        throw error;
+      }
+
+      return new User(data);
+    } catch (error) {
+      throw error;
+    }
   }
 
   // Find user by ID
   static async findById(id) {
-    const db = getDb();
-    return new Promise((resolve, reject) => {
-      const sql = `
-        SELECT u.*, 
-               GROUP_CONCAT(DISTINCT f.recipe_id) as favorite_recipe_ids,
-               GROUP_CONCAT(DISTINCT fr.id) as freezer_ids,
-               GROUP_CONCAT(DISTINCT c.id) as comment_ids
-        FROM users u
-        LEFT JOIN favorites f ON u.id = f.user_id
-        LEFT JOIN freezer fr ON u.id = fr.user_id
-        LEFT JOIN comments c ON u.id = c.user_id
-        WHERE u.id = ?
-        GROUP BY u.id
-      `;
-      db.get(sql, [id], (err, row) => {
-        if (err) {
-          reject(err);
-        } else if (row) {
-          const user = new User(row);
-          user.favoriteRecipes = row.favorite_recipe_ids ? row.favorite_recipe_ids.split(',').map(id => ({ id: parseInt(id) })) : [];
-          user.userFreezer = row.freezer_ids ? row.freezer_ids.split(',').map(id => ({ id: parseInt(id) })) : [];
-          user.comments = row.comment_ids ? row.comment_ids.split(',').map(id => ({ id: parseInt(id) })) : [];
-          resolve(user);
-        } else {
-          resolve(null);
+    const supabase = getDb();
+
+    try {
+      // Get user data
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (userError) {
+        if (userError.code === 'PGRST116') { // No rows returned
+          return null;
         }
-      });
-    });
+        throw userError;
+      }
+
+      const user = new User(userData);
+
+      // Get favorite recipes
+      const { data: favorites, error: favError } = await supabase
+        .from('favorites')
+        .select('recipe_id')
+        .eq('user_id', id);
+
+      if (favError) throw favError;
+      user.favoriteRecipes = favorites.map(f => ({ id: f.recipe_id }));
+
+      // Get freezer items
+      const { data: freezer, error: freezerError } = await supabase
+        .from('freezer')
+        .select('id')
+        .eq('user_id', id);
+
+      if (freezerError) throw freezerError;
+      user.userFreezer = freezer.map(f => ({ id: f.id }));
+
+      // Get comments
+      const { data: comments, error: commentsError } = await supabase
+        .from('comments')
+        .select('id')
+        .eq('user_id', id);
+
+      if (commentsError) throw commentsError;
+      user.comments = comments.map(c => ({ id: c.id }));
+
+      return user;
+    } catch (error) {
+      throw error;
+    }
   }
 
   // Authenticate user
@@ -120,17 +149,20 @@ class User {
 
   // Update user token
   async updateToken(token) {
-    const db = getDb();
-    return new Promise((resolve, reject) => {
-      const sql = 'UPDATE users SET token = ? WHERE id = ?';
-      db.run(sql, [token, this.id], (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
+    const supabase = getDb();
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ token })
+        .eq('id', this.id);
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      throw error;
+    }
   }
 
   // Convert to JSON (excluding sensitive data)
