@@ -1,10 +1,10 @@
-import '../lib/data/models/recipe.dart';
-import '../lib/data/models/ingredient.dart';
-import '../lib/data/models/recipe_step.dart';
+import 'package:recipe_master/data/models/recipe.dart';
+import 'package:recipe_master/data/models/ingredient.dart';
+import 'package:recipe_master/data/models/recipe_step.dart';
 
 void main() async {
   print('🧪 Testing Database Save Fix...\n');
-  
+
   // Create a test recipe with ingredients and steps
   final testRecipe = Recipe(
     uuid: 'test-uuid-123',
@@ -43,13 +43,13 @@ void main() async {
     isFavorite: false,
     comments: [],
   );
-  
+
   print('✅ Test recipe created successfully:');
   print('- Name: ${testRecipe.name}');
   print('- UUID: ${testRecipe.uuid}');
   print('- Ingredients count: ${testRecipe.ingredients.length}');
   print('- Steps count: ${testRecipe.steps.length}');
-  
+
   // Test Recipe.fromJson with API response structure (similar to the logs)
   final apiResponse = {
     'id': 3,
@@ -97,16 +97,16 @@ void main() async {
       }
     ]
   };
-  
+
   print('\n🔄 Testing Recipe.fromJson with API response...');
   final parsedRecipe = Recipe.fromJson(apiResponse);
-  
+
   print('✅ Recipe parsed successfully from API response:');
   print('- Name: ${parsedRecipe.name}');
   print('- UUID: ${parsedRecipe.uuid}');
   print('- Ingredients count: ${parsedRecipe.ingredients.length}');
   print('- Steps count: ${parsedRecipe.steps.length}');
-  
+
   if (parsedRecipe.ingredients.isNotEmpty) {
     print('\n📋 Parsed ingredients:');
     for (int i = 0; i < parsedRecipe.ingredients.length; i++) {
@@ -114,7 +114,7 @@ void main() async {
       print('  ${i + 1}. ${ingredient.name} - ${ingredient.quantity} ${ingredient.unit}');
     }
   }
-  
+
   if (parsedRecipe.steps.isNotEmpty) {
     print('\n📝 Parsed steps:');
     for (int i = 0; i < parsedRecipe.steps.length; i++) {
@@ -122,7 +122,7 @@ void main() async {
       print('  ${i + 1}. ${step.name} (${step.duration} min)');
     }
   }
-  
+
   print('\n🎉 Database fix test completed successfully!');
   print('The fix should prevent UNIQUE constraint errors by using UPDATE instead of INSERT for existing recipes.');
 }

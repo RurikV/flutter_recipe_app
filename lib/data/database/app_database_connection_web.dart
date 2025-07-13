@@ -1,10 +1,14 @@
 import 'package:drift/drift.dart';
-import 'package:drift/web.dart';
+import 'package:drift/wasm.dart';
 
-// Web-specific database connection using SQL.js
+// Web-specific database connection using WASM
 QueryExecutor createConnection() {
   return LazyDatabase(() async {
-    // Use SQL.js which is configured in index.html
-    return WebDatabase('recipes_db');
+    // Use WASM database which is more efficient than SQL.js
+    return WasmDatabase.open(
+      databaseName: 'recipes_db',
+      sqlite3Uri: Uri.parse('sqlite3.wasm'),
+      driftWorkerUri: Uri.parse('drift_worker.dart.js'),
+    );
   });
 }

@@ -214,10 +214,9 @@ void main() {
             body: Column(
               children: [
                 // Import the IngredientsTable widget
-                Container(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                       const Padding(
                         padding: EdgeInsets.fromLTRB(16, 24, 16, 0),
                         child: Text(
@@ -281,7 +280,6 @@ void main() {
                         ),
                       ),
                     ],
-                  ),
                 ),
               ],
             ),
