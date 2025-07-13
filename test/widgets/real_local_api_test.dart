@@ -64,18 +64,18 @@ class RealLocalApiMockRecipeManager implements RecipeManager {
 
     // Parse using Recipe.fromJson to simulate real data flow
     final recipe = Recipe.fromJson(realLocalApiResponse);
-    
+
     print('[DEBUG_LOG] Parsed real API recipe ingredients count: ${recipe.ingredients.length}');
     print('[DEBUG_LOG] Parsed real API recipe steps count: ${recipe.steps.length}');
-    
+
     if (recipe.ingredients.isNotEmpty) {
       print('[DEBUG_LOG] First ingredient: ${recipe.ingredients[0].name} - ${recipe.ingredients[0].quantity} ${recipe.ingredients[0].unit}');
     }
-    
+
     if (recipe.steps.isNotEmpty) {
       print('[DEBUG_LOG] First step: ${recipe.steps[0].name} (${recipe.steps[0].duration} min)');
     }
-    
+
     return recipe;
   }
 
@@ -108,6 +108,11 @@ class RealLocalApiMockRecipeManager implements RecipeManager {
   Future<bool> updateStepStatus(String recipeId, int stepIndex, bool isCompleted) async {
     return true;
   }
+
+  @override
+  Future<bool> deleteRecipe(String recipeId) async {
+    return true;
+  }
 }
 
 // Mock ObjectDetectionService
@@ -134,7 +139,7 @@ void main() {
   group('Real Local API Integration Tests', () {
     testWidgets('RecipeDetailScreen should display real local API data correctly', (WidgetTester tester) async {
       print('[DEBUG_LOG] Starting test with REAL local API data structure');
-      
+
       // Create a basic recipe that will be enhanced by the real API data
       final initialRecipe = Recipe(
         uuid: '8',
@@ -205,7 +210,7 @@ void main() {
 
     testWidgets('Recipe.fromJson should parse real local API response correctly', (WidgetTester tester) async {
       print('[DEBUG_LOG] Testing Recipe.fromJson with REAL local API response');
-      
+
       // Use the exact real API response structure
       final realApiResponse = {
         "id": 8,
@@ -264,7 +269,7 @@ void main() {
 
     testWidgets('IngredientsTable should display real API ingredient correctly', (WidgetTester tester) async {
       print('[DEBUG_LOG] Testing IngredientsTable with real API ingredient');
-      
+
       // Create the exact ingredient from real API
       final realApiResponse = {
         "id": 8,
@@ -303,10 +308,10 @@ void main() {
       await tester.pumpAndSettle();
 
       print('[DEBUG_LOG] Checking IngredientsTable with real API data');
-      
+
       // Verify ingredients header
       expect(find.text('Ингредиенты'), findsOneWidget);
-      
+
       // Verify real API ingredient is displayed
       expect(find.text('Сливочный сыр'), findsOneWidget);
       expect(find.text('1 ст. ложка'), findsOneWidget);
@@ -316,7 +321,7 @@ void main() {
 
     testWidgets('RecipeStepsList should display real API step correctly', (WidgetTester tester) async {
       print('[DEBUG_LOG] Testing RecipeStepsList with real API step');
-      
+
       // Create the exact step from real API
       final realApiResponse = {
         "id": 8,
@@ -356,7 +361,7 @@ void main() {
       await tester.pumpAndSettle();
 
       print('[DEBUG_LOG] Checking RecipeStepsList with real API data');
-      
+
       // Verify real API step is displayed
       expect(find.textContaining('111'), findsOneWidget);
 

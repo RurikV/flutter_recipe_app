@@ -405,7 +405,7 @@ Technical details: ${e.message}
     await _requestWithRetry(
       request: () async {
         final response = await _dio.delete('/recipe/$id');
-        if (response.statusCode != 204) {
+        if (response.statusCode != 200) {
           throw Exception('Failed to delete recipe: ${response.statusCode}');
         }
       },

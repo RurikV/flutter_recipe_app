@@ -108,6 +108,11 @@ class MockRecipeManager implements RecipeManager {
   Future<bool> updateStepStatus(String recipeId, int stepIndex, bool isCompleted) async {
     return true;
   }
+
+  @override
+  Future<bool> deleteRecipe(String recipeId) async {
+    return true;
+  }
 }
 
 // Mock ObjectDetectionService
