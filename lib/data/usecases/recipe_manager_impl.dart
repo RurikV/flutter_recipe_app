@@ -1,9 +1,9 @@
-import '../../domain/usecases/recipe_manager.dart';
-import '../../models/recipe.dart';
-import '../../models/ingredient.dart';
-import '../../models/recipe_step.dart';
-import '../../models/comment.dart';
-import '../../domain/repositories/recipe_repository.dart';
+import 'recipe_manager.dart';
+import '../models/recipe.dart';
+import '../models/comment.dart';
+import '../models/ingredient.dart';
+import '../models/recipe_step.dart';
+import '../repositories/recipe_repository.dart';
 
 /// Implementation of the RecipeManager interface
 class RecipeManagerImpl implements RecipeManager {
@@ -74,7 +74,7 @@ class RecipeManagerImpl implements RecipeManager {
   @override
   Future<List<Recipe>> getRecipes() async {
     try {
-      // Use the repository to get recipes
+      // Use the repository to get recipes (now returns domain entities)
       return await _recipeRepository.getRecipes();
     } catch (e) {
       print('Error in getRecipes: $e');
@@ -92,6 +92,57 @@ class RecipeManagerImpl implements RecipeManager {
       print('Error in getFavoriteRecipes: $e');
       // Rethrow the error instead of falling back to dummy recipes
       throw Exception('Failed to get favorite recipes: $e');
+    }
+  }
+
+  @override
+  Future<Recipe?> getRecipeByUuid(String uuid) async {
+    print('[DEBUG_LOG] RecipeManagerImpl: getRecipeByUuid called with UUID: $uuid');
+
+    try {
+      print('[DEBUG_LOG] RecipeManagerImpl: Calling repository.getRecipeByUuid($uuid)');
+
+      // Use the repository to get detailed recipe information
+      final recipe = await _recipeRepository.getRecipeByUuid(uuid);
+
+      if (recipe != null) {
+        print('[DEBUG_LOG] RecipeManagerImpl: Repository returned recipe:');
+        print('[DEBUG_LOG] - UUID: ${recipe.uuid}');
+        print('[DEBUG_LOG] - Name: ${recipe.name}');
+        print('[DEBUG_LOG] - Duration: ${recipe.duration}');
+        print('[DEBUG_LOG] - Ingredients count: ${recipe.ingredients.length}');
+        print('[DEBUG_LOG] - Steps count: ${recipe.steps.length}');
+
+        if (recipe.ingredients.isNotEmpty) {
+          print('[DEBUG_LOG] RecipeManagerImpl: Ingredients from repository:');
+          for (int i = 0; i < recipe.ingredients.length; i++) {
+            final ingredient = recipe.ingredients[i];
+            print('[DEBUG_LOG]   ${i + 1}. ${ingredient.name} - ${ingredient.quantity} ${ingredient.unit}');
+          }
+        } else {
+          print('[DEBUG_LOG] RecipeManagerImpl: ⚠️ Repository returned recipe with NO INGREDIENTS!');
+        }
+
+        if (recipe.steps.isNotEmpty) {
+          print('[DEBUG_LOG] RecipeManagerImpl: Steps from repository:');
+          for (int i = 0; i < recipe.steps.length; i++) {
+            final step = recipe.steps[i];
+            print('[DEBUG_LOG]   ${i + 1}. ${step.name} (${step.duration} min)');
+          }
+        } else {
+          print('[DEBUG_LOG] RecipeManagerImpl: ⚠️ Repository returned recipe with NO STEPS!');
+        }
+
+        return recipe;
+      } else {
+        print('[DEBUG_LOG] RecipeManagerImpl: ❌ Repository returned NULL recipe!');
+        return null;
+      }
+    } catch (e) {
+      print('[DEBUG_LOG] RecipeManagerImpl: ❌ Error in getRecipeByUuid: $e');
+      print('[DEBUG_LOG] RecipeManagerImpl: Error stack trace: ${StackTrace.current}');
+      // Rethrow the error
+      throw Exception('Failed to get recipe by UUID: $e');
     }
   }
 
@@ -171,6 +222,7 @@ class RecipeManagerImpl implements RecipeManager {
         id: recipe.steps[stepIndex].id,
         name: recipe.steps[stepIndex].name,
         duration: recipe.steps[stepIndex].duration,
+        stepLinks: recipe.steps[stepIndex].stepLinks,
         isCompleted: isCompleted,
       );
 
@@ -200,6 +252,18 @@ class RecipeManagerImpl implements RecipeManager {
     }
   }
 
+  @override
+  Future<bool> deleteRecipe(String recipeId) async {
+    try {
+      // Use the repository to delete the recipe
+      await _recipeRepository.deleteRecipe(recipeId);
+      return true;
+    } catch (e) {
+      print('Error in deleteRecipe: $e');
+      return false;
+    }
+  }
+
   // Method to get dummy recipes for testing or initial data
   static List<Recipe> getDummyRecipes() {
     return _dummyRecipes;
@@ -210,11 +274,11 @@ class RecipeManagerImpl implements RecipeManager {
     Recipe(
       uuid: '1',
       name: 'Спагетти Карбонара',
-      images: 'https://images.unsplash.com/photo-1588013273468-315fd88ea34c', // Ensure this is a direct image URL
+      images: 'https://images.unsplash.com/photo-1588013273468-315fd88ea34c',
       description: 'Классическое итальянское блюдо из спагетти с соусом на основе яиц, сыра, гуанчиале и черного перца.',
       instructions: '...',
       difficulty: 2,
-      duration: '30 минут', // Added duration
+      duration: '30 минут',
       rating: 5,
       tags: ['Итальянская кухня', 'Паста', 'Ужин'],
       ingredients: [
@@ -226,37 +290,33 @@ class RecipeManagerImpl implements RecipeManager {
         Ingredient.simple(name: 'Соль', quantity: '1', unit: 'по вкусу'),
       ],
       steps: [
-        RecipeStep(
-          id: 1,
-          name: 'Отварите спагетти в подсоленной воде до состояния аль денте.',
-          duration: 10,
+        RecipeStep.simple(
+          description: 'Отварите спагетти в подсоленной воде до состояния аль денте.',
+          duration: '10',
         ),
-        RecipeStep(
-          id: 2,
-          name: 'Нарежьте гуанчиале небольшими кубиками и обжарьте на сковороде до золотистого цвета.',
-          duration: 5,
+        RecipeStep.simple(
+          description: 'Нарежьте гуанчиале небольшими кубиками и обжарьте на сковороде до золотистого цвета.',
+          duration: '5',
         ),
-        RecipeStep(
-          id: 3,
-          name: 'Смешайте яйца, тертый пармезан и черный перец в миске.',
-          duration: 3,
+        RecipeStep.simple(
+          description: 'Смешайте яйца, тертый пармезан и черный перец в миске.',
+          duration: '3',
         ),
-        RecipeStep(
-          id: 4,
-          name: 'Добавьте горячие спагетти к гуанчиале, перемешайте и снимите с огня.',
-          duration: 2,
+        RecipeStep.simple(
+          description: 'Добавьте горячие спагетти к гуанчиале, перемешайте и снимите с огня.',
+          duration: '2',
         ),
-        RecipeStep(
-          id: 5,
-          name: 'Влейте яичную смесь и быстро перемешайте, чтобы получился кремовый соус.',
-          duration: 1,
+        RecipeStep.simple(
+          description: 'Влейте яичную смесь и быстро перемешайте, чтобы получился кремовый соус.',
+          duration: '1',
         ),
-        RecipeStep(
-          id: 6,
-          name: 'Подавайте сразу же, посыпав дополнительным пармезаном и черным перцем.',
-          duration: 1,
+        RecipeStep.simple(
+          description: 'Подавайте сразу же, посыпав дополнительным пармезаном и черным перцем.',
+          duration: '1',
         ),
       ],
+      isFavorite: false,
+      comments: [],
     ),
     Recipe(
       uuid: '2',
@@ -265,9 +325,13 @@ class RecipeManagerImpl implements RecipeManager {
       description: 'Традиционный восточноевропейский суп на основе свеклы, который придает ему характерный красный цвет.',
       instructions: '...',
       difficulty: 3,
-      duration: '1 час 15 минут', // Added duration
+      duration: '1 час 15 минут',
       rating: 5,
       tags: ['Русская кухня', 'Суп', 'Обед'],
+      ingredients: [],
+      steps: [],
+      isFavorite: false,
+      comments: [],
     ),
     Recipe(
       uuid: '3',
@@ -276,9 +340,13 @@ class RecipeManagerImpl implements RecipeManager {
       description: 'Свежий салат из помидоров, огурцов, болгарского перца, красного лука, оливок и сыра фета с оливковым маслом.',
       instructions: '...',
       difficulty: 1,
-      duration: '15 минут', // Added duration
+      duration: '15 минут',
       rating: 4,
       tags: ['Греческая кухня', 'Салат', 'Вегетарианское'],
+      ingredients: [],
+      steps: [],
+      isFavorite: false,
+      comments: [],
     ),
     Recipe(
       uuid: '4',
@@ -287,9 +355,13 @@ class RecipeManagerImpl implements RecipeManager {
       description: 'Популярные роллы с лососем, сливочным сыром, авокадо и огурцом.',
       instructions: '...',
       difficulty: 4,
-      duration: '45 минут', // Added duration
+      duration: '45 минут',
       rating: 5,
       tags: ['Японская кухня', 'Суши', 'Рыба'],
+      ingredients: [],
+      steps: [],
+      isFavorite: false,
+      comments: [],
     ),
     Recipe(
       uuid: '5',
@@ -298,9 +370,13 @@ class RecipeManagerImpl implements RecipeManager {
       description: 'Классический итальянский десерт на основе маскарпоне, кофе и печенья савоярди.',
       instructions: '...',
       difficulty: 3,
-      duration: '30 минут', // Added duration
+      duration: '30 минут',
       rating: 5,
       tags: ['Итальянская кухня', 'Десерт', 'Кофе'],
+      ingredients: [],
+      steps: [],
+      isFavorite: false,
+      comments: [],
     ),
   ];
 }

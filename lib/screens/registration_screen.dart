@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:provider/provider.dart';
+import 'package:auto_route/auto_route.dart';
 import '../redux/app_state.dart';
 import '../redux/actions.dart';
 import '../services/auth/auth_service.dart';
 import '../widgets/navigation/auth_bottom_navigation_bar.dart';
-import 'home_screen.dart';
+import '../routing/app_router.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -59,10 +60,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           .dispatch(RegisterSuccessAction(user));
 
       // Navigate to home screen
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      context.router.navigate(const HomeRoute());
     } catch (e) {
+      print('[DEBUG_LOG] Registration error occurred: $e');
+      print('[DEBUG_LOG] Exception type: ${e.runtimeType}');
       setState(() {
         _errorMessage = e.toString();
       });
@@ -76,7 +77,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   void _navigateToLogin() {
-    Navigator.of(context).pop();
+    context.router.maybePop();
   }
 
   @override

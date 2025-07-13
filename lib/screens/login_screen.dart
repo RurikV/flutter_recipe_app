@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:provider/provider.dart';
+import 'package:auto_route/auto_route.dart';
 import '../redux/app_state.dart';
 import '../redux/actions.dart';
 import '../services/auth/auth_service.dart';
 import '../widgets/navigation/auth_bottom_navigation_bar.dart';
-import 'registration_screen.dart';
-import 'home_screen.dart';
+import '../routing/app_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -48,10 +48,11 @@ class _LoginScreenState extends State<LoginScreen> {
           .dispatch(LoginSuccessAction(user));
 
       // Navigate to home screen
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      context.router.navigate(const HomeRoute());
     } catch (e) {
+      // Log the exception to console as requested
+      print('[DEBUG_LOG] Login exception occurred: $e');
+      print('[DEBUG_LOG] Exception type: ${e.runtimeType}');
       setState(() {
         _errorMessage = e.toString();
       });
@@ -65,9 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _navigateToRegistration() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const RegistrationScreen()),
-    );
+    context.router.push(const RegistrationRoute());
   }
 
   @override

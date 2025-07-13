@@ -6,8 +6,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
-import '../../models/recipe_image.dart' as model;
+import '../../../data/models/recipe_image.dart' as model;
 import 'object_detection_service.dart';
+import 'food_labels.dart';
 
 // Mock implementation of initTfliteFlutterPlugin for now
 Future<void> initTfliteFlutterPlugin() async {
@@ -57,7 +58,6 @@ class IsolateMessage {
 /// Implementation of the object detection service using an isolate
 class IsolateObjectDetectionService implements ObjectDetectionService {
   static const String _modelPath = 'assets/models/ssd_mobilenet.tflite';
-  static const String _labelsPath = 'assets/models/ssd_mobilenet_labels.txt';
 
   Isolate? _isolate;
   ReceivePort? _receivePort;
@@ -77,11 +77,11 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
     }
   }
 
-  // Load the labels from the assets
+  // Load the labels from the centralized food labels
   Future<List<String>> _loadLabels() async {
     try {
-      final labelsData = await rootBundle.loadString(_labelsPath);
-      return labelsData.split('\n');
+      // Use centralized food-focused labels instead of external file
+      return FoodLabels.labels;
     } catch (e) {
       debugPrint('Error loading labels: $e');
       return [];
@@ -254,7 +254,6 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
       _detectCompleters[requestId] = completer;
 
       // Check if the path is a URL or a local file
-      Uint8List imageBytes;
       if (image.path.startsWith('http://') || image.path.startsWith('https://')) {
         // For URLs, we can't use File directly
         debugPrint('Image path is a URL, skipping object detection: ${image.path}');
@@ -262,21 +261,19 @@ class IsolateObjectDetectionService implements ObjectDetectionService {
         // In a real implementation, you would download the image first
         return [];
       } else {
-        // For local files, use File
+        // For local files, verify file exists
         final File imageFile = File(image.path);
         if (!await imageFile.exists()) {
           throw Exception('Image file does not exist: ${image.path}');
         }
-        // Read the image bytes
-        imageBytes = await imageFile.readAsBytes();
       }
 
-      // Send the detection message to the isolate
+      // Send the detection message to the isolate with file path instead of bytes
       final message = IsolateMessage(
         IsolateMessageType.detect,
         {
           'requestId': requestId,
-          'imageBytes': imageBytes,
+          'imagePath': image.path,
         },
       );
 
@@ -362,7 +359,16 @@ Future<void> _handleInitializeMessage(IsolateMessage message, SendPort sendPort)
 
     // Initialize TensorFlow Lite interpreter
     // (This is a placeholder - actual implementation would use TFLite)
+    // In a real implementation, modelData and labels would be used here:
+    // interpreter = Interpreter.fromBuffer(modelData);
+    // _labels = labels;
     await Future.delayed(const Duration(milliseconds: 100)); // Simulate initialization
+
+    // Suppress unused variable warnings for placeholder implementation
+    // ignore: unused_local_variable
+    modelData;
+    // ignore: unused_local_variable
+    labels;
 
     // Send success message back to main thread
     final resultMessage = IsolateMessage(
@@ -380,11 +386,16 @@ Future<void> _handleDetectMessage(IsolateMessage message, SendPort sendPort) asy
   final String requestId = message.data['requestId'];
 
   try {
-    // Extract image data
-    final dynamic imageBytesRaw = message.data['imageBytes'];
-    final Uint8List imageBytes = imageBytesRaw is Uint8List
-        ? imageBytesRaw
-        : Uint8List.fromList(List<int>.from(imageBytesRaw));
+    // Extract image path and read file in isolate
+    final String imagePath = message.data['imagePath'];
+    final File imageFile = File(imagePath);
+
+    if (!await imageFile.exists()) {
+      throw Exception('Image file does not exist: $imagePath');
+    }
+
+    // Read the image bytes in the isolate
+    final Uint8List imageBytes = await imageFile.readAsBytes();
 
     // Decode the image
     final img.Image? image = img.decodeImage(imageBytes);

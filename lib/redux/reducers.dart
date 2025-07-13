@@ -1,13 +1,13 @@
-import 'package:flutter_recipe_app/models/recipe.dart';
-import 'package:flutter_recipe_app/models/user.dart';
-import 'package:flutter_recipe_app/redux/app_state.dart';
-import 'package:flutter_recipe_app/redux/actions.dart';
+import 'package:recipe_master/data/models/recipe.dart';
+import 'package:recipe_master/data/models/user.dart';
+import 'package:recipe_master/redux/app_state.dart';
+import 'package:recipe_master/redux/actions.dart';
 
 // Main reducer that combines all reducers
 AppState appReducer(AppState state, dynamic action) {
   return AppState(
     recipes: recipesReducer(state.recipes, action),
-    favoriteRecipes: favoriteRecipesReducer(state.favoriteRecipes, action),
+    favoriteRecipes: favoriteRecipesReducer(state.favoriteRecipes, action, state.recipes),
     isLoading: loadingReducer(state.isLoading, action),
     error: errorReducer(state.error, action),
     user: authUserReducer(state.user, action),
@@ -18,7 +18,7 @@ AppState appReducer(AppState state, dynamic action) {
 // Recipes reducer
 List<Recipe> recipesReducer(List<Recipe> recipes, dynamic action) {
   if (action is RecipesLoadedAction) {
-    return action.recipes.cast<Recipe>();
+    return action.recipes;
   } else if (action is ToggleFavoriteAction) {
     return recipes.map((recipe) {
       if (recipe.uuid == action.recipeId) {
@@ -57,30 +57,54 @@ List<Recipe> recipesReducer(List<Recipe> recipes, dynamic action) {
       }
       return recipe;
     }).toList();
+  } else if (action is RecipeDeletedAction) {
+    // Remove the deleted recipe from the list
+    return recipes.where((recipe) => recipe.uuid != action.recipeId).toList();
   }
   return recipes;
 }
 
 // Favorite recipes reducer
-List<Recipe> favoriteRecipesReducer(List<Recipe> favoriteRecipes, dynamic action) {
+List<Recipe> favoriteRecipesReducer(List<Recipe> favoriteRecipes, dynamic action, [List<Recipe>? allRecipes]) {
   if (action is FavoriteRecipesLoadedAction) {
-    return action.favoriteRecipes.cast<Recipe>();
+    return action.favoriteRecipes;
   } else if (action is ToggleFavoriteAction) {
-    // Find the recipe in the recipes list
-    final recipe = favoriteRecipes.firstWhere(
-      (r) => r.uuid == action.recipeId,
-      orElse: () => Recipe(
-        uuid: action.recipeId,
-        name: '',
-        description: '',
-        instructions: '',
-        difficulty: 0,
-        duration: '',
-        rating: 0,
-        tags: [],
-        isFavorite: false,
-      ),
-    );
+    // Find the recipe in the main recipes list first, then fallback to favorites
+    Recipe? recipe;
+    if (allRecipes != null) {
+      recipe = allRecipes.firstWhere(
+        (r) => r.uuid == action.recipeId,
+        orElse: () => favoriteRecipes.firstWhere(
+          (r) => r.uuid == action.recipeId,
+          orElse: () => Recipe(
+            uuid: action.recipeId,
+            name: '',
+            description: '',
+            instructions: '',
+            difficulty: 0,
+            duration: '',
+            rating: 0,
+            tags: [],
+            isFavorite: false,
+          ),
+        ),
+      );
+    } else {
+      recipe = favoriteRecipes.firstWhere(
+        (r) => r.uuid == action.recipeId,
+        orElse: () => Recipe(
+          uuid: action.recipeId,
+          name: '',
+          description: '',
+          instructions: '',
+          difficulty: 0,
+          duration: '',
+          rating: 0,
+          tags: [],
+          isFavorite: false,
+        ),
+      );
+    }
 
     // If the recipe is already in favorites, remove it
     if (favoriteRecipes.any((r) => r.uuid == action.recipeId)) {
@@ -92,20 +116,41 @@ List<Recipe> favoriteRecipesReducer(List<Recipe> favoriteRecipes, dynamic action
   } else if (action is FavoriteToggledAction) {
     if (action.isFavorite) {
       // Add to favorites if not already there
-      final recipe = favoriteRecipes.firstWhere(
-        (r) => r.uuid == action.recipeId,
-        orElse: () => Recipe(
-          uuid: action.recipeId,
-          name: '',
-          description: '',
-          instructions: '',
-          difficulty: 0,
-          duration: '',
-          rating: 0,
-          tags: [],
-          isFavorite: true,
-        ),
-      );
+      Recipe? recipe;
+      if (allRecipes != null) {
+        recipe = allRecipes.firstWhere(
+          (r) => r.uuid == action.recipeId,
+          orElse: () => favoriteRecipes.firstWhere(
+            (r) => r.uuid == action.recipeId,
+            orElse: () => Recipe(
+              uuid: action.recipeId,
+              name: '',
+              description: '',
+              instructions: '',
+              difficulty: 0,
+              duration: '',
+              rating: 0,
+              tags: [],
+              isFavorite: true,
+            ),
+          ),
+        );
+      } else {
+        recipe = favoriteRecipes.firstWhere(
+          (r) => r.uuid == action.recipeId,
+          orElse: () => Recipe(
+            uuid: action.recipeId,
+            name: '',
+            description: '',
+            instructions: '',
+            difficulty: 0,
+            duration: '',
+            rating: 0,
+            tags: [],
+            isFavorite: true,
+          ),
+        );
+      }
       if (!favoriteRecipes.any((r) => r.uuid == action.recipeId)) {
         return [...favoriteRecipes, recipe.copyWith(isFavorite: true)];
       }
@@ -113,6 +158,9 @@ List<Recipe> favoriteRecipesReducer(List<Recipe> favoriteRecipes, dynamic action
       // Remove from favorites
       return favoriteRecipes.where((recipe) => recipe.uuid != action.recipeId).toList();
     }
+  } else if (action is RecipeDeletedAction) {
+    // Remove the deleted recipe from favorites if it was there
+    return favoriteRecipes.where((recipe) => recipe.uuid != action.recipeId).toList();
   }
   return favoriteRecipes;
 }

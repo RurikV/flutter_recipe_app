@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../models/recipe_image.dart' as model;
+import '../../../data/models/recipe_image.dart' as model;
 import 'object_detection_service.dart';
 
 /// Web implementation of the object detection service

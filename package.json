@@ -1,0 +1,17 @@
+{
+  "name": "flutter-recipe-app",
+  "version": "1.0.0",
+  "description": "Flutter Recipe App with Node.js testing utilities",
+  "main": "comprehensive_web_test.js",
+  "scripts": {
+    "test": "node comprehensive_web_test.js"
+  },
+  "keywords": ["flutter", "recipe", "web", "testing"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}

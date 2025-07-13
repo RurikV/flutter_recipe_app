@@ -1,9 +1,9 @@
 import 'package:redux/redux.dart';
-import 'package:flutter_recipe_app/redux/app_state.dart';
-import 'package:flutter_recipe_app/redux/actions.dart';
-import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
-import 'package:flutter_recipe_app/models/comment.dart';
-import 'package:flutter_recipe_app/models/recipe.dart';
+import 'package:recipe_master/redux/app_state.dart';
+import 'package:recipe_master/redux/actions.dart';
+import 'package:recipe_master/data/usecases/recipe_manager.dart';
+import 'package:recipe_master/data/models/comment.dart' as model;
+import 'package:recipe_master/data/models/recipe.dart';
 import 'package:get_it/get_it.dart';
 
 // Helper method to create a default recipe
@@ -29,6 +29,7 @@ List<Middleware<AppState>> createMiddleware() {
   final toggleFavorite = _createToggleFavoriteMiddleware();
   final addComment = _createAddCommentMiddleware();
   final updateStepStatus = _createUpdateStepStatusMiddleware();
+  final deleteRecipe = _createDeleteRecipeMiddleware();
 
   return [
     loadRecipes,
@@ -36,6 +37,7 @@ List<Middleware<AppState>> createMiddleware() {
     toggleFavorite,
     addComment,
     updateStepStatus,
+    deleteRecipe,
   ];
 }
 
@@ -49,6 +51,10 @@ Middleware<AppState> _createLoadRecipesMiddleware() {
         final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
         final recipes = await recipeManager.getRecipes();
         store.dispatch(RecipesLoadedAction(recipes));
+
+        // After recipes are loaded successfully, automatically load favorites
+        // This ensures the cache is populated before getFavoriteRecipes() is called
+        store.dispatch(LoadFavoriteRecipesAction());
       } catch (e) {
         store.dispatch(RecipesLoadErrorAction(e.toString()));
       }
@@ -64,13 +70,6 @@ Middleware<AppState> _createLoadFavoriteRecipesMiddleware() {
     if (action is LoadFavoriteRecipesAction) {
       next(action); // Let the reducer know we're loading
 
-      // Check if user is authenticated
-      if (!store.state.isAuthenticated) {
-        // If not authenticated, return empty list
-        store.dispatch(FavoriteRecipesLoadedAction([]));
-        return;
-      }
-
       try {
         final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
         final favoriteRecipes = await recipeManager.getFavoriteRecipes();
@@ -78,6 +77,9 @@ Middleware<AppState> _createLoadFavoriteRecipesMiddleware() {
       } catch (e) {
         // Handle error if needed
         print('Error loading favorite recipes: $e');
+        // Don't dispatch empty list on error - preserve existing favorites in state
+        // Only dispatch error action to update loading state
+        store.dispatch(RecipesLoadErrorAction('Failed to load favorites: $e'));
       }
     } else {
       next(action);
@@ -91,13 +93,6 @@ Middleware<AppState> _createToggleFavoriteMiddleware() {
     if (action is ToggleFavoriteAction) {
       // Pass the action to the next dispatcher so the reducer can handle it immediately
       next(action);
-
-      // Check if user is authenticated
-      if (!store.state.isAuthenticated) {
-        // If not authenticated, show error or redirect to login
-        // For now, we'll just return without doing anything
-        return;
-      }
 
       // Find the recipe in the state
       final recipe = store.state.recipes.firstWhere(
@@ -128,7 +123,7 @@ Middleware<AppState> _createToggleFavoriteMiddleware() {
 Middleware<AppState> _createAddCommentMiddleware() {
   return (Store<AppState> store, dynamic action, NextDispatcher next) async {
     if (action is AddCommentAction) {
-      final comment = Comment(
+      final comment = model.Comment(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         authorName: 'User', // In a real app, this would be the current user's name
         text: action.commentText,
@@ -166,6 +161,34 @@ Middleware<AppState> _createUpdateStepStatusMiddleware() {
           action.stepIndex,
           action.isCompleted,
         ));
+      }
+    } else {
+      next(action);
+    }
+  };
+}
+
+// Middleware for deleting recipes
+Middleware<AppState> _createDeleteRecipeMiddleware() {
+  return (Store<AppState> store, dynamic action, NextDispatcher next) async {
+    if (action is DeleteRecipeAction) {
+      next(action); // Let the reducer know we're processing
+
+      try {
+        final RecipeManager recipeManager = GetIt.instance.get<RecipeManager>();
+        final success = await recipeManager.deleteRecipe(action.recipeId);
+
+        if (success) {
+          // Dispatch action to update state
+          store.dispatch(RecipeDeletedAction(action.recipeId));
+
+          // Reload recipes to ensure the list is updated
+          store.dispatch(LoadRecipesAction());
+        } else {
+          store.dispatch(RecipeDeleteErrorAction('Failed to delete recipe'));
+        }
+      } catch (e) {
+        store.dispatch(RecipeDeleteErrorAction('Error deleting recipe: $e'));
       }
     } else {
       next(action);

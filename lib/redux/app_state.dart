@@ -1,5 +1,5 @@
-import 'package:flutter_recipe_app/models/recipe.dart';
-import 'package:flutter_recipe_app/models/user.dart';
+import 'package:recipe_master/data/models/recipe.dart';
+import 'package:recipe_master/data/models/user.dart';
 
 class AppState {
   final List<Recipe> recipes;

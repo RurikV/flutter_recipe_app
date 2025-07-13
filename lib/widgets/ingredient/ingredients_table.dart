@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/ingredient.dart';
+import '../../data/models/ingredient.dart';
 
 /// A widget that displays a table of ingredients
 class IngredientsTable extends StatelessWidget {
@@ -12,6 +12,17 @@ class IngredientsTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('[DEBUG_LOG] IngredientsTable: Building widget with ${ingredients.length} ingredients');
+    if (ingredients.isNotEmpty) {
+      print('[DEBUG_LOG] IngredientsTable: Ingredients received:');
+      for (int i = 0; i < ingredients.length; i++) {
+        final ingredient = ingredients[i];
+        print('[DEBUG_LOG]   ${i + 1}. ${ingredient.name} - ${ingredient.quantity} ${ingredient.unit}');
+      }
+    } else {
+      print('[DEBUG_LOG] IngredientsTable: ⚠️ NO INGREDIENTS received!');
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

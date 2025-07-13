@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../../models/recipe_image.dart' as model;
+import '../../../data/models/recipe_image.dart' as model;
 import 'object_detection_service.dart';
 
 /// A mock implementation of the tensor detection service for testing

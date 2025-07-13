@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_recipe_app/domain/entities/ingredient.dart';
-import 'package:flutter_recipe_app/widgets/ingredient/ingredients_table.dart';
+import 'package:recipe_master/data/models/ingredient.dart';
+import 'package:recipe_master/widgets/ingredient/ingredients_table.dart';
 
 void main() {
   group('IngredientsTable Widget Tests', () {
@@ -23,9 +23,9 @@ void main() {
     testWidgets('displays ingredients in a table', (WidgetTester tester) async {
       // Create test ingredients
       final ingredients = [
-        Ingredient(name: 'Flour', quantity: '200', unit: 'g'),
-        Ingredient(name: 'Sugar', quantity: '100', unit: 'g'),
-        Ingredient(name: 'Eggs', quantity: '2', unit: ''),
+        Ingredient.simple(name: 'Flour', quantity: '200', unit: 'g'),
+        Ingredient.simple(name: 'Sugar', quantity: '100', unit: 'g'),
+        Ingredient.simple(name: 'Eggs', quantity: '2', unit: ''),
       ];
 
       // Build the widget with the test ingredients
@@ -39,7 +39,7 @@ void main() {
 
       // Verify that the table is displayed
       expect(find.byType(Table), findsOneWidget);
-      
+
       // Verify that each ingredient is displayed
       for (final ingredient in ingredients) {
         expect(find.text(ingredient.name), findsOneWidget);

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/image_picker/image_service.dart';
-import '../../models/recipe_image.dart';
+import '../../../data/models/recipe_image.dart';
 import 'image_source_dialog.dart';
 
 /// A handler class that manages photo capture and selection operations.

@@ -3,16 +3,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_recipe_app/models/recipe.dart';
-import 'package:flutter_recipe_app/models/ingredient.dart';
-import 'package:flutter_recipe_app/models/recipe_step.dart';
-import 'package:flutter_recipe_app/models/measure_unit.dart';
-import 'package:flutter_recipe_app/screens/recipe_detail_screen.dart';
-import 'package:flutter_recipe_app/redux/app_state.dart';
-import 'package:flutter_recipe_app/redux/store.dart';
-import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
-import 'package:flutter_recipe_app/data/usecases/recipe_manager_impl.dart';
-import 'package:flutter_recipe_app/services/classification/object_detection_service.dart';
+import 'package:recipe_master/data/models/recipe.dart';
+import 'package:recipe_master/data/models/ingredient.dart';
+import 'package:recipe_master/data/models/recipe_step.dart';
+import 'package:recipe_master/data/models/measure_unit.dart';
+import 'package:recipe_master/screens/recipe_detail_screen.dart';
+import 'package:recipe_master/redux/app_state.dart';
+import 'package:recipe_master/redux/store.dart';
+import 'package:recipe_master/data/usecases/recipe_manager.dart';
+import 'package:recipe_master/data/usecases/recipe_manager_impl.dart';
+import 'package:recipe_master/services/classification/object_detection_service.dart';
 import '../service_locator_test.dart' as test_locator;
 
 void main() {
@@ -24,10 +24,13 @@ void main() {
     late RecipeManager recipeManager;
     late ObjectDetectionService objectDetectionService;
 
+    late test_locator.MockRecipeRepository mockRecipeRepository;
+
     setUp(() {
       // Create instance directly
+      mockRecipeRepository = test_locator.MockRecipeRepository();
       recipeManager = RecipeManagerImpl(
-        recipeRepository: test_locator.MockRecipeRepository(),
+        recipeRepository: mockRecipeRepository,
       );
       objectDetectionService = test_locator.MockObjectDetectionService();
     });
@@ -104,6 +107,9 @@ void main() {
       // They would be used in a more complex test that verifies the relationships
       // between recipes, ingredients, and steps
 
+      // Add the recipe to the mock repository so it can be found by getRecipeByUuid
+      mockRecipeRepository.addRecipe(recipe);
+
       // Create a Redux store for testing
       final Store<AppState> store = createStore();
 
@@ -122,6 +128,9 @@ void main() {
           ),
         ),
       );
+
+      // Wait for any loading to complete
+      await tester.pumpAndSettle();
 
       // Verify that the recipe name is displayed
       expect(find.text('Spaghetti Carbonara'), findsOneWidget);

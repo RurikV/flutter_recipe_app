@@ -3,18 +3,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_recipe_app/models/recipe.dart';
-import 'package:flutter_recipe_app/models/recipe_step.dart';
-import 'package:flutter_recipe_app/models/ingredient.dart';
-import 'package:flutter_recipe_app/screens/recipe_list_screen.dart';
-import 'package:flutter_recipe_app/redux/app_state.dart';
-import 'package:flutter_recipe_app/redux/reducers.dart';
-import 'package:flutter_recipe_app/l10n/app_localizations.dart';
-import 'package:flutter_recipe_app/widgets/recipe/duration_display.dart';
-import 'package:flutter_recipe_app/domain/usecases/recipe_manager.dart';
-import 'package:flutter_recipe_app/services/classification/object_detection_service.dart';
+import 'package:recipe_master/data/models/recipe.dart';
+import 'package:recipe_master/data/models/recipe_step.dart';
+import 'package:recipe_master/data/models/ingredient.dart';
+import 'package:recipe_master/screens/recipe_list_screen.dart';
+import 'package:recipe_master/redux/app_state.dart';
+import 'package:recipe_master/redux/reducers.dart';
+import 'package:recipe_master/l10n/app_localizations.dart';
+import 'package:recipe_master/widgets/recipe/duration_display.dart';
+import 'package:recipe_master/data/usecases/recipe_manager.dart';
+import 'package:recipe_master/services/classification/object_detection_service.dart';
 import '../service_locator_test.dart' as test_locator;
-import 'package:flutter_recipe_app/data/usecases/recipe_manager_impl.dart';
+import 'package:recipe_master/data/usecases/recipe_manager_impl.dart';
 
 void main() {
   // Initialize the service locator for tests

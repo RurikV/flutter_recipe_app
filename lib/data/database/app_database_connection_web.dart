@@ -1,10 +1,7 @@
 import 'package:drift/drift.dart';
-import 'package:drift/web.dart';
 
-// Web-specific database connection
+// Stub implementation - SQLite database removed for performance optimization
+// App now uses API with caching instead of local database
 QueryExecutor createConnection() {
-  // The path to the sql.js wasm file is configured in index.html via window.sqliteWasmPath
-  return WebDatabase(
-    'recipes_db',
-  );
+  throw UnsupportedError('Local database has been removed. App now uses API with caching.');
 }
