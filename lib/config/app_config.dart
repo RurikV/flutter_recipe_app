@@ -7,7 +7,7 @@ class AppConfig {
   static String get baseUrl {
     // Production URL (uncomment when deploying to production)
     // return 'https://foodapi.dzolotov.pro';
-     return 'https://foodapi-otus.vercel.app';
+    // return 'https://foodapi-otus.vercel.app';
 
     // Development URLs based on platform:
     if (kIsWeb) {

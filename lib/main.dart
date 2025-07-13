@@ -11,7 +11,6 @@ import 'redux/app_state.dart';
 import 'redux/store.dart';
 import 'redux/actions.dart';
 import 'services/auth/auth_service.dart';
-import 'data/database/app_database.dart';
 import 'services/classification/object_detection_service.dart';
 import 'services/bluetooth_service.dart';
 import 'data/usecases/recipe_manager.dart';
@@ -83,7 +82,6 @@ void main() async {
         ChangeNotifierProvider(create: (context) => LanguageProvider()),
         Provider<Store<AppState>>(create: (context) => store),
         Provider<AuthService>(create: (context) => authService),
-        Provider<AppDatabase>(create: (context) => service_locator.get<AppDatabase>()),
         Provider<ObjectDetectionService>(create: (context) => getIt<ObjectDetectionService>()),
         // Only provide BluetoothService on mobile platforms
         if (defaultTargetPlatform == TargetPlatform.android || 

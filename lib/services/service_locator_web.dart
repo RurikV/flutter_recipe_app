@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'package:get_it/get_it.dart';
-import '../data/database/app_database.dart';
 
 // Use web-specific implementation to avoid ffi on web
+// Local database has been removed for performance optimization.
+// App now uses API with caching instead of local database.
 
 final GetIt serviceLocator = GetIt.instance;
 
 Future<void> initLocator() async {
-  // Register AppDatabase with web-specific implementation
-  // The platform-specific implementation is handled by conditional imports in app_database.dart
-  serviceLocator.registerSingleton<AppDatabase>(AppDatabase());
+  // Database registration removed - app now uses API with caching instead of local database
 }
 
 // Service locator interface methods
