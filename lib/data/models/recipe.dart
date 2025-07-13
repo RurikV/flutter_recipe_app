@@ -77,12 +77,21 @@ class Recipe {
   }
 
   factory Recipe.fromJson(Map<String, dynamic> json) {
+    print('[DEBUG_LOG] Recipe.fromJson: Starting to parse recipe JSON');
+    print('[DEBUG_LOG] Recipe.fromJson: JSON keys: ${json.keys.toList()}');
+    print('[DEBUG_LOG] Recipe.fromJson: Recipe name: ${json['name']}');
+    print('[DEBUG_LOG] Recipe.fromJson: Recipe ID: ${json['id']}');
+
     // Handle the API response structure which uses 'id' instead of 'uuid'
     // and 'photo' instead of 'images'
     final String imageUrl = (json['images'] ?? json['photo'] ?? 'https://placehold.co/400x300/png?text=No+Image') as String;
     String validImageUrl = imageUrl;
 
+    // Validate and sanitize image URL
     if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+      validImageUrl = 'https://placehold.co/400x300/png?text=No+Image';
+    } else if (imageUrl.contains('example.com') || imageUrl.contains('placeholder.com')) {
+      // Replace known problematic placeholder URLs
       validImageUrl = 'https://placehold.co/400x300/png?text=No+Image';
     }
 
@@ -104,48 +113,76 @@ class Recipe {
           : [],
       // Handle ingredients from different API structures
       ingredients: json['ingredients'] != null
-          ? List<Ingredient>.from(
-              (json['ingredients'] as List).map(
-                (x) => Ingredient.fromJson(x as Map<String, dynamic>),
-              ),
-            )
+          ? (() {
+              print('[DEBUG_LOG] Recipe.fromJson: Found "ingredients" field');
+              final ingredientsList = json['ingredients'] as List;
+              print('[DEBUG_LOG] Recipe.fromJson: Ingredients count: ${ingredientsList.length}');
+              return List<Ingredient>.from(
+                ingredientsList.map(
+                  (x) => Ingredient.fromJson(x as Map<String, dynamic>),
+                ),
+              );
+            })()
           : json['recipeIngredients'] != null
-              ? List<Ingredient>.from(
-                  (json['recipeIngredients'] as List).map(
-                    (x) {
-                      // Extract ingredient from recipeIngredient
-                      final ingredientData = x['ingredient'] as Map<String, dynamic>?;
-                      final count = x['count']?.toString() ?? '';
+              ? (() {
+                  print('[DEBUG_LOG] Recipe.fromJson: Found "recipeIngredients" field');
+                  final recipeIngredientsList = json['recipeIngredients'] as List;
+                  print('[DEBUG_LOG] Recipe.fromJson: RecipeIngredients count: ${recipeIngredientsList.length}');
 
-                      if (ingredientData != null) {
-                        // Create ingredient with data from the relationship
-                        // Determine which form of the measure unit to use based on the count
-                        String unitForm = '';
-                        if (ingredientData['measureUnit'] != null) {
-                          final measureUnit = ingredientData['measureUnit'] as Map<String, dynamic>;
-                          final countNum = int.tryParse(count) ?? 0;
+                  final parsedIngredients = List<Ingredient>.from(
+                    recipeIngredientsList.map(
+                      (x) {
+                        print('[DEBUG_LOG] Recipe.fromJson: Processing ingredient: $x');
 
-                          if (countNum == 1) {
-                            unitForm = measureUnit['one'] as String? ?? '';
-                          } else if (countNum >= 2 && countNum <= 4) {
-                            unitForm = measureUnit['few'] as String? ?? '';
-                          } else {
-                            unitForm = measureUnit['many'] as String? ?? '';
+                        // Extract ingredient from recipeIngredient
+                        final ingredientData = x['ingredient'] as Map<String, dynamic>?;
+                        final count = x['count']?.toString() ?? '';
+
+                        print('[DEBUG_LOG] Recipe.fromJson: Ingredient data: $ingredientData');
+                        print('[DEBUG_LOG] Recipe.fromJson: Count: $count');
+
+                        if (ingredientData != null) {
+                          // Create ingredient with data from the relationship
+                          // Determine which form of the measure unit to use based on the count
+                          String unitForm = '';
+                          if (ingredientData['measureUnit'] != null) {
+                            final measureUnit = ingredientData['measureUnit'] as Map<String, dynamic>;
+                            final countNum = int.tryParse(count) ?? 0;
+
+                            print('[DEBUG_LOG] Recipe.fromJson: MeasureUnit: $measureUnit');
+                            print('[DEBUG_LOG] Recipe.fromJson: Count number: $countNum');
+
+                            if (countNum == 1) {
+                              unitForm = measureUnit['one'] as String? ?? '';
+                            } else if (countNum >= 2 && countNum <= 4) {
+                              unitForm = measureUnit['few'] as String? ?? '';
+                            } else {
+                              unitForm = measureUnit['many'] as String? ?? '';
+                            }
+
+                            print('[DEBUG_LOG] Recipe.fromJson: Selected unit form: $unitForm');
                           }
-                        }
 
-                        return Ingredient.simple(
-                          name: ingredientData['name'] as String? ?? '',
-                          quantity: count,
-                          unit: unitForm,
-                        );
-                      } else {
-                        // Fallback if ingredient data is missing
-                        return Ingredient.simple(name: '', quantity: '', unit: '');
-                      }
-                    },
-                  ),
-                )
+                          final ingredient = Ingredient.simple(
+                            name: ingredientData['name'] as String? ?? '',
+                            quantity: count,
+                            unit: unitForm,
+                          );
+
+                          print('[DEBUG_LOG] Recipe.fromJson: Created ingredient: ${ingredient.name} - ${ingredient.quantity} ${ingredient.unit}');
+                          return ingredient;
+                        } else {
+                          print('[DEBUG_LOG] Recipe.fromJson: ⚠️ Ingredient data is null!');
+                          // Fallback if ingredient data is missing
+                          return Ingredient.simple(name: '', quantity: '', unit: '');
+                        }
+                      },
+                    ),
+                  );
+
+                  print('[DEBUG_LOG] Recipe.fromJson: Parsed ${parsedIngredients.length} ingredients');
+                  return parsedIngredients;
+                })()
               : json['recipeIngredientLinks'] != null
                   ? List<Ingredient>.from(
                       (json['recipeIngredientLinks'] as List).map(
@@ -183,46 +220,79 @@ class Recipe {
                         },
                       ),
                     )
-                  : [],
+                  : (() {
+                      print('[DEBUG_LOG] Recipe.fromJson: ⚠️ No ingredients found in any expected field!');
+                      return <Ingredient>[];
+                    })(),
       // Handle steps from different API structures
       steps: json['steps'] != null
-          ? List<RecipeStep>.from(
-              (json['steps'] as List).map(
-                (x) => RecipeStep.fromJson(x as Map<String, dynamic>),
-              ),
-            )
+          ? (() {
+              print('[DEBUG_LOG] Recipe.fromJson: Found "steps" field');
+              final stepsList = json['steps'] as List;
+              print('[DEBUG_LOG] Recipe.fromJson: Steps count: ${stepsList.length}');
+              return List<RecipeStep>.from(
+                stepsList.map(
+                  (x) => RecipeStep.fromJson(x as Map<String, dynamic>),
+                ),
+              );
+            })()
           : json['recipesteplink'] != null
-              ? List<RecipeStep>.from(
-                  (json['recipesteplink'] as List).map(
-                    (x) => RecipeStep.fromJson(x as Map<String, dynamic>),
-                  ),
-                )
+              ? (() {
+                  print('[DEBUG_LOG] Recipe.fromJson: Found "recipesteplink" field');
+                  final stepsList = json['recipesteplink'] as List;
+                  print('[DEBUG_LOG] Recipe.fromJson: RecipeStepLink count: ${stepsList.length}');
+                  return List<RecipeStep>.from(
+                    stepsList.map(
+                      (x) => RecipeStep.fromJson(x as Map<String, dynamic>),
+                    ),
+                  );
+                })()
               : json['recipeStepLinks'] != null
-                  ? List<RecipeStep>.from(
-                      (json['recipeStepLinks'] as List).map(
-                        (x) {
-                          // Extract step from recipeStepLink
-                          final stepData = x['step'] as Map<String, dynamic>?;
-                          // The number field is used to order steps but not needed for display
-                          // final number = x['number']?.toString() ?? '';
+                  ? (() {
+                      print('[DEBUG_LOG] Recipe.fromJson: Found "recipeStepLinks" field');
+                      final recipeStepLinksList = json['recipeStepLinks'] as List;
+                      print('[DEBUG_LOG] Recipe.fromJson: RecipeStepLinks count: ${recipeStepLinksList.length}');
 
-                          if (stepData != null) {
-                            // Create step with data from the relationship
-                            return RecipeStep(
-                              id: 0,
-                              name: stepData['name'] as String? ?? '',
-                              duration: stepData['duration'] is int 
-                                  ? stepData['duration'] as int
-                                  : int.tryParse((stepData['duration'] ?? '0') as String) ?? 0,
-                            );
-                          } else {
-                            // Fallback if step data is missing
-                            return RecipeStep(id: 0, name: '', duration: 0);
-                          }
-                        },
-                      ),
-                    )
-                  : [],
+                      final parsedSteps = List<RecipeStep>.from(
+                        recipeStepLinksList.map(
+                          (x) {
+                            print('[DEBUG_LOG] Recipe.fromJson: Processing step: $x');
+
+                            // Extract step from recipeStepLink
+                            final stepData = x['step'] as Map<String, dynamic>?;
+                            final number = x['number']?.toString() ?? '';
+
+                            print('[DEBUG_LOG] Recipe.fromJson: Step data: $stepData');
+                            print('[DEBUG_LOG] Recipe.fromJson: Step number: $number');
+
+                            if (stepData != null) {
+                              // Create step with data from the relationship
+                              final step = RecipeStep(
+                                id: 0,
+                                name: stepData['name'] as String? ?? '',
+                                duration: stepData['duration'] is int 
+                                    ? stepData['duration'] as int
+                                    : int.tryParse((stepData['duration'] ?? '0') as String) ?? 0,
+                              );
+
+                              print('[DEBUG_LOG] Recipe.fromJson: Created step: ${step.name} (${step.duration} min)');
+                              return step;
+                            } else {
+                              print('[DEBUG_LOG] Recipe.fromJson: ⚠️ Step data is null!');
+                              // Fallback if step data is missing
+                              return RecipeStep(id: 0, name: '', duration: 0);
+                            }
+                          },
+                        ),
+                      );
+
+                      print('[DEBUG_LOG] Recipe.fromJson: Parsed ${parsedSteps.length} steps');
+                      return parsedSteps;
+                    })()
+                  : (() {
+                      print('[DEBUG_LOG] Recipe.fromJson: ⚠️ No steps found in any expected field!');
+                      return <RecipeStep>[];
+                    })(),
       isFavorite: json['isFavorite'] as bool? ?? false,
       comments: json['comments'] != null
           ? List<Comment>.from(
@@ -232,6 +302,7 @@ class Recipe {
             )
           : [],
     );
+
   }
 
   Map<String, dynamic> toJson() {

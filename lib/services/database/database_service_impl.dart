@@ -123,16 +123,31 @@ class DatabaseServiceImpl implements DatabaseService {
       }
 
       // Create or update the recipe
-      await _database.insertRecipe(RecipesCompanion(
-        uuid: Value(recipe.uuid),
-        name: Value(recipe.name),
-        images: Value(imagesJson),
-        description: Value(recipe.description),
-        instructions: Value(recipe.instructions),
-        difficulty: Value(recipe.difficulty),
-        duration: Value(recipe.duration),
-        rating: Value(recipe.rating),
-      ));
+      if (existingRecipe != null) {
+        // Update existing recipe
+        await _database.updateRecipe(RecipesCompanion(
+          uuid: Value(recipe.uuid),
+          name: Value(recipe.name),
+          images: Value(imagesJson),
+          description: Value(recipe.description),
+          instructions: Value(recipe.instructions),
+          difficulty: Value(recipe.difficulty),
+          duration: Value(recipe.duration),
+          rating: Value(recipe.rating),
+        ));
+      } else {
+        // Insert new recipe
+        await _database.insertRecipe(RecipesCompanion(
+          uuid: Value(recipe.uuid),
+          name: Value(recipe.name),
+          images: Value(imagesJson),
+          description: Value(recipe.description),
+          instructions: Value(recipe.instructions),
+          difficulty: Value(recipe.difficulty),
+          duration: Value(recipe.duration),
+          rating: Value(recipe.rating),
+        ));
+      }
 
       // Handle tags
       if (existingRecipe != null) {

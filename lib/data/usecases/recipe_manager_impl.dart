@@ -96,6 +96,57 @@ class RecipeManagerImpl implements RecipeManager {
   }
 
   @override
+  Future<Recipe?> getRecipeByUuid(String uuid) async {
+    print('[DEBUG_LOG] RecipeManagerImpl: getRecipeByUuid called with UUID: $uuid');
+
+    try {
+      print('[DEBUG_LOG] RecipeManagerImpl: Calling repository.getRecipeByUuid($uuid)');
+
+      // Use the repository to get detailed recipe information
+      final recipe = await _recipeRepository.getRecipeByUuid(uuid);
+
+      if (recipe != null) {
+        print('[DEBUG_LOG] RecipeManagerImpl: Repository returned recipe:');
+        print('[DEBUG_LOG] - UUID: ${recipe.uuid}');
+        print('[DEBUG_LOG] - Name: ${recipe.name}');
+        print('[DEBUG_LOG] - Duration: ${recipe.duration}');
+        print('[DEBUG_LOG] - Ingredients count: ${recipe.ingredients.length}');
+        print('[DEBUG_LOG] - Steps count: ${recipe.steps.length}');
+
+        if (recipe.ingredients.isNotEmpty) {
+          print('[DEBUG_LOG] RecipeManagerImpl: Ingredients from repository:');
+          for (int i = 0; i < recipe.ingredients.length; i++) {
+            final ingredient = recipe.ingredients[i];
+            print('[DEBUG_LOG]   ${i + 1}. ${ingredient.name} - ${ingredient.quantity} ${ingredient.unit}');
+          }
+        } else {
+          print('[DEBUG_LOG] RecipeManagerImpl: ⚠️ Repository returned recipe with NO INGREDIENTS!');
+        }
+
+        if (recipe.steps.isNotEmpty) {
+          print('[DEBUG_LOG] RecipeManagerImpl: Steps from repository:');
+          for (int i = 0; i < recipe.steps.length; i++) {
+            final step = recipe.steps[i];
+            print('[DEBUG_LOG]   ${i + 1}. ${step.name} (${step.duration} min)');
+          }
+        } else {
+          print('[DEBUG_LOG] RecipeManagerImpl: ⚠️ Repository returned recipe with NO STEPS!');
+        }
+
+        return recipe;
+      } else {
+        print('[DEBUG_LOG] RecipeManagerImpl: ❌ Repository returned NULL recipe!');
+        return null;
+      }
+    } catch (e) {
+      print('[DEBUG_LOG] RecipeManagerImpl: ❌ Error in getRecipeByUuid: $e');
+      print('[DEBUG_LOG] RecipeManagerImpl: Error stack trace: ${StackTrace.current}');
+      // Rethrow the error
+      throw Exception('Failed to get recipe by UUID: $e');
+    }
+  }
+
+  @override
   Future<List<String>> getIngredients() async {
     try {
       // Use the repository to get available ingredients

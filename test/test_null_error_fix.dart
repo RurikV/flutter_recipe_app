@@ -30,7 +30,7 @@ void main() async {
     final authService = AuthService(dio: mockDio, initializeUser: false);
 
     print('[DEBUG_LOG] Attempting login that should trigger null error scenario');
-    await authService.login('user1', 'user1');
+    await authService.login('user1', 'password123');
 
     print('[DEBUG_LOG] ERROR: Login should have failed but succeeded');
   } catch (e) {

@@ -25,11 +25,13 @@ void main() {
     late Recipe testRecipe;
     late RecipeManager recipeManager;
     late ObjectDetectionService objectDetectionService;
+    late test_locator.MockRecipeRepository mockRecipeRepository;
 
     setUp(() {
       // Create RecipeManager instance
+      mockRecipeRepository = test_locator.MockRecipeRepository();
       recipeManager = RecipeManagerImpl(
-        recipeRepository: test_locator.MockRecipeRepository(),
+        recipeRepository: mockRecipeRepository,
       );
       objectDetectionService = test_locator.MockObjectDetectionService();
 
@@ -72,6 +74,9 @@ void main() {
         comments: [],
       );
 
+      // Add the recipe to the mock repository so it can be found by getRecipeByUuid
+      mockRecipeRepository.addRecipe(testRecipe);
+
       // Create a Redux store with the test recipe
       store = Store<AppState>(
         appReducer,
@@ -103,6 +108,9 @@ void main() {
           ),
         ),
       );
+
+      // Wait for any loading to complete
+      await tester.pumpAndSettle();
 
       // Verify that the recipe is not favorite initially
       expect(store.state.recipes.first.isFavorite, false);
@@ -151,6 +159,9 @@ void main() {
         ),
       );
 
+      // Wait for any loading to complete
+      await tester.pumpAndSettle();
+
       // Verify that the recipe steps are displayed
       expect(find.text('Test step 1'), findsOneWidget);
       expect(find.text('Test step 2'), findsOneWidget);
@@ -176,6 +187,9 @@ void main() {
           ),
         ),
       );
+
+      // Wait for any loading to complete
+      await tester.pumpAndSettle();
 
       // Verify that the recipe name is displayed
       expect(find.text('Test Recipe'), findsOneWidget);

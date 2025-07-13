@@ -65,7 +65,7 @@ void main() {
       print('[DEBUG_LOG] Attempting to login with user1 and user1');
 
       try {
-        final user = await authService.login('user1', 'user1');
+        final user = await authService.login('user1', 'password123');
         print('[DEBUG_LOG] Login successful: ${user.login}, ID: ${user.id}');
         expect(user.login, equals('user1'));
         expect(user.id, isNotNull);

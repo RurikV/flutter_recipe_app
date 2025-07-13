@@ -128,7 +128,12 @@ Technical details: ${e.message ?? 'No additional error details available'}
 
   // Register a new user
   Future<User> register(String login, String password) async {
+    print('[DEBUG_LOG] AuthService: Starting registration for user: $login');
+    print('[DEBUG_LOG] AuthService: Base URL: $baseUrl');
+    print('[DEBUG_LOG] AuthService: Full URL: $baseUrl/user');
+
     try {
+      print('[DEBUG_LOG] AuthService: Making POST request to /user');
       final response = await _dio.post(
         '/user',
         data: {
@@ -137,6 +142,9 @@ Technical details: ${e.message ?? 'No additional error details available'}
         },
       );
 
+      print('[DEBUG_LOG] AuthService: Registration response status: ${response.statusCode}');
+      print('[DEBUG_LOG] AuthService: Registration response data: ${response.data}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         // If registration is successful, login the user
         return await this.login(login, password);
@@ -144,13 +152,42 @@ Technical details: ${e.message ?? 'No additional error details available'}
         throw Exception('Registration failed: ${response.statusCode}');
       }
     } on DioException catch (e) {
+      print('[DEBUG_LOG] AuthService: DioException caught during registration');
+      print('[DEBUG_LOG] AuthService: Exception type: ${e.type}');
+      print('[DEBUG_LOG] AuthService: Response status: ${e.response?.statusCode}');
+      print('[DEBUG_LOG] AuthService: Response data: ${e.response?.data}');
+      print('[DEBUG_LOG] AuthService: Exception message: ${e.message}');
+
       if (e.response != null && e.response?.statusCode == 409) {
         throw Exception('User already exists');
+      } else if (e.response != null && e.response?.statusCode == 500) {
+        // Handle 500 Internal Server Error specifically
+        String errorMessage = 'Registration failed due to server error. ';
+        if (baseUrl.contains('vercel.app')) {
+          errorMessage += 'The production server is experiencing database issues. Please try again later or contact support.';
+        } else {
+          errorMessage += 'Please check server logs and try again.';
+        }
+        throw Exception(errorMessage);
       } else if (e.response != null) {
-        throw Exception('Registration failed: ${e.response?.data['message'] ?? e.message}');
+        // Handle other HTTP errors
+        final errorData = e.response?.data;
+        String errorMessage = 'Registration failed';
+
+        if (errorData is Map && errorData.containsKey('error')) {
+          errorMessage += ': ${errorData['error']}';
+        } else if (e.message != null && e.message!.isNotEmpty) {
+          errorMessage += ': ${e.message}';
+        }
+
+        throw Exception(errorMessage);
       } else {
         throw _handleWebError(e, 'Registration');
       }
+    } catch (e) {
+      print('[DEBUG_LOG] AuthService: General exception caught during registration: $e');
+      print('[DEBUG_LOG] AuthService: Exception type: ${e.runtimeType}');
+      rethrow;
     }
   }
 
@@ -175,7 +212,9 @@ Technical details: ${e.message ?? 'No additional error details available'}
 
         final responseMap = response.data as Map<String, dynamic>;
         final token = responseMap['token'] as String;
-        final userId = responseMap['id'] is String ? int.parse(responseMap['id']) : responseMap['id'] as int;
+        final userId = responseMap['id'] is String 
+            ? int.parse(responseMap['id']) 
+            : (responseMap['id'] as int? ?? 0);
 
         // Get user details using the user ID
         final user = await getUserProfile(userId.toString());
