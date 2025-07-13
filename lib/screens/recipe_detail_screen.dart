@@ -195,15 +195,13 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       },
     );
 
-    // If user confirmed deletion
-    if (confirmed == true) {
+    // If user confirmed deletion and widget is still mounted
+    if (confirmed == true && mounted) {
       try {
         // Show loading indicator
-        if (mounted) {
-          setState(() {
-            _isLoading = true;
-          });
-        }
+        setState(() {
+          _isLoading = true;
+        });
 
         // Dispatch delete action to Redux store
         final store = StoreProvider.of<AppState>(context);

@@ -10,8 +10,65 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"]
+    }
+  }
+}));
 app.use(compression()); // Add gzip compression for better performance
+
+// Swagger documentation setup - moved here to be available for custom initializer
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
+
+// Override the default swagger-initializer.js with our custom configuration BEFORE serving static files
+app.get('/api-docs/swagger-initializer.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  const initializerScript = `
+window.onload = function() {
+  window.ui = SwaggerUIBundle({
+    spec: ${JSON.stringify(swaggerDocument)},
+    dom_id: '#swagger-ui',
+    deepLinking: true,
+    presets: [
+      SwaggerUIBundle.presets.apis,
+      SwaggerUIStandalonePreset
+    ],
+    plugins: [
+      SwaggerUIBundle.plugins.DownloadUrl
+    ],
+    layout: "StandaloneLayout",
+    validatorUrl: null,
+    url: null,
+    urls: null
+  });
+};
+`;
+  res.send(initializerScript);
+});
+
+// Serve Swagger UI static assets explicitly with correct MIME types for serverless environments
+app.use('/api-docs', express.static(path.join(__dirname, 'node_modules/swagger-ui-dist'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    } else if (filePath.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    } else if (filePath.endsWith('.png')) {
+      res.setHeader('Content-Type', 'image/png');
+    } else if (filePath.endsWith('.svg')) {
+      res.setHeader('Content-Type', 'image/svg+xml');
+    }
+  }
+}));
 
 // Enhanced CORS configuration for Flutter web apps
 app.use(cors({
@@ -56,12 +113,6 @@ app.use('/freezer', require('./routes/freezer'));
 app.use('/favorite', require('./routes/favorite'));
 app.use('/user', require('./routes/user'));
 
-// Swagger documentation
-const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
-const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
