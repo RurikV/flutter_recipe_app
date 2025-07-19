@@ -29,19 +29,134 @@ class MeasureUnit extends BaseModel {
 
 class Ingredient extends BaseModel {
   static async create(data) {
-    return await BaseModel.create('ingredients', data);
+    const supabase = require('../config/database').getDb();
+
+    try {
+      const { data: result, error } = await supabase
+        .from('ingredients')
+        .insert([data])
+        .select(`
+          id,
+          name,
+          caloriesForUnit,
+          created_at,
+          measureUnit:measure_units(id, one, few, many)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async findById(id) {
-    return await BaseModel.findById('ingredients', id);
+    const supabase = require('../config/database').getDb();
+    
+    try {
+      const { data, error } = await supabase
+        .from('ingredients')
+        .select(`
+          id,
+          name,
+          caloriesForUnit,
+          created_at,
+          measureUnit:measure_units(id, one, few, many)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') { // No rows returned
+          return null;
+        }
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async findAll(options) {
-    return await BaseModel.findAll('ingredients', options);
+    const supabase = require('../config/database').getDb();
+    const { count = 50, offset = 0, sortBy = [], pageBy, pageAfter, pagePrior } = options;
+
+    try {
+      let query = supabase
+        .from('ingredients')
+        .select(`
+          id,
+          name,
+          caloriesForUnit,
+          created_at,
+          measureUnit:measure_units(id, one, few, many)
+        `);
+
+      // Handle pagination
+      if (pageBy && pageAfter) {
+        query = query.gt(pageBy, pageAfter);
+      }
+      if (pageBy && pagePrior) {
+        query = query.lt(pageBy, pagePrior);
+      }
+
+      // Handle sorting
+      if (sortBy.length > 0) {
+        for (const field of sortBy) {
+          const cleanField = field.replace('-', '');
+          const ascending = !field.startsWith('-');
+          query = query.order(cleanField, { ascending });
+        }
+      } else {
+        query = query.order('id', { ascending: false });
+      }
+
+      // Apply pagination
+      query = query.range(offset, offset + count - 1);
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async update(id, data) {
-    return await BaseModel.update('ingredients', id, data);
+    const supabase = require('../config/database').getDb();
+
+    try {
+      const { data: result, error } = await supabase
+        .from('ingredients')
+        .update(data)
+        .eq('id', id)
+        .select(`
+          id,
+          name,
+          caloriesForUnit,
+          created_at,
+          measureUnit:measure_units(id, one, few, many)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async delete(id) {
@@ -81,19 +196,134 @@ class RecipeStep extends BaseModel {
 
 class RecipeStepLink extends BaseModel {
   static async create(data) {
-    return await BaseModel.create('recipe_step_links', data);
+    const supabase = require('../config/database').getDb();
+
+    try {
+      const { data: result, error } = await supabase
+        .from('recipe_step_links')
+        .insert([data])
+        .select(`
+          id,
+          number,
+          created_at,
+          recipe:recipes(id, name),
+          step:recipe_steps(id, name)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async findById(id) {
-    return await BaseModel.findById('recipe_step_links', id);
+    const supabase = require('../config/database').getDb();
+    
+    try {
+      const { data, error } = await supabase
+        .from('recipe_step_links')
+        .select(`
+          id,
+          number,
+          created_at,
+          recipe:recipes(id, name),
+          step:recipe_steps(id, name)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') { // No rows returned
+          return null;
+        }
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async findAll(options) {
-    return await BaseModel.findAll('recipe_step_links', options);
+    const supabase = require('../config/database').getDb();
+    const { count = 50, offset = 0, sortBy = [], pageBy, pageAfter, pagePrior } = options;
+
+    try {
+      let query = supabase
+        .from('recipe_step_links')
+        .select(`
+          id,
+          number,
+          created_at,
+          recipe:recipes(id, name),
+          step:recipe_steps(id, name)
+        `);
+
+      // Handle pagination
+      if (pageBy && pageAfter) {
+        query = query.gt(pageBy, pageAfter);
+      }
+      if (pageBy && pagePrior) {
+        query = query.lt(pageBy, pagePrior);
+      }
+
+      // Handle sorting
+      if (sortBy.length > 0) {
+        for (const field of sortBy) {
+          const cleanField = field.replace('-', '');
+          const ascending = !field.startsWith('-');
+          query = query.order(cleanField, { ascending });
+        }
+      } else {
+        query = query.order('id', { ascending: false });
+      }
+
+      // Apply pagination
+      query = query.range(offset, offset + count - 1);
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async update(id, data) {
-    return await BaseModel.update('recipe_step_links', id, data);
+    const supabase = require('../config/database').getDb();
+
+    try {
+      const { data: result, error } = await supabase
+        .from('recipe_step_links')
+        .update(data)
+        .eq('id', id)
+        .select(`
+          id,
+          number,
+          created_at,
+          recipe:recipes(id, name),
+          step:recipe_steps(id, name)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async delete(id) {
@@ -107,19 +337,134 @@ class RecipeStepLink extends BaseModel {
 
 class RecipeIngredient extends BaseModel {
   static async create(data) {
-    return await BaseModel.create('recipe_ingredients', data);
+    const supabase = require('../config/database').getDb();
+
+    try {
+      const { data: result, error } = await supabase
+        .from('recipe_ingredients')
+        .insert([data])
+        .select(`
+          id,
+          count,
+          created_at,
+          ingredient:ingredients(id, name),
+          recipe:recipes(id, name)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async findById(id) {
-    return await BaseModel.findById('recipe_ingredients', id);
+    const supabase = require('../config/database').getDb();
+    
+    try {
+      const { data, error } = await supabase
+        .from('recipe_ingredients')
+        .select(`
+          id,
+          count,
+          created_at,
+          ingredient:ingredients(id, name),
+          recipe:recipes(id, name)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') { // No rows returned
+          return null;
+        }
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async findAll(options) {
-    return await BaseModel.findAll('recipe_ingredients', options);
+    const supabase = require('../config/database').getDb();
+    const { count = 50, offset = 0, sortBy = [], pageBy, pageAfter, pagePrior } = options;
+
+    try {
+      let query = supabase
+        .from('recipe_ingredients')
+        .select(`
+          id,
+          count,
+          created_at,
+          ingredient:ingredients(id, name),
+          recipe:recipes(id, name)
+        `);
+
+      // Handle pagination
+      if (pageBy && pageAfter) {
+        query = query.gt(pageBy, pageAfter);
+      }
+      if (pageBy && pagePrior) {
+        query = query.lt(pageBy, pagePrior);
+      }
+
+      // Handle sorting
+      if (sortBy.length > 0) {
+        for (const field of sortBy) {
+          const cleanField = field.replace('-', '');
+          const ascending = !field.startsWith('-');
+          query = query.order(cleanField, { ascending });
+        }
+      } else {
+        query = query.order('id', { ascending: false });
+      }
+
+      // Apply pagination
+      query = query.range(offset, offset + count - 1);
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async update(id, data) {
-    return await BaseModel.update('recipe_ingredients', id, data);
+    const supabase = require('../config/database').getDb();
+
+    try {
+      const { data: result, error } = await supabase
+        .from('recipe_ingredients')
+        .update(data)
+        .eq('id', id)
+        .select(`
+          id,
+          count,
+          created_at,
+          ingredient:ingredients(id, name),
+          recipe:recipes(id, name)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async delete(id) {
@@ -133,19 +478,134 @@ class RecipeIngredient extends BaseModel {
 
 class Comment extends BaseModel {
   static async create(data) {
-    return await BaseModel.create('comments', data);
+    const supabase = require('../config/database').getDb();
+
+    try {
+      const { data: result, error } = await supabase
+        .from('comments')
+        .insert([data])
+        .select(`
+          id,
+          text,
+          created_at,
+          user:users(id, login),
+          recipe:recipes(id, name)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async findById(id) {
-    return await BaseModel.findById('comments', id);
+    const supabase = require('../config/database').getDb();
+    
+    try {
+      const { data, error } = await supabase
+        .from('comments')
+        .select(`
+          id,
+          text,
+          created_at,
+          user:users(id, login),
+          recipe:recipes(id, name)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') { // No rows returned
+          return null;
+        }
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async findAll(options) {
-    return await BaseModel.findAll('comments', options);
+    const supabase = require('../config/database').getDb();
+    const { count = 50, offset = 0, sortBy = [], pageBy, pageAfter, pagePrior } = options;
+
+    try {
+      let query = supabase
+        .from('comments')
+        .select(`
+          id,
+          text,
+          created_at,
+          user:users(id, login),
+          recipe:recipes(id, name)
+        `);
+
+      // Handle pagination
+      if (pageBy && pageAfter) {
+        query = query.gt(pageBy, pageAfter);
+      }
+      if (pageBy && pagePrior) {
+        query = query.lt(pageBy, pagePrior);
+      }
+
+      // Handle sorting
+      if (sortBy.length > 0) {
+        for (const field of sortBy) {
+          const cleanField = field.replace('-', '');
+          const ascending = !field.startsWith('-');
+          query = query.order(cleanField, { ascending });
+        }
+      } else {
+        query = query.order('id', { ascending: false });
+      }
+
+      // Apply pagination
+      query = query.range(offset, offset + count - 1);
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async update(id, data) {
-    return await BaseModel.update('comments', id, data);
+    const supabase = require('../config/database').getDb();
+
+    try {
+      const { data: result, error } = await supabase
+        .from('comments')
+        .update(data)
+        .eq('id', id)
+        .select(`
+          id,
+          text,
+          created_at,
+          user:users(id, login),
+          recipe:recipes(id, name)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async delete(id) {
@@ -159,19 +619,134 @@ class Comment extends BaseModel {
 
 class Freezer extends BaseModel {
   static async create(data) {
-    return await BaseModel.create('freezer', data);
+    const supabase = require('../config/database').getDb();
+
+    try {
+      const { data: result, error } = await supabase
+        .from('freezer')
+        .insert([data])
+        .select(`
+          id,
+          count,
+          created_at,
+          user:users(id, login),
+          ingredient:ingredients(id, name)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async findById(id) {
-    return await BaseModel.findById('freezer', id);
+    const supabase = require('../config/database').getDb();
+    
+    try {
+      const { data, error } = await supabase
+        .from('freezer')
+        .select(`
+          id,
+          count,
+          created_at,
+          user:users(id, login),
+          ingredient:ingredients(id, name)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') { // No rows returned
+          return null;
+        }
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async findAll(options) {
-    return await BaseModel.findAll('freezer', options);
+    const supabase = require('../config/database').getDb();
+    const { count = 50, offset = 0, sortBy = [], pageBy, pageAfter, pagePrior } = options;
+
+    try {
+      let query = supabase
+        .from('freezer')
+        .select(`
+          id,
+          count,
+          created_at,
+          user:users(id, login),
+          ingredient:ingredients(id, name)
+        `);
+
+      // Handle pagination
+      if (pageBy && pageAfter) {
+        query = query.gt(pageBy, pageAfter);
+      }
+      if (pageBy && pagePrior) {
+        query = query.lt(pageBy, pagePrior);
+      }
+
+      // Handle sorting
+      if (sortBy.length > 0) {
+        for (const field of sortBy) {
+          const cleanField = field.replace('-', '');
+          const ascending = !field.startsWith('-');
+          query = query.order(cleanField, { ascending });
+        }
+      } else {
+        query = query.order('id', { ascending: false });
+      }
+
+      // Apply pagination
+      query = query.range(offset, offset + count - 1);
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async update(id, data) {
-    return await BaseModel.update('freezer', id, data);
+    const supabase = require('../config/database').getDb();
+
+    try {
+      const { data: result, error } = await supabase
+        .from('freezer')
+        .update(data)
+        .eq('id', id)
+        .select(`
+          id,
+          count,
+          created_at,
+          user:users(id, login),
+          ingredient:ingredients(id, name)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async delete(id) {
@@ -185,19 +760,130 @@ class Freezer extends BaseModel {
 
 class Favorite extends BaseModel {
   static async create(data) {
-    return await BaseModel.create('favorites', data);
+    const supabase = require('../config/database').getDb();
+
+    try {
+      const { data: result, error } = await supabase
+        .from('favorites')
+        .insert([data])
+        .select(`
+          id,
+          created_at,
+          recipe:recipes(id, name),
+          user:users(id, login)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async findById(id) {
-    return await BaseModel.findById('favorites', id);
+    const supabase = require('../config/database').getDb();
+    
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select(`
+          id,
+          created_at,
+          recipe:recipes(id, name),
+          user:users(id, login)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') { // No rows returned
+          return null;
+        }
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async findAll(options) {
-    return await BaseModel.findAll('favorites', options);
+    const supabase = require('../config/database').getDb();
+    const { count = 50, offset = 0, sortBy = [], pageBy, pageAfter, pagePrior } = options;
+
+    try {
+      let query = supabase
+        .from('favorites')
+        .select(`
+          id,
+          created_at,
+          recipe:recipes(id, name),
+          user:users(id, login)
+        `);
+
+      // Handle pagination
+      if (pageBy && pageAfter) {
+        query = query.gt(pageBy, pageAfter);
+      }
+      if (pageBy && pagePrior) {
+        query = query.lt(pageBy, pagePrior);
+      }
+
+      // Handle sorting
+      if (sortBy.length > 0) {
+        for (const field of sortBy) {
+          const cleanField = field.replace('-', '');
+          const ascending = !field.startsWith('-');
+          query = query.order(cleanField, { ascending });
+        }
+      } else {
+        query = query.order('id', { ascending: false });
+      }
+
+      // Apply pagination
+      query = query.range(offset, offset + count - 1);
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async update(id, data) {
-    return await BaseModel.update('favorites', id, data);
+    const supabase = require('../config/database').getDb();
+
+    try {
+      const { data: result, error } = await supabase
+        .from('favorites')
+        .update(data)
+        .eq('id', id)
+        .select(`
+          id,
+          created_at,
+          recipe:recipes(id, name),
+          user:users(id, login)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
   
   static async delete(id) {
